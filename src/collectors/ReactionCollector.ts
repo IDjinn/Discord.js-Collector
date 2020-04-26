@@ -137,7 +137,7 @@ export default class ReactionCollector {
     }
 }
 
-interface CollectorOptions{
+export interface CollectorOptions{
     botMessage: Message;
     user: UserResolvable;
     reactions?: string[];
@@ -146,7 +146,7 @@ interface CollectorOptions{
     deleteReaction?: boolean;
 }
 
-interface AsyncCollectorOptions{
+export interface AsyncCollectorOptions{
     botMessage: Message;
     user: UserResolvable;
     reactions?: string[];
