@@ -1,5 +1,5 @@
 
-import { Message, ReactionCollectorOptions, ReactionCollector as DjsReactionCollector,CollectorOptions as DjsCollectorOptions, CollectorFilter, User, ReactionEmoji, MessageReaction, UserResolvable, Util } from "discord.js";
+import { Message, ReactionCollectorOptions, ReactionCollector as DjsReactionCollector,CollectorOptions as DjsCollectorOptions, CollectorFilter, User, ReactionEmoji, MessageReaction, UserResolvable, Util, MessageEmbed } from "discord.js";
 import Constants from "../util/Constants";
 
 export default class ReactionCollector {
@@ -26,7 +26,7 @@ export default class ReactionCollector {
      * @returns DjsReactionCollector
      */
     public static question(options: CollectorOptions): DjsReactionCollector {
-        return this._createReactionCollector(this.verifyArguments(options));
+        return this._createReactionCollector(this.setDefaultCollectorOptions(options));
     }
     
     /**
@@ -46,7 +46,7 @@ export default class ReactionCollector {
      * @returns Promise<boolean>
      */
     public static async asyncQuestion(options: AsyncCollectorOptions): Promise<boolean> {
-        return this._createAsyncReactionCollector(this.verifyArguments(options));
+        return this._createAsyncReactionCollector(this.setDefaultCollectorOptions(options));
     }
 
     /**
@@ -54,7 +54,7 @@ export default class ReactionCollector {
      * @description This method verify if collector configuration can be used, avoiding errors.
      * @returns CollectorOptions | AsyncCollectorOptions
      */
-    private static verifyArguments(options: CollectorOptions | AsyncCollectorOptions): CollectorOptions | AsyncCollectorOptions {
+    private static setDefaultCollectorOptions(options: CollectorOptions | AsyncCollectorOptions | MenuOptions): CollectorOptions | AsyncCollectorOptions {
         if (!options.reactions)
             options.reactions = Constants.DEFAULT_YES_NO_REACTIONS;
 
@@ -64,7 +64,7 @@ export default class ReactionCollector {
         if (options.collectorOptions.time === undefined)
             options.collectorOptions.time = Constants.DEFAULT_COLLECTOR_TIME;
         
-        if (options.collectorOptions.max === undefined)
+        if (!(options as MenuOptions) && options.collectorOptions.max === undefined)
             options.collectorOptions.max = Constants.DEFAULT_COLLECTOR_MAX_REACT;
 
         const syncOptions = options as CollectorOptions;
@@ -93,7 +93,7 @@ export default class ReactionCollector {
             throw 'Invalid input: fx is undefined or different of reactions length.';
         
         Promise.all(reactions.map(r => botMessage.react(r))).catch(console.error);
-        const filter = (r: any, u: any) => u.id === user.id && reactions.includes(r.emoji.name);
+        const filter = (r: any, u: any) => u.id === user.id && reactions.includes(r.emoji.name) && !user.bot;
         const collector = botMessage.createReactionCollector(filter, collectorOptions);
         collector.on('collect', async (reaction: MessageReaction) => {
             const emoji = reaction.emoji.name;
@@ -101,6 +101,7 @@ export default class ReactionCollector {
                 reaction.users.remove(user.id);
             await onReact[reactions.indexOf(emoji)](botMessage);
         });
+        collector.on('end', async () => await botMessage.reactions.removeAll().catch());
         return collector;
     }
 
@@ -126,17 +127,52 @@ export default class ReactionCollector {
                 return reject('I cannot react in messages in that channel.');
         
             await Promise.all(reactions.map(r => botMessage.react(r))).catch(reject);
-            const filter = (r: any, u: any) => u.id === user.id && reactions.includes(r.emoji.name);
+            const filter = (r: any, u: any) => u.id === user.id && reactions.includes(r.emoji.name) && !user.bot;
             const collector = botMessage.createReactionCollector(filter, collectorOptions);
             collector.on('collect', async (reaction: MessageReaction) => {
                 if (deleteReaction)
                     await reaction.users.remove(user.id);
                 return resolve(reactions.indexOf(reaction.emoji.name) === 0 ? true : false);
             });
+            collector.on('end', async () => await botMessage.reactions.removeAll().catch(reject));
+        });
+    }
+
+    /**
+     * @param  {MenuOptions} options
+     * @returns void
+     */
+    public static async menu(options: MenuOptions): Promise<void> {
+        const { botMessage, user: userResolvable, pages, collectorOptions } = options;
+        if (!options.reactions)
+            options.reactions = [];
+        options.reactions = options.reactions.length > 0 ? options.reactions : Constants.DEFAULT_MENU_REACTIONS;
+        const user = botMessage.client.users.resolve(userResolvable);
+        if (!user)
+            throw 'Invalid input: user is null or invalid.';
+        if (!pages || pages.length === 0)
+            throw 'Invalid input: pages is null or empty';
+        
+        let i = 0;
+        const edit = async (botMessage: Message, back: boolean) => {
+            back ? (i > 0 ? --i : pages.length - 1) : (i + 1 < pages.length ? ++i : 0);
+            await botMessage.edit({ embed: pages[i] }).catch(console.error);
+        }
+
+        await botMessage.edit({ embed: pages[0] }).catch(console.error);
+        this.question({
+            botMessage,
+            user: userResolvable,
+            reactions: options.reactions,
+            collectorOptions,
+            deleteReaction: true,
+            onReact: [
+                async (botMessage: Message) => await edit(botMessage, true),
+                async (botMessage: Message) => await edit(botMessage, false)
+            ]
         });
     }
 }
-
 export interface CollectorOptions{
     botMessage: Message;
     user: UserResolvable;
@@ -152,4 +188,12 @@ export interface AsyncCollectorOptions{
     reactions?: string[];
     collectorOptions?: ReactionCollectorOptions;
     deleteReaction?: boolean;
+}
+
+export interface MenuOptions{
+    botMessage: Message;
+    user: UserResolvable;
+    pages: MessageEmbed[];
+    reactions?: string[];
+    collectorOptions?: ReactionCollectorOptions;
 }

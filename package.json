@@ -1,11 +1,12 @@
 {
-  "name": "d.js-collector",
+  "name": "discord.js-collector",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
     "discord.js": "^12.2.0",
-    "global": "^4.4.0"
+    "global": "^4.4.0",
+    "tslib": "^1.11.1"
   },
   "devDependencies": {
     "@types/ws": "^7.2.4",
