@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "discord.js": "^12.2.0",
+    "discord.js-collector": "^1.0.0",
     "global": "^4.4.0",
     "tslib": "^1.11.1"
   },
