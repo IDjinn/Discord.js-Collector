@@ -1,16 +1,22 @@
 {
   "name": "discord.js-collector",
-  "version": "1.0.1",
+  "description": "Library to easily create message collector and reactions on discord, with customization ways",
+  "version": "1.0.2",
   "main": "src/index.js",
   "license": "MIT",
+  "scripts": {
+    "dev": "node ./test/bot.js"
+  },
   "dependencies": {
-    "discord.js": "^12.2.0",
-    "discord.js-collector": "^1.0.0",
-    "global": "^4.4.0",
-    "tslib": "^1.11.1"
+    "discord.js": "^12.1.0"
   },
   "devDependencies": {
     "@types/ws": "^7.2.4",
     "typescript": "^3.8.3"
+  },
+  "homepage": "https://github.com/IDjinn/Discord.js-Collector",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IDjinn/Discord.js-Collector"
   }
 }

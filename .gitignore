@@ -1,5 +1,6 @@
 node_modules/*
 build/*
 test/*
-yarn.error
+yarn-error.log
 yarn.lock
+package-lock.json
