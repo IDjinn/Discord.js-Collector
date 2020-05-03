@@ -11,12 +11,12 @@ const { isArray, isBoolean, isNumber, isObject } = require('util');
 module.exports.validateOptions = (options, type) => {
     if (!options)
         throw 'Missing arguments: options is undefined.';
-    if (!options.botMessage || !(options.botMessage instanceof Message))
+    if (!options.botMessage || !options.botMessage.client)
         throw 'Invalid input: botMessage is undefined or invalid.';
 
     const client = options.botMessage.client;
     options.user = client.users.resolve(options.user);
-    if (!(options.user instanceof User))
+    if (!options.user)
         throw 'Invalid input: user is undefined or invalid.';
     if (!options.botMessage.guild)
         throw 'Invalid input: botMessage.guild is undefined.';
