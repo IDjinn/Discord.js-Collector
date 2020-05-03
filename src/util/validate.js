@@ -1,4 +1,4 @@
-const { Message, User } = require("discord.js");
+const { Message, User, ClientUser } = require("discord.js");
 const Constants = require('./constants');
 const { isArray, isBoolean, isNumber, isObject } = require('util');
 
@@ -14,7 +14,8 @@ module.exports.validateOptions = (options, type) => {
     if (!options.botMessage || !(options.botMessage instanceof Message))
         throw 'Invalid input: botMessage is undefined or invalid.';
 
-    options.user = options.botMessage.client.users.resolve(options.user);
+    const client = options.botMessage.client;
+    options.user = client.users.resolve(options.user);
     if (!(options.user instanceof User))
         throw 'Invalid input: user is undefined or invalid.';
     if (!options.botMessage.guild)
@@ -27,14 +28,14 @@ module.exports.validateOptions = (options, type) => {
     switch (type) {
         case 'reactQuestion':
         case 'reactAsyncQuestion':
-        case 'reactMenu':
-            if (options.reactions && (!isArray(options.reactions) || options.reactions.filter(r => typeof r !== 'string').length > 0))
+        case 'reactPaginator':
+            if (options.reactions && (!isArray(options.reactions) || options.reactions.filter(emoji => !client.emojis.resolveIdentifier(emoji)).length > 0))
                 throw 'Invalid input: reactions is invalid type.';
             if (options.onReact && (!isArray(options.onReact) || options.onReact.filter(fx => typeof fx !== 'function').length > 0))
                 throw 'Invalid input: onReact is invalid type.';
 
             if (!options.reactions)
-                options.reactions = (type !== 'reactMenu') ? Constants.DEFAULT_YES_NO_REACTIONS : Constants.DEFAULT_MENU_REACTIONS;
+                options.reactions = (type !== 'reactPaginator') ? Constants.DEFAULT_YES_NO_REACTIONS : Constants.DEFAULT_PAGINATOR_REACTIONS;
             
             if (!options.onReact)
                 options.onReact = [Constants.DEFAULT_RETURN_FUNCTION, Constants.DEFAULT_RETURN_FUNCTION];
@@ -74,19 +75,19 @@ module.exports.validateOptions = (options, type) => {
     }
 
     if (!options.collectorOptions || !isObject(options.collectorOptions))
-        options.collectorOptions = { time: Constants.DEFAULT_COLLECTOR_TIME, max: Constants.DEFAULT_COLLECTOR_MAX_REACT };
-
+        options.collectorOptions = { time: Constants.DEFAULT_COLLECTOR_TIME, max: (type === 'reactPaginator') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT };
+        
     if (!isNumber(options.collectorOptions.time)) {
         options.collectorOptions.time = parseInt(options.collectorOptions.time);
         if (isNaN(options.collectorOptions.time)) {
             options.collectorOptions.time = Constants.DEFAULT_COLLECTOR_TIME;
         }
     }
-
+        
     if (!isNumber(options.collectorOptions.max)) {
         options.collectorOptions.max = parseInt(options.collectorOptions.max);
         if (isNaN(options.collectorOptions.max)) {
-            options.collectorOptions.max = Constants.DEFAULT_COLLECTOR_MAX_REACT;
+            options.collectorOptions.max = (type === 'reactPaginator') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT;
         }
     }
 
