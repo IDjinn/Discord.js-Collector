@@ -6,7 +6,12 @@ module.exports = class MessageCollector{
      * @param  {Object} options
      * @param {Message} options.botMessage - Message sent from bot.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
-     * @param {MessageCollectorOptions} options.collectorOptions - Message sent from bot.
+     * @param {MessageCollectorOptions} [options.collectorOptions] - Message collector options
+     * @param {Funciton} [options.onMessage] - Triggered when user sent a message
+     * @param {boolean} [options.deleteMessage] - Default true - Message sent from bot.
+     * 
+     * @note Trigger when user sent a message must be like onMessage(botMessage, message) => {};
+     * @returns {void}
      */
     static question(options) {
         return this.__createMessageCollector(validateOptions(options, 'messageQuestion'));
@@ -17,7 +22,8 @@ module.exports = class MessageCollector{
      * @param  {Object} options
      * @param {Message} options.botMessage - Message sent from bot.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
-     * @param {MessageCollectorOptions} options.collectorOptions - Message sent from bot.
+     * @param {MessageCollectorOptions} [options.collectorOptions] - Message collector options
+     * @param {boolean} [options.deleteMessage] - Default true - Message sent from bot.
      * 
      * @returns {Promise<Message>}
      */
@@ -39,9 +45,9 @@ module.exports = class MessageCollector{
     
     static async __createAsyncMessageCollector(_options) {
         return new Promise(async(resolve, reject) => {
-            const { botMessage, user, collectorOptions, deleteMessage } = validateOptions(_options, 'messageCollector');
-            const filter = (message) => message.author.id === user.id && !user.bot;
-            const caughtMessages = await botMessage.awaitReactions(filter, collectorOptions);
+            const { botMessage, user, collectorOptions, deleteMessage } = validateOptions(_options, 'messageAsyncQuestion');
+            const filter = (message) => message.author.id === user.id && !message.author.bot;
+            const caughtMessages = await botMessage.channel.awaitMessages(filter, collectorOptions);
             if (caughtMessages.size > 0) {
                 const message = caughtMessages.first();
                 if (deleteMessage)
