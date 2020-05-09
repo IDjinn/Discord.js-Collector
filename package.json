@@ -8,7 +8,9 @@
     "dev": "node ./test/bot.js"
   },
   "dependencies": {
-    "discord.js": "^12.1.0",
+    "discord.js": "^12.1.0"
+  },
+  "devDependencies": {
     "discord.js-collector": "^1.0.4"
   },
   "homepage": "https://github.com/IDjinn/Discord.js-Collector",

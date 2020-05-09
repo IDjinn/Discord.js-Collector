@@ -11,20 +11,21 @@ To use in multiple actions, react and then trigger one function to do things.
 ![Question Gif](./assets/reactQuestion.gif)
 
 ```js
-const {ReactionCollector} = require('discord.js-collector');
+const { ReactionCollector } = require("discord.js-collector");
 
-const botMessage = await message.channel.send('Simple choice yes/no...');
+const botMessage = await message.channel.send("Simple choice yes/no...");
 ReactionCollector.question({
-    botMessage,
-    user: message,
-    onReact: [
-        async (botMessage) => await botMessage.channel.send("You've choice yes."),
-        async (botMessage) => await botMessage.channel.send("You've choice no."),
-    ]
+  botMessage,
+  user: message,
+  onReact: [
+    async (botMessage) => await botMessage.channel.send("You've choice yes."),
+    async (botMessage) => await botMessage.channel.send("You've choice no."),
+  ],
 });
 ```
 
 ### Options param
+
 `ReactionCollector.question(options);`
 
 ```js
@@ -46,19 +47,19 @@ To use in `if` statements, the asynchronous reaction collector returning Promise
 ![Question Gif](./assets/reactAsyncQuestion.gif)
 
 ```js
-const {ReactionCollector} = require('discord.js-collector');
+const { ReactionCollector } = require("discord.js-collector");
 
-const botMessage = await message.channel.send('Simple choice yes/no...');
-const options = { botMessage, user: message};
-if(await ReactionCollector.asyncQuestion(options)){
-    await botMessage.channel.send("You've choice yes.");
-}
-else{
-    await botMessage.channel.send("You've choice no.");
+const botMessage = await message.channel.send("Simple choice yes/no...");
+const options = { botMessage, user: message };
+if (await ReactionCollector.asyncQuestion(options)) {
+  await botMessage.channel.send("You've choice yes.");
+} else {
+  await botMessage.channel.send("You've choice no.");
 }
 ```
 
 ### Options param
+
 `ReactionCollector.asyncQuestion(options);`
 
 ```js
@@ -79,20 +80,21 @@ Easier paginator embeds, with back/skip reaction to change current page.
 ![Question Gif](./assets/reactPaginator.gif)
 
 ```js
-const {ReactionCollector} = require('discord.js-collector');
+const { ReactionCollector } = require("discord.js-collector");
 
-const botMessage = await message.channel.send('Simple paginator...');
+const botMessage = await message.channel.send("Simple paginator...");
 ReactionCollector.paginator({
-    botMessage,
-    user: message,
-    pages: [
-        new MessageEmbed({ description: 'First page content...' }),
-        new MessageEmbed({ description: 'Second page content...' })
-    ]
+  botMessage,
+  user: message,
+  pages: [
+    new MessageEmbed({ description: "First page content..." }),
+    new MessageEmbed({ description: "Second page content..." }),
+  ],
 });
 ```
 
 ### Options param
+
 `ReactionCollector.paginator(options);`
 
 ```js
@@ -115,18 +117,21 @@ Await for messages from user, and when it's send will fire a trigger to do thing
 ![Question Gif](./assets/messageQuestion.gif)
 
 ```js
-const {MessageCollector} = require('discord.js-collector');
+const { MessageCollector } = require("discord.js-collector");
 
-const botMessage = await message.channel.send('Awaiting a message');
+const botMessage = await message.channel.send("Awaiting a message");
 MessageCollector.question({
-    botMessage,
-    user: message.author.id,
-    onMessage: async (botMessage, message) => await botMessage.channel.send(`Your answer was \`$message.content}\``)
+  botMessage,
+  user: message.author.id,
+  onMessage: async (botMessage, message) =>
+    await botMessage.channel.send(`Your answer was ${message.content}`),
 });
 ```
 
 ### Options param
+
 `MessageCollector.question(options);`
+
 ```js
 {
     botMessage: Message // Message sent from bot.
@@ -144,17 +149,22 @@ Await for message from user, and when user send, will return user message as Pro
 ![Question Gif](./assets/messageAsyncQuestion.gif)
 
 ```js
-const {MessageCollector} = require('discord.js-collector');
+const { MessageCollector } = require("discord.js-collector");
 
-const botMessage = await message.channel.send('Awaiting a message');
-const userMessage = await MessageCollector.asyncQuestion({ botMessage, user: message.author.id });
-if (userMessage.content === 'ping') {
-    await message.channel.send('pong!');
+const botMessage = await message.channel.send("Awaiting a message");
+const userMessage = await MessageCollector.asyncQuestion({
+  botMessage,
+  user: message.author.id,
+});
+if (userMessage.content === "ping") {
+  await message.channel.send("pong!");
 }
 ```
 
 ### Options param
+
 `MessageCollector.asyncQuestion(options);`
+
 ```js
 {
     botMessage: Message // Message sent from bot.
