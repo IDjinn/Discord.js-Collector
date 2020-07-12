@@ -3,12 +3,62 @@
 Library to easily create message collector and reactions on discord.js v12, with customization ways.
 
 ---
+# CHANGELOG - V1.2.0
+
+• New functions to create reactions menu, you can use with `ReactionCollector.menu(options)`
+
+---
 # CHANGELOG - V1.1.0
 
 • Now collectors work in DM Channels, but cannot delete user reaction/message
 • [BETA] Added ReactionRoleManager, easy mode to create reactions roles with storage system, when finish i will share examples and gifs explaining how this work.
 
 ---
+
+## Reaction menu
+
+To create a reaction menu with multiple pages.
+
+![Menu Gif](./assets/reactMenu.gif)
+
+```js
+const botMessage = await message.reply('Lorem Menu')
+ReactionCollector.menu({
+  botMessage,
+  user: message,
+  pages: {
+    '✅': {
+      embed: {
+        description: 'Minim magna do quis nulla excepteur dolore aute aute minim amet eu ea.'
+      }
+    },
+    '706597879523049585': {
+      content: 'Lorem Text ',
+      embed: {
+        description: 'Nisi ullamco magna in id ea anim aliquip officia ex excepteur est nulla exercitation.'
+      }
+    },
+    '📢': {
+      embed: {
+        description: 'Mollit fugiat aliqua nisi in sunt pariatur laboris eiusmod anim magna ut id occaecat eu.'
+      }
+    }
+  }
+});
+```
+
+### Options param
+
+`ReactionCollector.menu(options);`
+
+```js
+{
+    botMessage: Message // Message sent from bot.
+    user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
+    pages: Array // Array with menu pages.
+    collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
+}
+```
 
 ## Simple reaction collector
 

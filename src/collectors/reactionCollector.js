@@ -5,7 +5,72 @@ const editPaginator = async (botMessage, isBack, i, pages) => {
     await botMessage.edit({ embed: pages[i] });
 }
 
+const pages = {
+    '#emoji#': {
+        embed: {},
+        content: {}
+    }
+}
+
 module.exports = class ReactionCollector {
+    /**
+     * @description This method can be used to create easier react menu.
+     * @param  {PaginatorOptions} options
+     * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
+     * @param  {UserResolvable} options.user - UserResolvable who will react. 
+     * @param  options.pages - Array with menu pages.
+     * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
+     * @example
+     *  //First step, you need make menu pages like that:
+     *  const pages = {
+     *        '✅': {
+     *          embed: {
+     *            description: 'Minim magna do quis nulla excepteur dolore aute aute minim amet eu ea.'
+     *          }
+     *        },
+     *        '706597879523049585': {
+     *          content: 'Lorem Text ',
+     *          embed: {
+     *            description: 'Nisi ullamco magna in id ea anim aliquip officia ex excepteur est nulla exercitation.'
+     *          }
+     *        },
+     *        '📢': {
+     *          embed: {
+     *            description: 'Mollit fugiat aliqua nisi in sunt pariatur laboris eiusmod anim magna ut id occaecat eu.'
+     *          }
+     *        }
+     *    }
+     * 
+     *   const botMessage = await message.channel.send('Simple Reaction Menu...');
+     *   ReactionCollector.menu({
+     *       botMessage,
+     *       user: message,
+     *       pages
+     *   });
+     * @returns void
+     */
+    static async menu(options) {
+        const { botMessage, user, pages, collectorOptions } = validateOptions(options, 'reactMenu');
+        if (!pages || pages.length === 0)
+            throw 'Invalid input: pages is null or empty';
+
+
+        const keys = Object.keys(pages);
+        const key = keys[0];
+        const onReact = [];
+        for (let i = 0; i < keys.length; i++) {
+            onReact[i] = async (botMessage) => await botMessage.edit(pages[keys[i]]);
+        }
+        await botMessage.edit(pages[key].embed ? pages[key].embed : pages[key]);
+        this.question({
+            botMessage,
+            user,
+            reactions: keys,
+            collectorOptions,
+            onReact
+        });
+    }
+
     /**
      * @description This method can be used to create easier react pagination, with multiple embeds pages.
      * @param  {PaginatorOptions} options
@@ -108,10 +173,10 @@ module.exports = class ReactionCollector {
         try {
             const { botMessage, reactions, user, collectorOptions, onReact, deleteReaction, deleteAllReactionsWhenCollectorEnd } = _options;
             Promise.all(reactions.map(r => botMessage.react(r)));
-            const filter = (r, u) => u.id === user.id && reactions.includes(r.emoji.name) && !user.bot;
+            const filter = (r, u) => u.id === user.id && (reactions.includes(r.emoji.id) || reactions.includes(r.emoji.name)) && !user.bot;
             const collector = botMessage.createReactionCollector(filter, collectorOptions);
             collector.on('collect', async (reaction) => {
-                const emoji = reaction.emoji.name;
+                const emoji = reaction.emoji.id || reaction.emoji.name;
                 if (deleteReaction)
                     await reaction.users.remove(user.id);
                 await onReact[reactions.indexOf(emoji)](botMessage);
@@ -133,7 +198,7 @@ module.exports = class ReactionCollector {
         return new Promise(async (resolve) => {
             const { botMessage, reactions, user, collectorOptions, deleteReaction, deleteAllReactionsWhenCollectorEnd } = _options;
             await Promise.all(reactions.map(r => botMessage.react(r)));
-            const filter = (r, u) => u.id === user.id && reactions.includes(r.emoji.name) && !user.bot;
+            const filter = (r, u) => u.id === user.id && (reactions.includes(r.emoji.id) || reactions.includes(r.emoji.name)) && !user.bot;
             const caughtReactions = await botMessage.awaitReactions(filter, collectorOptions);
             if (caughtReactions.size > 0) {
                 const reactionCollected = caughtReactions.first();
@@ -141,7 +206,7 @@ module.exports = class ReactionCollector {
                     await reactionCollected.users.remove(user.id);
                 if (deleteAllReactionsWhenCollectorEnd)
                     await reactionCollected.message.reactions.removeAll();
-                return resolve(reactions.indexOf(reactionCollected.emoji ? reactionCollected.emoji.name : reactionCollected.name) === 0);
+                return resolve(reactions.indexOf(reactionCollected.emoji ? (reactionCollected.emoji.name || reactionCollected.emoji.id) : (reactionCollected.name || reactionCollected.id)) === 0);
             }
             return resolve(false);
         });

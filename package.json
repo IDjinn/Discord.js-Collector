@@ -1,7 +1,7 @@
 {
   "name": "discord.js-collector",
   "description": "Library to easily create message collector and reactions on discord, with customization ways",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "src/index.js",
   "license": "GPL-3.0",
   "scripts": {

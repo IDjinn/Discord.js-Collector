@@ -12,13 +12,7 @@ class ReactionRole {
         this.role = role.id ? role.id : role;
         this.emoji = emoji.id ? emoji.id : emoji.name || emoji;
         this.max = isNaN(max) ? Infinity : max;
-        // this.init();
     }
-    /*
-        async init(client) {
-            guild.
-            return this.message.react(this.emoji);
-        }*/
 
     get id() {
         return `${this.message}-${this.emoji}`;
@@ -62,8 +56,11 @@ class ReactionRoleManager {
             console.debug(`[${new Date().toLocaleString()}] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`)
     }
 
-    addRole({ message, role, emoji, max }) {
+    addRole({ message, role, emoji, max } = { max: Infinity }) {
         if (message instanceof Message && message.guild) {
+            if (!message.guild)
+                throw 'Bad input: message must be a guild message, cannot create reaction role in DM channels.'
+            
             const discordRole = message.guild.roles.resolve(role);
             const discordEmoji = message.guild.emojis.resolve(emoji);
             message.react(discordEmoji);
@@ -72,7 +69,7 @@ class ReactionRoleManager {
             return;
         }
 
-        throw 'Bad input: addRole({...}) message must be a Message object inside a guild.';
+        throw 'Bad input: addRole({...}) message must be a Message object.';
     }
 
     removeRole(role) {

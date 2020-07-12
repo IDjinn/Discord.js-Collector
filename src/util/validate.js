@@ -49,6 +49,8 @@ module.exports.validateOptions = (options, type) => {
 
             if (options.botMessage.channel.type == 'dm')
                 options.deleteReaction = false;
+            else if (type === 'reactMenu')
+                options.deleteReaction = true;
             else if (options.deleteReaction === undefined)
                 options.deleteReaction = true;
             else if (!isBoolean(options.deleteReaction))
@@ -56,6 +58,8 @@ module.exports.validateOptions = (options, type) => {
 
             if (options.botMessage.channel.type == 'dm')
                 options.deleteAllReactionsWhenCollectorEnd = false;
+            else if (type === 'reactMenu')
+                options.deleteAllReactionsWhenCollectorEnd = true;
             else if (options.deleteAllReactionsWhenCollectorEnd === undefined)
                 options.deleteAllReactionsWhenCollectorEnd = true;
             else if (!isBoolean(options.deleteAllReactionsWhenCollectorEnd))
@@ -71,6 +75,9 @@ module.exports.validateOptions = (options, type) => {
                 if (options.deleteAllReactionsWhenCollectorEnd && !options.botMessage.guild.me.permissionsIn(options.botMessage.channel).has('MANAGE_MESSAGES'))
                     throw 'Missing permissions: I not have permissions to Manage Messages in this channel to delete all reactions when collector end.';
             }
+            break;
+
+        case 'reactMenu': // TODO: precisa disso?
             break;
 
         case 'messageQuestion':
@@ -92,7 +99,7 @@ module.exports.validateOptions = (options, type) => {
     }
 
     if (!options.collectorOptions || !isObject(options.collectorOptions))
-        options.collectorOptions = { time: Constants.DEFAULT_COLLECTOR_TIME, max: (type === 'reactPaginator') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT };
+        options.collectorOptions = { time: Constants.DEFAULT_COLLECTOR_TIME, max: (type === 'reactPaginator' || type === 'reactMenu') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT };
 
     if (!isNumber(options.collectorOptions.time)) {
         options.collectorOptions.time = parseInt(options.collectorOptions.time);
@@ -104,7 +111,7 @@ module.exports.validateOptions = (options, type) => {
     if (!isNumber(options.collectorOptions.max)) {
         options.collectorOptions.max = parseInt(options.collectorOptions.max);
         if (isNaN(options.collectorOptions.max)) {
-            options.collectorOptions.max = (type === 'reactPaginator') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT;
+            options.collectorOptions.max = (type === 'reactPaginator' || type === 'reactMenu') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT;
         }
     }
 
