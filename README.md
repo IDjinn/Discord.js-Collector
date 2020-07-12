@@ -1,6 +1,11 @@
 # Discord.js-colelctor
 
-Library to easily create message collector and reactions on discord.js v12, with customization ways.
+Library to easily create message collector, reactions collector and reactions role on discord.js v12, with customization ways.
+
+---
+# CHANGELOG - V1.3.0
+
+• Added Reaction Role system, now you can create easy reaction roles with a internal storage, if your bot shutdown, all users will won the roles when it's up!
 
 ---
 # CHANGELOG - V1.2.0
