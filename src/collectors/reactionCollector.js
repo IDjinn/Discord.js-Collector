@@ -1,5 +1,5 @@
-const { Message, ReactionCollector: DjsReactionCollector, EmojiResolvable,CollectorOptions: DjsCollectorOptions, UserResolvable, MessageEmbed } = require("discord.js");
-const {validateOptions} = require('../util/validate');
+const { Message, ReactionCollector: DjsReactionCollector, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
+const { validateOptions } = require('../util/validate');
 const editPaginator = async (botMessage, isBack, i, pages) => {
     isBack ? (i > 0 ? --i : pages.length - 1) : (i + 1 < pages.length ? ++i : 0);
     await botMessage.edit({ embed: pages[i] });
@@ -33,8 +33,6 @@ module.exports = class ReactionCollector {
         const { botMessage, user, pages, collectorOptions, reactions, deleteReaction, deleteAllReactionsWhenCollectorEnd } = validateOptions(options, 'reactPaginator');
         if (!pages || pages.length === 0)
             throw 'Invalid input: pages is null or empty';
-        if (pages.filter(page => !(page instanceof MessageEmbed)).length > 0)
-            throw 'Invalid input: pages can be only MessageEmbed array.';
 
         let i = 0;
         botMessage.edit({ embed: pages[0] }).then(() => {
@@ -107,18 +105,22 @@ module.exports = class ReactionCollector {
      * @returns {DjsReactionCollector}
      */
     static __createReactionCollector(_options) {
-        const { botMessage, reactions, user, collectorOptions, onReact, deleteReaction, deleteAllReactionsWhenCollectorEnd } = _options;
-        Promise.all(reactions.map(r => botMessage.react(r)));
-        const filter = (r, u) => u.id === user.id && reactions.includes(r.emoji.name) && !user.bot;
-        const collector = botMessage.createReactionCollector(filter, collectorOptions);
-        collector.on('collect', async (reaction) => {
-            const emoji = reaction.emoji.name;
-            if (deleteReaction)
-                await reaction.users.remove(user.id);
-            await onReact[reactions.indexOf(emoji)](botMessage);
-        });
-        collector.on('end', async () => { if (deleteAllReactionsWhenCollectorEnd) await botMessage.reactions.removeAll() });
-        return collector;
+        try {
+            const { botMessage, reactions, user, collectorOptions, onReact, deleteReaction, deleteAllReactionsWhenCollectorEnd } = _options;
+            Promise.all(reactions.map(r => botMessage.react(r)));
+            const filter = (r, u) => u.id === user.id && reactions.includes(r.emoji.name) && !user.bot;
+            const collector = botMessage.createReactionCollector(filter, collectorOptions);
+            collector.on('collect', async (reaction) => {
+                const emoji = reaction.emoji.name;
+                if (deleteReaction)
+                    await reaction.users.remove(user.id);
+                await onReact[reactions.indexOf(emoji)](botMessage);
+            });
+            collector.on('end', async () => { if (deleteAllReactionsWhenCollectorEnd) await botMessage.reactions.removeAll() });
+            return collector;
+        } catch (e) {
+            throw e;
+        }
     }
 
     /**
@@ -128,7 +130,7 @@ module.exports = class ReactionCollector {
      * @returns {DjsReactionCollector}
      */
     static async __createAsyncReactionCollector(_options) {
-        return new Promise(async(resolve) => {
+        return new Promise(async (resolve) => {
             const { botMessage, reactions, user, collectorOptions, deleteReaction, deleteAllReactionsWhenCollectorEnd } = _options;
             await Promise.all(reactions.map(r => botMessage.react(r)));
             const filter = (r, u) => u.id === user.id && reactions.includes(r.emoji.name) && !user.bot;

@@ -1,5 +1,5 @@
 const {validateOptions} = require('../util/validate');
-const { Message, MessageCollectorOptions } = require('discord.js');
+const { Message, MessageCollectorOptions, UserResolvable} = require('discord.js');
 module.exports = class MessageCollector{
     /**
      * @description This method create easier message collector, then collected, will execute your custom function.

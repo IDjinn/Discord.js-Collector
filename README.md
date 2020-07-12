@@ -1,6 +1,12 @@
 # Discord.js-colelctor
 
-Library to easily create message collector and reactions on discord, with customization ways
+Library to easily create message collector and reactions on discord.js v12, with customization ways.
+
+---
+# CHANGELOG - V1.1.0
+
+• Now collectors work in DM Channels, but cannot delete user reaction/message
+• [BETA] Added ReactionRoleManager, easy mode to create reactions roles with storage system, when finish i will share examples and gifs explaining how this work.
 
 ---
 
