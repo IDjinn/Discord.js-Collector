@@ -1,7 +1,7 @@
 {
   "name": "discord.js-collector",
   "description": "Library to easily create message collector and reactions on discord, with customization ways",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "src/index.js",
   "license": "GPL-3.0",
   "scripts": {
@@ -18,5 +18,15 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/IDjinn/Discord.js-Collector"
-  }
+  },
+  "keywords": [
+    "discord",
+    "discord.js",
+    "discordjs",
+    "message collector",
+    "reaction role",
+    "reaction collector",
+    "reaction menu",
+    "discord paginator"
+  ]
 }
