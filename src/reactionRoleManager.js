@@ -143,7 +143,7 @@ class ReactionRoleManager {
             console.debug(`[${new Date().toLocaleString()}] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`)
     }
 
-    async addRole({ message, role, emoji, max } = { max: Infinity }) {
+    async addRole({ message, role, emoji, max } = { max: Number.MAX_SAFE_INTEGER }) {
         if (message instanceof Message && message.guild) {
             if (!message.guild)
                 throw 'Bad input: message must be a guild message, cannot create reaction role in DM channels.'
