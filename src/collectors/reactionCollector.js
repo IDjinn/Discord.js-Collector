@@ -8,7 +8,7 @@ const editPaginator = async (botMessage, isBack, i, pages) => {
 const pages = {
     '#emoji#': {
         embed: {},
-        content: {}
+        content: {},
     }
 }
 
@@ -61,7 +61,8 @@ module.exports = class ReactionCollector {
         for (let i = 0; i < keys.length; i++) {
             onReact[i] = async (botMessage) => await botMessage.edit(pages[keys[i]]);
         }
-        await botMessage.edit(pages[key].embed ? pages[key].embed : pages[key]);
+
+        // not needed. await botMessage.edit(pages[key].embed ? pages[key].embed : pages[key]);
         this.question({
             botMessage,
             user,

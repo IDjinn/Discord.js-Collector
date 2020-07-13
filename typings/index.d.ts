@@ -1,23 +1,24 @@
+import {
+    CollectorOptions,
+    MessageCollector as DjsMessageCollector,
+    ReactionCollector as DjsReactionCollector,
+    EmojiIdentifierResolvable,
+    Message,
+    MessageEmbed,
+    UserResolvable,
+    Client,
+    Role,
+    Collection,
+    MessageReaction,
+    User,
+    Snowflake,
+    TextChannel,
+    Guild,
+    GuildEmoji,
+    EmojiResolvable
+} from "discord.js";
+
 declare module 'discord.js-collector' {
-    import {
-        CollectorOptions,
-        MessageCollector as DjsMessageCollector,
-        ReactionCollector as DjsReactionCollector,
-        EmojiIdentifierResolvable,
-        Message,
-        MessageEmbed,
-        UserResolvable,
-        Client,
-        Role,
-        Collection,
-        MessageReaction,
-        User,
-        Snowflake,
-        TextChannel,
-        Guild,
-        GuildEmoji,
-        EmojiResolvable
-    } from "discord.js";
 
     class ReactionRole {
         constructor(options: IReactionRoleOptions);
@@ -32,7 +33,7 @@ declare module 'discord.js-collector' {
         guild: Guild | Snowflake;
         role: Role | Snowflake;
         emoji: GuildEmoji | EmojiResolvable;
-        winners: [key: string];
+        winners: string[];
         max: number;
     }
 
@@ -109,7 +110,7 @@ declare module 'discord.js-collector' {
     }
 
     export interface IReactMenuOptions {
-        pages: IMenuPage[];
+        pages: IMenuPage;
         botMessage: Message;
         user: UserResolvable;
         collectorOptions?: CollectorOptions;
