@@ -192,7 +192,7 @@ module.exports = class ReactionCollector {
      * @private
      * @static
      * @param  {AsyncCollectorOptions} _options
-     * @returns {DjsReactionCollector}
+     * @returns {Promise<boolean>}
      */
     static async __createAsyncReactionCollector(_options) {
         return new Promise(async (resolve) => {
