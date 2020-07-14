@@ -10,6 +10,7 @@ client.on("ready", () => {
 
 client.on("message", async (message) => {
     if (message.content.startsWith('>createReactionRole')) {
+        // You can create a command to add roles in message, but you will need fetch it.
         if (message.mentions.roles.size == 0)
             return await message.reply('You need mention a role.');
 

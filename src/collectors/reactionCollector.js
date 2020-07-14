@@ -5,12 +5,23 @@ const editPaginator = async (botMessage, isBack, i, pages) => {
     await botMessage.edit({ embed: pages[i] });
 }
 
-const pages = {
-    '#emoji#': {
-        embed: {},
-        content: {},
+let result = [];
+const findRecursively = (obj, toFind) => {
+    for (const key in obj) {
+        if (typeof obj[key] === 'object') {
+            findRecursively(obj[key], toFind);
+        }
+    }
+
+    if (obj && obj[toFind]) {
+        if (obj[toFind].length > 0)
+            result.push(...obj[toFind]);
+        else
+            result.push(obj[toFind]);
+        return true;
     }
 }
+
 
 module.exports = class ReactionCollector {
     /**
@@ -54,22 +65,32 @@ module.exports = class ReactionCollector {
         if (!pages || pages.length === 0)
             throw 'Invalid input: pages is null or empty';
 
-
         const keys = Object.keys(pages);
-        const key = keys[0];
-        const onReact = [];
-        for (let i = 0; i < keys.length; i++) {
-            onReact[i] = async (botMessage) => await botMessage.edit(pages[keys[i]]);
-        }
+        result = [];
+        findRecursively(pages, 'reactions');
+        const allReactions = result;
+        allReactions.push(...keys);
+        let currentPage = null;
 
-        // not needed. await botMessage.edit(pages[key].embed ? pages[key].embed : pages[key]);
-        this.question({
-            botMessage,
-            user,
-            reactions: keys,
-            collectorOptions,
-            onReact
+        await Promise.all(Object.keys(pages).map(r => botMessage.react(r)));
+        const filter = (r, u) => u.id === user.id && (allReactions.includes(r.emoji.id) || allReactions.includes(r.emoji.name)) && !user.bot;
+        const collector = botMessage.createReactionCollector(filter, collectorOptions);
+        collector.on('collect', async (reaction) => {
+            const emoji = reaction.emoji.id || reaction.emoji.name;
+            currentPage = currentPage && currentPage.pages ? currentPage.pages[emoji] : pages[emoji];
+            if (currentPage && currentPage.reactions) {
+                await botMessage.reactions.removeAll();
+                await currentPage.reactions.map((r) => botMessage.react(r));
+            }
+            else {
+                await reaction.users.remove(user.id);
+            }
+            let { content, embed } = currentPage || botMessage;
+            await botMessage.edit(content, embed);
+            //await onReact[reactions.indexOf(emoji)](botMessage);
         });
+        collector.on('end', async () => await botMessage.reactions.removeAll());
+        return collector;
     }
 
     /**

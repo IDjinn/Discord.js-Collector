@@ -117,6 +117,11 @@ declare module 'discord.js-collector' {
     }
 
     export interface IMenuPage {
-        [key: string]: {};
+        [key: string]: {
+            embed?: MessageEmbed | object;
+            content?: string;
+            reactions?: string[];
+            pages?: IMenuPage;
+        };
     }
 }

@@ -3,20 +3,39 @@
 Library to easily create message collector, reactions collector and reactions role on discord.js v12, with customization ways.
 
 ---
-# CHANGELOG - V1.3.0
 
-• Added Reaction Role system, now you can create easy reaction roles with a internal storage, if your bot shutdown, all users will won the roles when it's up!
+## Sumary
+  ◘ Reactions Collectors:
+    • [Reaction Role](#reaction-role)
+    • [Menu](#reaction-menu)
+    • [Question](#simple-reaction-collector)
+    • [Async Question](#simple-boolean-reaction-collector)
+    • [Embeds Paginator](#embeds-pagination)
+  ◘ Messages Collectors:
+    • [Question](#simple-messages-collector)
+    • [Async Question](#async-message-collector)
+
+◘ Examples
+  ◘ Reactions Collectors
+    • [Reaction Role Manager](./examples/reaction-role-manager/basic.js)
+    • [Reaction Menu](./examples/reaction-collector/menu.js)
+
+◘ Others
+  [Changelog](CHANGELOG.md)
 
 ---
-# CHANGELOG - V1.2.0
 
-• New functions to create reactions menu, you can use with `ReactionCollector.menu(options)`
+## Reaction role
 
----
-# CHANGELOG - V1.1.0
+You can create reactions roles, with amazing functions:
+  • If you bot turns off, when it turns on all users reacted in messages will win the role.
+  • If you bot turns off, if any user remove reaction, when the bot turns on will remove the role from him.
+  • You can store the roles in a JSON file and migrate the reaction role data.
+  • You can limit max roles given by bot, like 10 roles.
 
-• Now collectors work in DM Channels, but cannot delete user reaction/message
-• [BETA] Added ReactionRoleManager, easy mode to create reactions roles with storage system, when finish i will share examples and gifs explaining how this work.
+![Reaction Role Gif](./assets/reactionRole.gif)
+
+You can find this code example in [Sumary](#sumary)
 
 ---
 
@@ -27,25 +46,30 @@ To create a reaction menu with multiple pages.
 ![Menu Gif](./assets/reactMenu.gif)
 
 ```js
-const botMessage = await message.reply('Lorem Menu')
+const botMessage = await message.reply('Testing reaction menu...')
 ReactionCollector.menu({
   botMessage,
   user: message,
   pages: {
     '✅': {
+      content: 'Hello world!',
+      reactions: ['?'], // Reactions to acess next sub-page
       embed: {
-        description: 'Minim magna do quis nulla excepteur dolore aute aute minim amet eu ea.'
+        description: 'First page content, you can edit and put your custom embed.'
+      },
+      pages:{ // Exemple sub-pages
+        '❓': {
+          content: '?',
+          embed: {
+            description: 'You\'ve found the secret page.'
+          }
+        }
       }
     },
-    '706597879523049585': {
-      content: 'Lorem Text ',
+    '❌': {
+      content: 'What\'s happened?',
       embed: {
-        description: 'Nisi ullamco magna in id ea anim aliquip officia ex excepteur est nulla exercitation.'
-      }
-    },
-    '📢': {
-      embed: {
-        description: 'Mollit fugiat aliqua nisi in sunt pariatur laboris eiusmod anim magna ut id occaecat eu.'
+        description: 'You\'ve clicked in ❌ emoji.'
       }
     }
   }
@@ -60,7 +84,12 @@ ReactionCollector.menu({
 {
     botMessage: Message // Message sent from bot.
     user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
-    pages: Array // Array with menu pages.
+    pages: IMenuPage {// Object with menu pages.
+      content?: string; // Message content.
+      embed?: {} | MessageEmbed; // Embed, you can use JSON or MessageEmbed.
+      reactions?: Array<EmojiResolvable>; // These emojis will use to acess next subpages.
+      pages?: IMenuPage; // Recursive pages inside pages.
+    } 
     collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
 }
 ```
@@ -101,7 +130,7 @@ ReactionCollector.question({
 }
 ```
 
-## Simple yes/no reaction collector
+## Simple boolean reaction collector
 
 To use in `if` statements, the asynchronous reaction collector returning Promise <boolean> is more practical
 
