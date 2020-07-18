@@ -14,7 +14,9 @@ const findRecursively = (obj, toFind) => {
     }
 
     if (obj && obj[toFind]) {
-        if (obj[toFind].length > 0)
+        if (typeof obj[toFind] === 'function')
+            result.push(obj[toFind]);
+        else if (obj[toFind].length > 0)
             result.push(...obj[toFind]);
         else
             result.push(obj[toFind]);
@@ -34,22 +36,27 @@ module.exports = class ReactionCollector {
      * @example
      *  //First step, you need make menu pages like that:
      *  const pages = {
-     *        '✅': {
-     *          embed: {
-     *            description: 'Minim magna do quis nulla excepteur dolore aute aute minim amet eu ea.'
-     *          }
+     *  '✅': {
+     *        content: 'Hello world!',
+     *        reactions: ['?'], // Reactions to acess next sub-page
+     *        embed: {
+     *          description: 'First page content, you can edit and put your custom embed.'
      *        },
-     *        '706597879523049585': {
-     *          content: 'Lorem Text ',
-     *          embed: {
-     *            description: 'Nisi ullamco magna in id ea anim aliquip officia ex excepteur est nulla exercitation.'
-     *          }
-     *        },
-     *        '📢': {
-     *          embed: {
-     *            description: 'Mollit fugiat aliqua nisi in sunt pariatur laboris eiusmod anim magna ut id occaecat eu.'
+     *        pages: { // Exemple sub-pages
+     *          '❓': {
+     *            content: '?',
+     *            embed: {
+     *              description: 'You\'ve found the secret page.'
+     *            }
      *          }
      *        }
+     *    },
+     *    '❌': {
+     *        content: 'What\'s happened?',
+     *        embed: {
+     *          description: 'You\'ve clicked in ❌ emoji.'
+     *        }
+     *      }
      *    }
      * 
      *   const botMessage = await message.channel.send('Simple Reaction Menu...');
@@ -71,6 +78,9 @@ module.exports = class ReactionCollector {
         const allReactions = result;
         allReactions.push(...keys);
         let currentPage = null;
+        result = [];
+        findRecursively(pages, 'onMessage');
+        const needCollectMessages = result.length > 0;
 
         await Promise.all(Object.keys(pages).map(r => botMessage.react(r)));
         const filter = (r, u) => u.id === user.id && (allReactions.includes(r.emoji.id) || allReactions.includes(r.emoji.name)) && !user.bot;
@@ -78,18 +88,30 @@ module.exports = class ReactionCollector {
         collector.on('collect', async (reaction) => {
             const emoji = reaction.emoji.id || reaction.emoji.name;
             currentPage = currentPage && currentPage.pages ? currentPage.pages[emoji] : pages[emoji];
+            if (currentPage && typeof currentPage.onReact === 'function')
+                await currentPage.onReact(botMessage, reaction);
             if (currentPage && currentPage.reactions) {
                 await botMessage.reactions.removeAll();
-                await currentPage.reactions.map((r) => botMessage.react(r));
+                await Promise.all(currentPage.reactions.map((r) => botMessage.react(r)));
             }
             else {
                 await reaction.users.remove(user.id);
             }
+
             let { content, embed } = currentPage || botMessage;
-            await botMessage.edit(content, embed);
-            //await onReact[reactions.indexOf(emoji)](botMessage);
+            await botMessage.edit(content, { embed });
         });
         collector.on('end', async () => await botMessage.reactions.removeAll());
+
+        if (needCollectMessages) {
+            const messagesCollector = botMessage.channel.createMessageCollector((message) => message.author.id === user.id, collectorOptions);
+            messagesCollector.on('collect', async (message) => {
+                if (message.deletable)
+                    await message.delete();
+                if (currentPage && typeof currentPage.onMessage === 'function')
+                    await currentPage.onMessage(message, botMessage);
+            });
+        }
         return collector;
     }
 
@@ -154,8 +176,8 @@ module.exports = class ReactionCollector {
      *     user: message,
      *     botMessage,
      *     onReact: [
-     *         (botMessage) => message.channel.send("You've clicked in yes button!"),
-     *         (botMessage) => message.channel.send("You've clicked in no button!")
+     *         (botMessage, reaction) => message.channel.send("You've clicked in yes button!"),
+     *         (botMessage, reaction) => message.channel.send("You've clicked in no button!")
      *     ]
      * });
      * @note onReact(botMessage?: Message) - onReact functions can use botMessage argument.
@@ -201,7 +223,7 @@ module.exports = class ReactionCollector {
                 const emoji = reaction.emoji.id || reaction.emoji.name;
                 if (deleteReaction)
                     await reaction.users.remove(user.id);
-                await onReact[reactions.indexOf(emoji)](botMessage);
+                await onReact[reactions.indexOf(emoji)](botMessage, reaction);
             });
             collector.on('end', async () => { if (deleteAllReactionsWhenCollectorEnd) await botMessage.reactions.removeAll() });
             return collector;

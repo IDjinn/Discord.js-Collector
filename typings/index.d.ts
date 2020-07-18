@@ -92,7 +92,7 @@ declare module 'discord.js-collector' {
     export interface IReactQuestionOptions {
         botMessage: Message;
         user: UserResolvable;
-        onReact: [(botMessage: Message) => {}];
+        onReact: [(botMessage: Message, reaction: MessageReaction) => {}];
         reactions?: EmojiIdentifierResolvable[];
         collectorOptions?: CollectorOptions;
         deleteReaction?: boolean;
@@ -122,6 +122,8 @@ declare module 'discord.js-collector' {
             content?: string;
             reactions?: string[];
             pages?: IMenuPage;
+            onMessage?: (message: Message, botMessage: Message) => {};
+            onReact?: (botMessage: Message, reaction: MessageReaction) => {};
         };
     }
 }

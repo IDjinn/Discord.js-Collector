@@ -1,4 +1,8 @@
 
+---
+# CHANGELOG - V1.3.4
+
+• Added onMessage and onReact in menu pages.
 
 ---
 # CHANGELOG - V1.3.4
