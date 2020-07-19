@@ -1,6 +1,11 @@
 
 ---
-# CHANGELOG - V1.3.4
+# CHANGELOG - V1.3.6
+
+• Fix invalid main file.
+
+---
+# CHANGELOG - V1.3.5
 
 • Added onMessage and onReact in menu pages.
 
