@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.3.7
+
+• Fix format in README.md
+
+---
 # CHANGELOG - V1.3.6
 
 • Fix invalid main file.

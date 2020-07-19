@@ -5,33 +5,30 @@ Library to easily create message collector, reactions collector and reactions ro
 ---
 
 ## Sumary
-  ◘ Reactions Collectors:
-    • [Reaction Role](#reaction-role)
-    • [Menu](#reaction-menu)
-    • [Question](#simple-reaction-collector)
-    • [Async Question](#simple-boolean-reaction-collector)
-    • [Embeds Paginator](#embeds-pagination)
-  ◘ Messages Collectors:
-    • [Question](#simple-messages-collector)
-    • [Async Question](#async-message-collector)
-
+◘ Reactions Collectors:
+| [Reaction Role](#reaction-role)
+| [Menu](#reaction-menu)
+| [Question](#simple-reaction-collector)
+| [Async Question](#simple-boolean-reaction-collector)
+| [Embeds Paginator](#embeds-pagination)
+◘ Messages Collectors:
+| [Question](#simple-messages-collector)
+| [Async Question](#async-message-collector)
 ◘ Examples
-  ◘ Reactions Collectors
-    • [Reaction Role Manager](./examples/reaction-role-manager/basic.js)
-    • [Reaction Menu](./examples/reaction-collector/menu.js)
-
+| [Reaction Role Manager](./examples/reaction-role-manager/basic.js)
+| [Reaction Menu](./examples/reaction-collector/menu.js)
 ◘ Others
-  [Changelog](CHANGELOG.md)
+| [Changelog](CHANGELOG.md)
 
 ---
 
 ## Reaction role
 
 You can create reactions roles, with amazing functions:
-  • If you bot turns off, when it turns on all users reacted in messages will win the role.
-  • If you bot turns off, if any user remove reaction, when the bot turns on will remove the role from him.
-  • You can store the roles in a JSON file and migrate the reaction role data.
-  • You can limit max roles given by bot, like 10 roles.
+| • If you bot turns off, when it turns on all users reacted in messages will win the role.
+| • If you bot turns off, if any user remove reaction, when the bot turns on will remove the role from him.
+| • You can store the roles in a JSON file and migrate the reaction role data.
+| • You can limit max roles given by bot, like 10 roles.
 
 ![Reaction Role Gif](./assets/reactionRole.gif)
 
