@@ -1,4 +1,4 @@
-# Discord.js-colelctor
+# Discord.js-collector
 
 Library to easily create message collector, reactions collector and reactions role on discord.js v12, with customization ways.
 
