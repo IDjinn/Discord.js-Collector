@@ -6,15 +6,16 @@ const editPaginator = async (botMessage, isBack, i, pages) => {
 }
 
 let result = [];
-const findRecursively = (obj, toFind) => {
+const findRecursively = (obj, toFind, value = null) => {
     for (const key in obj) {
         if (typeof obj[key] === 'object') {
-            findRecursively(obj[key], toFind);
+            findRecursively(obj[key], toFind, value);
         }
     }
-
     if (obj && obj[toFind]) {
-        if (typeof obj[toFind] === 'function')
+        if (value && obj[toFind] == value)
+            result.push(obj)
+        else if (typeof obj[toFind] === 'function')
             result.push(obj[toFind]);
         else if (obj[toFind].length > 0)
             result.push(...obj[toFind]);
@@ -24,6 +25,89 @@ const findRecursively = (obj, toFind) => {
     }
 }
 
+
+module.exports.Controller = class Controller {
+    constructor(botMessage, collector, pages) {
+        this._botMessage = botMessage;
+        this._collector = collector;
+        this._pages = pages;
+        this._lastPage = null;
+        this._currentPage = null;
+    }
+    stop() {
+        if (this.messagesCollector)
+            this.messagesCollector.stop();
+        return this._collector.stop();
+    }
+    resetTimer(options) {
+        if (this.messagesCollector)
+            this.messagesCollector.resetTimer(options)
+        this.collector.resetTimer(options);
+    }
+    goTo(pageId) {
+        result = [];
+        findRecursively(Object.entries(this.pages), 'id', pageId);
+        const page = result.find(x => typeof x === 'object');
+        if (!page)
+            throw 'Invalid action: Couldn\'t go to page \'' + pageId + '\', this page doens\'t exists.';
+        this.currentPage = page;
+        this.update();
+    }
+    get canBack() {
+        return this.lastPage != null;
+    }
+    back() {
+        if (!this.canBack)
+            throw 'Invalid action: Cannot back without last page valid.';
+        let aux = this.currentPage;
+        this.currentPage = this.lastPage;
+        this.lastPage = aux;
+        this.update();
+    }
+    async update(onlyMessage = false) {
+        if (!onlyMessage) {
+            await this.botMessage.reactions.removeAll();
+            await this.botMessage.edit(this.currentPage);
+            if (this.currentPage) {
+                if (this.currentPage.reactions)
+                    await Promise.all(this.currentPage.reactions.map(x => this.botMessage.react(x)));
+                if (this.currentPage.backEmoji)
+                    await this.botMessage.react(this.currentPage.backEmoji)
+            }
+        }
+        else {
+            await this.botMessage.edit(this.currentPage);
+        }
+    }
+    get botMessage() {
+        return this._botMessage;
+    }
+    get lastPage() {
+        return this._lastPage;
+    }
+    set messagesCollector(value) {
+        this._messagesCollector = value;
+    }
+    get messagesCollector() {
+        return this._messagesCollector;
+    }
+    get collector() {
+        return this._collector;
+    }
+    get currentPage() {
+        return this._currentPage;
+    }
+    set currentPage(value) {
+        this.lastPage = this.currentPage || value;
+        this._currentPage = value;
+    }
+    set lastPage(value) {
+        this._lastPage = value;
+    }
+    get pages() {
+        return this._pages;
+    }
+}
 
 module.exports = class ReactionCollector {
     /**
@@ -62,57 +146,79 @@ module.exports = class ReactionCollector {
      *   const botMessage = await message.channel.send('Simple Reaction Menu...');
      *   ReactionCollector.menu({
      *       botMessage,
-     *       user: message,
+     *       user: message.author,
      *       pages
      *   });
      * @returns void
      */
     static async menu(options) {
         const { botMessage, user, pages, collectorOptions } = validateOptions(options, 'reactMenu');
-        if (!pages || pages.length === 0)
-            throw 'Invalid input: pages is null or empty';
 
         const keys = Object.keys(pages);
         result = [];
         findRecursively(pages, 'reactions');
+        findRecursively(pages, 'backEmoji');
         const allReactions = result;
         allReactions.push(...keys);
-        let currentPage = null;
         result = [];
         findRecursively(pages, 'onMessage');
         const needCollectMessages = result.length > 0;
 
-        await Promise.all(Object.keys(pages).map(r => botMessage.react(r)));
         const filter = (r, u) => u.id === user.id && (allReactions.includes(r.emoji.id) || allReactions.includes(r.emoji.name)) && !user.bot;
         const collector = botMessage.createReactionCollector(filter, collectorOptions);
+        const controller = new Controller(botMessage, collector, pages);
         collector.on('collect', async (reaction) => {
-            const emoji = reaction.emoji.id || reaction.emoji.name;
-            currentPage = currentPage && currentPage.pages ? currentPage.pages[emoji] : pages[emoji];
-            if (currentPage && typeof currentPage.onReact === 'function')
-                await currentPage.onReact(botMessage, reaction);
-            if (currentPage && currentPage.reactions) {
-                await botMessage.reactions.removeAll();
-                await Promise.all(currentPage.reactions.map((r) => botMessage.react(r)));
-            }
-            else {
-                await reaction.users.remove(user.id);
-            }
+            try {
+                const emoji = reaction.emoji.id || reaction.emoji.name;
+                if (controller.currentPage && emoji == controller.currentPage.backEmoji && controller.canBack) {
+                    controller.back();
+                    return;
+                }
 
-            let { content, embed } = currentPage || botMessage;
-            await botMessage.edit(content, { embed });
+                controller.currentPage = controller.currentPage && controller.currentPage.pages ? controller.currentPage.pages[emoji] : pages[emoji];
+                if (controller.currentPage) {
+                    if (typeof controller.currentPage.onReact === 'function')
+                        await controller.currentPage.onReact(controller, reaction);
+                    if (controller.currentPage.clearReactions) {
+                        await botMessage.reactions.removeAll();
+                    }
+                    else if (controller.currentPage.reactions) {
+                        await botMessage.reactions.removeAll();
+                        await Promise.all(controller.currentPage.reactions.map((r) => botMessage.react(r)));
+                    }
+                    else {
+                        await reaction.users.remove(user.id);
+                    }
+                }
+                else {
+                    await reaction.users.remove(user.id);
+                }
+
+                await controller.update(true);
+            } catch (e) {
+                console.error(e);
+            }
         });
+        await Promise.all(Object.keys(pages).map(r => botMessage.react(r)));
         collector.on('end', async () => await botMessage.reactions.removeAll());
 
         if (needCollectMessages) {
             const messagesCollector = botMessage.channel.createMessageCollector((message) => message.author.id === user.id, collectorOptions);
+            controller.messagesCollector = messagesCollector;
             messagesCollector.on('collect', async (message) => {
-                if (message.deletable)
-                    await message.delete();
-                if (currentPage && typeof currentPage.onMessage === 'function')
-                    await currentPage.onMessage(message, botMessage);
+                try {
+                    if (message.deletable)
+                        await message.delete();
+                    if (controller.currentPage && typeof controller.currentPage.onMessage === 'function')
+                        await controller.currentPage.onMessage(controller, message);
+                } catch (e) {
+                    console.error(e);
+                }
             });
+
+            collector.on('end', () => messagesCollector.stop());
         }
-        return collector;
+        return controller;
     }
 
     /**
@@ -130,7 +236,7 @@ module.exports = class ReactionCollector {
      *   const botMessage = await message.channel.send('Simple paginator...');
      *   ReactionCollector.paginator({
      *       botMessage,
-     *       user: message,
+     *       user: message.author,
      *       pages: [
      *           new MessageEmbed({ description: 'First page content...' }),
      *           new MessageEmbed({ description: 'Second page content...' })
@@ -173,7 +279,7 @@ module.exports = class ReactionCollector {
      * @example 
      * const botMessage = await message.channel.send('Simple yes/no question');
      * ReactionCollector.question({
-     *     user: message,
+     *     user: message.author,
      *     botMessage,
      *     onReact: [
      *         (botMessage, reaction) => message.channel.send("You've clicked in yes button!"),
@@ -198,7 +304,7 @@ module.exports = class ReactionCollector {
      * @param  {boolean} [options.deleteAllReactionsWhenCollectorEnd] - The Bot will remove reaction after collector end?
      * @example 
      * const botMessage = await message.channel.send('Simple yes/no question');
-     * if (await ReactionCollector.asyncQuestion({ user: message, botMessage }))
+     * if (await ReactionCollector.asyncQuestion({ user: message.author, botMessage }))
      *     message.channel.send('You\'ve clicked in yes button!');
      * else
      *     message.channel.send('You\'ve clicked in no button!');

@@ -80,8 +80,27 @@ declare module 'discord.js-collector' {
         deleteMessage?: boolean;
     }
 
+    export class Controller {
+        constructor(botMessage: Message, collector: DjsReactionCollector, pages: IMenuPage);
+        public stop(): void;
+        public back(): void;
+        public restTimer(options: { time: number, idle: number } = {}): void;
+        public goTo(pageId: string | number): void;
+        public get canBack(): boolean;
+        async update(bool: boolean): Promise<void>;
+        get botMessage(): Message;
+        get lastPage(): IMenuPage;
+        set messagesCollector(value: IMenuPage): void;
+        get messagesCollector(): DjsMessageCollector;
+        get collector(): DjsReactionCollector;
+        get currentPage(): IMenuPage;
+        set currentPage(value: IMenuPage): void;
+        set lastPage(value: IMenuPage): void
+        get pages(): IMenuPage;
+    }
+
     export class ReactionCollector {
-        public static menu(options: IReactMenuOptions): void;
+        public static menu(options: IReactMenuOptions): Controller;
         public static paginator(options: IPaginatorOptions): void;
         public static question(options: IReactQuestionOptions): DjsReactionCollector;
         public static asyncQuestion(options: IReactQuestionOptions): Promise<boolean>;
@@ -118,12 +137,15 @@ declare module 'discord.js-collector' {
 
     export interface IMenuPage {
         [key: string]: {
+            id?: string | number;
             embed?: MessageEmbed | object;
             content?: string;
-            reactions?: string[];
+            reactions?: EmojiIdentifierResolvable[];
+            backEmoji?: EmojiIdentifierResolvable;
+            clearReactions?: boolean;
             pages?: IMenuPage;
-            onMessage?: (message: Message, botMessage: Message) => {};
-            onReact?: (botMessage: Message, reaction: MessageReaction) => {};
+            onMessage?: (controller: Controller, message: Message) => {};
+            onReact?: (controller: Controller, reaction: MessageReaction) => {};
         };
     }
 }

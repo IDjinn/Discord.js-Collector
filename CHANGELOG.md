@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.4.0
+
+• Refractor reaction menu, more options and new menu Controller, to stop, reset timer, back and go to pages.
+
+---
 # CHANGELOG - V1.3.7
 
 • Fix format in README.md
