@@ -241,7 +241,7 @@ module.exports = class ReactionCollector {
      *   });
      * @returns void
      */
-    async static paginator(options) {
+    static async paginator(options) {
         const { botMessage, user, pages, collectorOptions, reactionsMap, deleteReaction, deleteAllOnEnd } = validateOptions(options, 'reactPaginator');
         if (!pages || pages.length === 0)
             throw 'Invalid input: pages is null or empty';
