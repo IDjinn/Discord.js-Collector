@@ -1,5 +1,5 @@
 {
-  "name": "discord.js-collector",
+  "name": "@idjinn/discord.js-collector",
   "description": "Library to easily create message collector and reactions on discord, with customization ways",
   "version": "1.4.2",
   "main": "src/index.js",
@@ -19,7 +19,7 @@
     "url": "https://github.com/IDjinn/Discord.js-Collector"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/djjinn"
+    "registry": "https://npm.pkg.github.com/"
   },
   "keywords": [
     "discord",

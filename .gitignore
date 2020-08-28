@@ -3,3 +3,4 @@ build/*
 tests/*
 yarn-error.log
 yarn.lock
+.npmrc
