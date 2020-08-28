@@ -18,6 +18,9 @@
     "type": "git",
     "url": "https://github.com/IDjinn/Discord.js-Collector"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/djjinn"
+  },
   "keywords": [
     "discord",
     "discord.js",
