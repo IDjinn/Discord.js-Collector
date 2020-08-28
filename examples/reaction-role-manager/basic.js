@@ -1,4 +1,4 @@
-const { ReactionRoleManager } = require('../../src/index')
+const { ReactionRoleManager } = require('discord.js-collector')
 const { Client } = require("discord.js");
 const client = new Client();
 const reactionRoleManager = new ReactionRoleManager(client, {

@@ -30,7 +30,7 @@ You can create reactions roles, with amazing functions:
 | • You can store the roles in a JSON file and migrate the reaction role data.
 | • You can limit max roles given by bot, like 10 roles.
 
-![Reaction Role Gif](./assets/reactionRole.gif)
+![Reaction Role Gif](./assets/reactionRoles.gif)
 
 You can find this code example in [Sumary](#sumary)
 
