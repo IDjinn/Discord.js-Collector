@@ -1,7 +1,8 @@
-const { Client } = require("discord.js");
+const { Client, Role, MessageEmbed } = require("discord.js");
 const { Collection, Message } = require('discord.js');
 const fs = require('fs');
 const { EventEmitter } = require("events");
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 class ReactionRole {
     constructor({ message, channel, guild, role, emoji, winners, max }) {
@@ -57,6 +58,7 @@ class ReactionRole {
  */
 class ReactionRoleManager extends EventEmitter {
     constructor(client, { store, path, debug, refreshOnBoot } = { refreshOnBoot: true, store: true, path: __dirname + '/data/roles.json', debug: false }) {
+        super();
         if (!(client instanceof Client))
             throw 'Client param must be a Client object.';
 
@@ -66,7 +68,7 @@ class ReactionRoleManager extends EventEmitter {
         this.debug = debug;
         this.roles = this.__parseStore();
         if (refreshOnBoot && this.store)
-            this.__resfreshOnBoot();
+            this.client.on('ready', () => this.__resfreshOnBoot());
 
         this.client.on('messageReactionAdd', (msgReaction, user) => this.__onReactionAdd(msgReaction, user));
         this.client.on('messageReactionRemove', (msgReaction, user) => this.__onReactionRemove(msgReaction, user));
@@ -74,6 +76,7 @@ class ReactionRoleManager extends EventEmitter {
     }
 
     async __resfreshOnBoot() {
+        await sleep(1000);
         for (const reactionRole of this.roles.values()) {
             const guild = this.client.guilds.cache.get(reactionRole.guild);
             if (!guild) {
@@ -147,20 +150,25 @@ class ReactionRoleManager extends EventEmitter {
     }
 
     async addRole({ message, role, emoji, max } = { max: Number.MAX_SAFE_INTEGER }) {
-        if (message instanceof Message && message.guild) {
+        if (message instanceof Message) {
             if (!message.guild)
                 throw 'Bad input: message must be a guild message, cannot create reaction role in DM channels.'
 
-            const discordRole = message.guild.roles.resolve(role);
-            const discordEmoji = message.guild.emojis.resolve(emoji);
-            await message.react(discordEmoji);
-            const reactionRole = new ReactionRole({ message: message, role: discordRole, emoji: discordEmoji, max });
+            role = message.guild.roles.resolve(role);
+            if (!(role instanceof Role))
+                throw 'Bad input: I canno\'t resolve role ' + role;
+            emoji = message.client.emojis.resolveIdentifier(emoji);
+            if (!emoji)
+                throw 'Bad input: I canno\'t resolve emoji ' + role;
+
+            
+            await message.react(emoji);
+            const reactionRole = new ReactionRole({ message: message, role, emoji, max });
             this.roles.set(reactionRole.id, reactionRole);
             this.__store();
-            this.__debug('ROLE', `Role '${discordRole.id}' added in reactionRoleManager!`);
+            this.__debug('ROLE', `Role '${role.id}' added in reactionRoleManager!`);
             return;
         }
-
         throw 'Bad input: addRole({...}) message must be a Message object.';
     }
 
@@ -200,7 +208,7 @@ class ReactionRoleManager extends EventEmitter {
         if (user.bot)
             return;
 
-        const emoji = msgReaction.emoji.id || msgReaction.emoji.name;
+        const emoji = this.client.emojis.resolveIdentifier(msgReaction.emoji.id || msgReaction.emoji.name);
         const { message } = msgReaction;
         const { guild } = message;
         const id = `${message.id}-${emoji}`;
@@ -216,21 +224,26 @@ class ReactionRoleManager extends EventEmitter {
         if (reactionRole.max <= 0)
             return this.removeRole(reactionRole);
 
+        const role = guild.roles.cache.get(reactionRole.role);
+        if (!(role instanceof Role))
+            return this.removeRole(reactionRole);
+
         reactionRole.max--;
         if (reactionRole.winners.indexOf(member.id) <= -1)
             reactionRole.winners.push(member.id);
 
+
         this.__store();
-        this.__debug('REACTION', `User '${member.displayName}' won the role '${reactionRole.role}'.`);
-        this.emit('reactionRoleAdd', member, reactionRole.role);
-        return await member.roles.add(reactionRole.role).catch(console.error);
+        this.__debug('REACTION', `User '${member.displayName}' won the role '${role.name}'.`);
+        this.emit('reactionRoleAdd', member, role);
+        return await member.roles.add(role).catch(console.error);
     }
 
     async __onReactionRemove(msgReaction, user) {
         if (user.bot)
             return;
 
-        const emoji = msgReaction.emoji.id || msgReaction.emoji.name;
+        const emoji = this.client.emojis.resolveIdentifier(msgReaction.emoji.id || msgReaction.emoji.name);
         const { message } = msgReaction;
         const { guild } = message;
         const id = `${message.id}-${emoji}`;
@@ -244,6 +257,10 @@ class ReactionRoleManager extends EventEmitter {
             return;
 
         if (reactionRole.max <= 0)
+            return this.removeRole(reactionRole);
+
+        const role = guild.roles.cache.get(reactionRole.role);
+        if (!(role instanceof Role))
             return this.removeRole(reactionRole);
 
         reactionRole.max++;
@@ -252,9 +269,9 @@ class ReactionRoleManager extends EventEmitter {
         reactionRole.winners.splice(index, 1);
         //
         this.__store();
-        this.__debug('REACTION', `User '${member.displayName}' lost the role '${reactionRole.role}'.`);
-        this.emit('reactionRoleRemove', member, reactionRole.role);
-        return await member.roles.remove(reactionRole.role).catch(console.error);
+        this.__debug('REACTION', `User '${member.displayName}' lost the role '${role.name}'.`);
+        this.emit('reactionRoleRemove', member, role);
+        return await member.roles.remove(role).catch(console.error);
     }
 
     async __onRemoveAllReaction(message) {
