@@ -53,8 +53,8 @@ declare module 'discord.js-collector' {
         private __onReactionRemove(msgReaction: MessageReaction, user: User): Promise<void>;
         private __onRemoveAllReaction(message: Message): Promise<void>;
         
-        public on(event: 'reactionRoleAdd', listener:(member: GuildMember, role: Snowflake) =>{}): void;
-        public on(event: 'reactionRoleRemove', listener:(member: GuildMember, role: Snowflake) =>{}): void;
+        public on(event: 'reactionRoleAdd', listener:(member: GuildMember, role: Role) =>{}): void;
+        public on(event: 'reactionRoleRemove', listener:(member: GuildMember, role: Role) =>{}): void;
         public on(event: 'allReactionsRemove', listener:(message: Message) =>{}): void;
     }
 

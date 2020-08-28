@@ -120,7 +120,7 @@ Example [here](./examples/reaction-collector/question.js)
 
 To use in `if` statements, the asynchronous reaction collector returning Promise <boolean> is more practical
 
-![Question Gif](./assets/reactYesNoQuestion.gif.gif)
+![Question Gif](./assets/reactYesNoQuestion.gif)
 
 ### Options param
 Example [here](./examples/reaction-collector/yesNoQuestion.js)
