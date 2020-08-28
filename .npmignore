@@ -1,7 +1,7 @@
 node_modules/*
 .github/*
 build/*
-test/*
+tests/*
 yarn-error.log
 yarn.lock
 package-lock.json

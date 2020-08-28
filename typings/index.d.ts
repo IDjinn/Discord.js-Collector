@@ -53,9 +53,10 @@ declare module 'discord.js-collector' {
         private __onReactionRemove(msgReaction: MessageReaction, user: User): Promise<void>;
         private __onRemoveAllReaction(message: Message): Promise<void>;
         
-        public on(event: 'reactionRoleAdd', listener:(member: GuildMember, role: Role) =>{}): void;
-        public on(event: 'reactionRoleRemove', listener:(member: GuildMember, role: Role) =>{}): void;
-        public on(event: 'allReactionsRemove', listener:(message: Message) =>{}): void;
+        public on(event: string, listener: (...args: any[]) => void): this;
+        public on(event: 'reactionRoleAdd', listener:(member: GuildMember, role: Role) => void): this;
+        public on(event: 'reactionRoleRemove', listener:(member: GuildMember, role: Role) => void): this;
+        public on(event: 'allReactionsRemove', listener:(message: Message) => void): this;
     }
 
     export interface IAddRoleOptions {
@@ -88,32 +89,37 @@ declare module 'discord.js-collector' {
         deleteMessage?: boolean;
     }
 
+    export interface ITimerOptions{
+        time?: number;
+        idle?: number;
+    }
+
     export class Controller {
         constructor(botMessage: Message, collector: DjsReactionCollector, pages: IMenuPage);
         public stop(): void;
         public back(): void;
-        public restTimer(options: { time: number, idle: number } = {}): void;
+        public restTimer(options?: ITimerOptions): void;
         public goTo(pageId: string | number): void;
         public get canBack(): boolean;
-        async update(bool: boolean): Promise<void>;
+        public update(bool: boolean): Promise<void>;
         get botMessage(): Message;
         get lastPage(): IMenuPage;
-        set messagesCollector(value: IMenuPage): void;
+        set messagesCollector(value);
         get messagesCollector(): DjsMessageCollector;
         get collector(): DjsReactionCollector;
         get currentPage(): IMenuPage;
-        set currentPage(value: IMenuPage): void;
-        set lastPage(value: IMenuPage): void
+        set currentPage(value);
+        set lastPage(value);
         get pages(): IMenuPage;
     }
 
     export class ReactionCollector {
-        public async static menu(options: IReactMenuOptions): Controller;
-        public async static paginator(options: IPaginatorOptions): DjsReactionCollector;
-        public async static question(options: IReactQuestionOptions, ...args: any): DjsReactionCollector;
-        public async static yesNoQuestion(options: IReactQuestionOptions): Promise<boolean>;
-        private async static __createReactionCollector(_options, ...args: any): DjsReactionCollector;
-        private async static __createYesNoReactionCollector(_options): Promise<boolean>;
+        public static menu(options: IReactMenuOptions): Controller;
+        public static paginator(options: IPaginatorOptions): DjsReactionCollector;
+        public static question(options: IReactQuestionOptions, ...args: any): DjsReactionCollector;
+        public static yesNoQuestion(options: IReactQuestionOptions): Promise<boolean>;
+        private static __createReactionCollector(_options, ...args: any): DjsReactionCollector;
+        private static __createYesNoReactionCollector(_options): Promise<boolean>;
     }
 
     export interface IReactQuestionOptions {
@@ -143,7 +149,7 @@ declare module 'discord.js-collector' {
     }
 
     export interface IReactionMapAction{
-        [key: EmojiIdentifierResolvable]: (reaction: MessageReaction, ...args: any) => {};
+        [key: string]: (reaction: MessageReaction, ...args: any) => {};
     }
 
     export interface IMenuPage {

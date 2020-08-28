@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.4.2
+
+• Fix typings
+
+---
 # CHANGELOG - V1.4.1
 
 • Reactions arrays now is object, key value with key is Emoji and value is function when user react.
