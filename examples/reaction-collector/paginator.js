@@ -1,4 +1,4 @@
-const { ReactionCollector } = require('../../src/index')
+const { ReactionCollector } = require('discord.js-collector')
 const { Client, MessageEmbed} = require("discord.js");
 const client = new Client();
 client.on("ready", () => {

@@ -1,5 +1,14 @@
 
 ---
+# CHANGELOG - V1.4.1
+
+• Reactions arrays now is object, key value with key is Emoji and value is function when user react.
+• Now you can give more params to react functions, all ...args given in question(options, ...args) for e.g.g will be available in reactions functions after default params.
+• Improve examples in docs, improve [README.md](./README.md)
+• Fix typings
+• Reactions roles will emit events when user win/lose role or all reactions was removed from message.
+
+---
 # CHANGELOG - V1.4.0
 
 • Refractor reaction menu, more options and new menu Controller, to stop, reset timer, back and go to pages.
