@@ -97,57 +97,35 @@ To use in multiple actions, react and then trigger one function to do things.
 
 ![Question Gif](./assets/reactQuestion.gif)
 
-```js
-const { ReactionCollector } = require("discord.js-collector");
-
-const botMessage = await message.channel.send("Simple choice yes/no...");
-ReactionCollector.question({
-  botMessage,
-  user: message,
-  onReact: [
-    async (botMessage) => await botMessage.channel.send("You've choice yes."),
-    async (botMessage) => await botMessage.channel.send("You've choice no."),
-  ],
-});
-```
-
 ### Options param
+Example [here](./examples/reaction-collector/question.js)
 
-`ReactionCollector.question(options);`
+`ReactionCollector.question(options, ...args);`
 
 ```js
 {
     botMessage: Message // Message sent from bot.
     user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
     collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
-    reactions?: Array<EmojiResolvable> // List of emojis will use to create reaction question.
-    onReact?: Array<Function> // When user click on reaction, will trigger respective funcion, in order by reaction list.
+    reactions?: {
+        'emoji': async (reaction) => {} // Key must be Emoji and value one funcion with MessageReaction param. When user react, will trigger this funcion.
+    }
     deleteReaction?: boolean // Default true, when user react if it's enabled will remove user reaction.
-    deleteAllReactionsWhenCollectorEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
-}
+    deleteAllOnEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
+},
+...args // All these arguments will send in react() function, after reaction param.
 ```
 
 ## Simple boolean reaction collector
 
 To use in `if` statements, the asynchronous reaction collector returning Promise <boolean> is more practical
 
-![Question Gif](./assets/reactAsyncQuestion.gif)
-
-```js
-const { ReactionCollector } = require("discord.js-collector");
-
-const botMessage = await message.channel.send("Simple choice yes/no...");
-const options = { botMessage, user: message };
-if (await ReactionCollector.asyncQuestion(options)) {
-  await botMessage.channel.send("You've choice yes.");
-} else {
-  await botMessage.channel.send("You've choice no.");
-}
-```
+![Question Gif](./assets/reactAsyncYesNoQuestion.gif.gif)
 
 ### Options param
+Example [here](./examples/reaction-collector/yesNoQuestion.js)
 
-`ReactionCollector.asyncQuestion(options);`
+`ReactionCollector.yesNoQuestion(options);`
 
 ```js
 {
@@ -156,11 +134,12 @@ if (await ReactionCollector.asyncQuestion(options)) {
     collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
     reactions?: Array<EmojiResolvable> // Max 2 emojis - List of emojis will use to create reaction question.
     deleteReaction?: boolean // Default true, when user react if it's enabled will remove user reaction.
-    deleteAllReactionsWhenCollectorEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
+    deleteAllOnEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
 }
 ```
 
 ## Embeds pagination
+Example [here](./examples/reaction-collector/paginator.js)
 
 Easier paginator embeds, with back/skip reaction to change current page.
 
@@ -191,7 +170,7 @@ ReactionCollector.paginator({
     collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
     reactions?: Array<EmojiResolvable> // List of emojis will use to create reaction question. First emoji will be use to back page, second to skip page.
     deleteReaction?: boolean // Default true, when user react if it's enabled will remove user reaction.
-    deleteAllReactionsWhenCollectorEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
+    deleteAllOnEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
 }
 ```
 

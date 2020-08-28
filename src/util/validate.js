@@ -62,13 +62,13 @@ module.exports.validateOptions = (options, type) => {
         options.deleteReaction = Boolean(options.deleteReaction);
 
     if (options.botMessage.channel.type == 'dm')
-        options.deleteAllReactionsWhenCollectorEnd = false;
+        options.deleteAllOnEnd = false;
     else if (type === 'reactMenu' || type === 'reactPaginator')
-        options.deleteAllReactionsWhenCollectorEnd = true;
-    else if (options.deleteAllReactionsWhenCollectorEnd === undefined)
-        options.deleteAllReactionsWhenCollectorEnd = true;
-    else if (!isBoolean(options.deleteAllReactionsWhenCollectorEnd))
-        options.deleteAllReactionsWhenCollectorEnd = Boolean(options.deleteAllReactionsWhenCollectorEnd);
+        options.deleteAllOnEnd = true;
+    else if (options.deleteAllOnEnd === undefined)
+        options.deleteAllOnEnd = true;
+    else if (!isBoolean(options.deleteAllOnEnd))
+        options.deleteAllOnEnd = Boolean(options.deleteAllOnEnd);
 
     if (options.botMessage.channel.type == 'text') {
         if (!options.botMessage.guild.me.permissionsIn(options.botMessage.channel).has('ADD_REACTIONS'))
@@ -77,24 +77,21 @@ module.exports.validateOptions = (options, type) => {
         if (options.deleteReaction && !options.botMessage.guild.me.permissionsIn(options.botMessage.channel).has('MANAGE_MESSAGES'))
             throw 'Missing permissions: I not have permissions to Manage Messages in this channel to delete reactions.';
 
-        if (options.deleteAllReactionsWhenCollectorEnd && !options.botMessage.guild.me.permissionsIn(options.botMessage.channel).has('MANAGE_MESSAGES'))
+        if (options.deleteAllOnEnd && !options.botMessage.guild.me.permissionsIn(options.botMessage.channel).has('MANAGE_MESSAGES'))
             throw 'Missing permissions: I not have permissions to Manage Messages in this channel to delete all reactions when collector end.';
     }
 
     switch (type) {
         case 'reactQuestion':
-        case 'reactAsyncQuestion':
+        case 'yesNoQuestion':
         case 'reactPaginator':
-            if (options.reactions && (!isArray(options.reactions) || options.reactions.filter(emoji => !client.emojis.resolveIdentifier(emoji)).length > 0))
+            options.reactionsMap = options.reactions; // TODO: REMOVE-ME
+            options.reactions = undefined;
+            if (options.reactionsMap && Object.keys(options.reactionsMap).filter(emoji => !client.emojis.resolveIdentifier(emoji)).length > 0)
                 throw 'Invalid input: reactions is invalid type.';
-            if (options.onReact && (!isArray(options.onReact) || options.onReact.filter(fx => typeof fx !== 'function').length > 0))
-                throw 'Invalid input: onReact is invalid type.';
 
-            if (!options.reactions)
-                options.reactions = (type !== 'reactPaginator') ? Constants.DEFAULT_YES_NO_REACTIONS : Constants.DEFAULT_PAGINATOR_REACTIONS;
-
-            if (!options.onReact)
-                options.onReact = [Constants.DEFAULT_RETURN_FUNCTION, Constants.DEFAULT_RETURN_FUNCTION];
+            if (!options.reactionsMap)
+                options.reactionsMap = (type !== 'reactPaginator') ? Constants.DEFAULT_YES_NO_MAP : Constants.DEFAULT_PAGINATOR_REACTIONS_MAP;
             break;
 
         case 'messageQuestion':
@@ -154,7 +151,11 @@ module.exports.validateOptions = (options, type) => {
     if (!isNumber(options.collectorOptions.max)) {
         options.collectorOptions.max = parseInt(options.collectorOptions.max);
         if (isNaN(options.collectorOptions.max)) {
-            options.collectorOptions.max = (type === 'reactPaginator' || type === 'reactMenu') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT;
+            if (type === 'reactPaginator' || type === 'reactMenu') {
+                options.collectorOptions.max = Constants.DEFAULT_PAGINATOR_MAX_REACT;
+            } else {
+                options.collectorOptions.max = Constants.DEFAULT_COLLECTOR_MAX_REACT;
+            }
         }
     }
 

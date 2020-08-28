@@ -15,8 +15,11 @@ import {
     TextChannel,
     Guild,
     GuildEmoji,
-    EmojiResolvable
+    EmojiResolvable,
+    GuildMember
 } from "discord.js";
+
+import {EventEmitter} from 'events';
 
 declare module 'discord.js-collector' {
 
@@ -37,8 +40,9 @@ declare module 'discord.js-collector' {
         max: number;
     }
 
-    export class ReactionRoleManager {
+    export class ReactionRoleManager extends EventEmitter {
         constructor(client: Client, options?: IReactionRoleManagerOptions);
+        public roles: Collection<string, ReactionRole>;
         private __resfreshOnBoot(): Promise<void>;
         private __debug(type: string, message: string, ...args: any)
         public addRole(options: IAddRoleOptions): Promise<void>;
@@ -48,6 +52,10 @@ declare module 'discord.js-collector' {
         private __onReactionAdd(msgReaction: MessageReaction, user: User): Promise<void>;
         private __onReactionRemove(msgReaction: MessageReaction, user: User): Promise<void>;
         private __onRemoveAllReaction(message: Message): Promise<void>;
+        
+        public on(event: 'reactionRoleAdd', listener:(member: GuildMember, role: Snowflake) =>{}): void;
+        public on(event: 'reactionRoleRemove', listener:(member: GuildMember, role: Snowflake) =>{}): void;
+        public on(event: 'allReactionsRemove', listener:(message: Message) =>{}): void;
     }
 
     export interface IAddRoleOptions {
@@ -100,32 +108,31 @@ declare module 'discord.js-collector' {
     }
 
     export class ReactionCollector {
-        public static menu(options: IReactMenuOptions): Controller;
-        public static paginator(options: IPaginatorOptions): void;
-        public static question(options: IReactQuestionOptions): DjsReactionCollector;
-        public static asyncQuestion(options: IReactQuestionOptions): Promise<boolean>;
-        private static __createReactionCollector(_options): DjsReactionCollector;
-        private static __createAsyncReactionCollector(_options): Promise<boolean>;
+        public async static menu(options: IReactMenuOptions): Controller;
+        public async static paginator(options: IPaginatorOptions): DjsReactionCollector;
+        public async static question(options: IReactQuestionOptions, ...args: any): DjsReactionCollector;
+        public async static yesNoQuestion(options: IReactQuestionOptions): Promise<boolean>;
+        private async static __createReactionCollector(_options, ...args: any): DjsReactionCollector;
+        private async static __createYesNoReactionCollector(_options): Promise<boolean>;
     }
 
     export interface IReactQuestionOptions {
         botMessage: Message;
         user: UserResolvable;
-        onReact: [(botMessage: Message, reaction: MessageReaction) => {}];
-        reactions?: EmojiIdentifierResolvable[];
+        reactions?: IReactionMapAction;
         collectorOptions?: CollectorOptions;
         deleteReaction?: boolean;
-        deleteAllReactionsWhenCollectorEnd?: boolean;
+        deleteAllOnEnd?: boolean;
     }
 
     export interface IPaginatorOptions {
         pages: MessageEmbed;
         botMessage: Message;
         user: UserResolvable;
-        reactions?: EmojiIdentifierResolvable[];
+        reactions?: IReactionMapAction;
         collectorOptions?: CollectorOptions;
         deleteReaction?: boolean;
-        deleteAllReactionsWhenCollectorEnd?: boolean;
+        deleteAllOnEnd?: boolean;
     }
 
     export interface IReactMenuOptions {
@@ -133,6 +140,10 @@ declare module 'discord.js-collector' {
         botMessage: Message;
         user: UserResolvable;
         collectorOptions?: CollectorOptions;
+    }
+
+    export interface IReactionMapAction{
+        [key: EmojiIdentifierResolvable]: (reaction: MessageReaction, ...args: any) => {};
     }
 
     export interface IMenuPage {

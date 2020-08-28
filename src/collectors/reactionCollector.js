@@ -1,9 +1,6 @@
 const { Message, ReactionCollector: DjsReactionCollector, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
 const { validateOptions } = require('../util/validate');
-const editPaginator = async (botMessage, isBack, i, pages) => {
-    isBack ? (i > 0 ? --i : pages.length - 1) : (i + 1 < pages.length ? ++i : 0);
-    await botMessage.edit({ embed: pages[i] });
-}
+
 
 let result = [];
 const findRecursively = (obj, toFind, value = null) => {
@@ -151,7 +148,7 @@ module.exports = class ReactionCollector {
      *   });
      * @returns void
      */
-    static async menu(options) {
+    static async menu(options, ...args) {
         const { botMessage, user, pages, collectorOptions } = validateOptions(options, 'reactMenu');
 
         const keys = Object.keys(pages);
@@ -178,7 +175,7 @@ module.exports = class ReactionCollector {
                 controller.currentPage = controller.currentPage && controller.currentPage.pages ? controller.currentPage.pages[emoji] : pages[emoji];
                 if (controller.currentPage) {
                     if (typeof controller.currentPage.onReact === 'function')
-                        await controller.currentPage.onReact(controller, reaction);
+                        await controller.currentPage.onReact(controller, reaction, ...args);
                     if (controller.currentPage.clearReactions) {
                         await botMessage.reactions.removeAll();
                     }
@@ -210,7 +207,7 @@ module.exports = class ReactionCollector {
                     if (message.deletable)
                         await message.delete();
                     if (controller.currentPage && typeof controller.currentPage.onMessage === 'function')
-                        await controller.currentPage.onMessage(controller, message);
+                        await controller.currentPage.onMessage(controller, message, ...args);
                 } catch (e) {
                     console.error(e);
                 }
@@ -230,7 +227,7 @@ module.exports = class ReactionCollector {
      * @param  {EmojiResolvable[]} [options.reactions] - Array with back/skip reactions.
      * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
      * @param  {boolean?} [options.deleteReaction] - Default True - The Bot will remove reaction after user react?
-     * @param  {boolean?} [options.deleteAllReactionsWhenCollectorEnd] - Default True - The Bot will remove reaction after collector end?
+     * @param  {boolean?} [options.deleteAllOnEnd] - Default True - The Bot will remove reaction after collector end?
      * @note {Function[]?} options.onReact cannot be set in this method. (yet)
      * @example
      *   const botMessage = await message.channel.send('Simple paginator...');
@@ -244,26 +241,26 @@ module.exports = class ReactionCollector {
      *   });
      * @returns void
      */
-    static paginator(options) {
-        const { botMessage, user, pages, collectorOptions, reactions, deleteReaction, deleteAllReactionsWhenCollectorEnd } = validateOptions(options, 'reactPaginator');
+    async static paginator(options) {
+        const { botMessage, user, pages, collectorOptions, reactionsMap, deleteReaction, deleteAllOnEnd } = validateOptions(options, 'reactPaginator');
         if (!pages || pages.length === 0)
             throw 'Invalid input: pages is null or empty';
 
         let i = 0;
-        botMessage.edit({ embed: pages[0] }).then(() => {
-            this.question({
-                botMessage,
-                user,
-                reactions,
-                collectorOptions,
-                deleteReaction,
-                deleteAllReactionsWhenCollectorEnd,
-                onReact: [
-                    async (botMessage) => await editPaginator(botMessage, true, i, pages),
-                    async (botMessage) => await editPaginator(botMessage, false, i, pages)
-                ]
-            });
-        });
+        await botMessage.edit({ embed: pages[0] });
+        const collector = this.__createReactionCollector({
+            botMessage,
+            user,
+            reactionsMap,
+            collectorOptions,
+            deleteReaction,
+            deleteAllOnEnd,
+        },
+            botMessage,
+            i,
+            pages
+        );
+        return collector;
     }
 
     /**
@@ -271,26 +268,17 @@ module.exports = class ReactionCollector {
      * @param  {CollectorOptions} options
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
-     * @param  {EmojiResolvable[]} [options.reactions] - Array with reactions.
+     * @param  [options.reactions] - Object with reactions and functions.
      * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
-     * @param  {Function[]?} [options.onReact] - Corresponding functions when clicking on each reaction
      * @param  {boolean?} [options.deleteReaction] - The Bot will remove reaction after user react?
-     * @param  {boolean?} [options.deleteAllReactionsWhenCollectorEnd] - The Bot will remove reaction after collector end?
-     * @example 
-     * const botMessage = await message.channel.send('Simple yes/no question');
-     * ReactionCollector.question({
-     *     user: message.author,
-     *     botMessage,
-     *     onReact: [
-     *         (botMessage, reaction) => message.channel.send("You've clicked in yes button!"),
-     *         (botMessage, reaction) => message.channel.send("You've clicked in no button!")
-     *     ]
-     * });
+     * @param  {boolean?} [options.deleteAllOnEnd] - The Bot will remove reaction after collector end?
+     * 
+     * See example in {@link https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/reaction-collector/question.js}
      * @note onReact(botMessage?: Message) - onReact functions can use botMessage argument.
      * @returns DjsReactionCollector
      */
-    static question(options) {
-        return this.__createReactionCollector(validateOptions(options, 'reactQuestion'));
+    static question(options, ...args) {
+        return this.__createReactionCollector(validateOptions(options, 'reactQuestion'), ...args);
     }
 
     /**
@@ -298,20 +286,20 @@ module.exports = class ReactionCollector {
      * @param  {AsyncCollectorOptions} options
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
-     * @param  {EmojiResolvable[]} [options.reactions] - Array with reactions.
+     * @param  {EmojiResolvable[]} [options.reactions] - Array with 2 emojis, first one is "Yes" and second one is "No".
      * @param  {DjsCollectorOptions} [options.collectorOptions] - Default discord.js collector options
      * @param  {boolean} [options.deleteReaction] - The Bot will remove reaction after user react?
-     * @param  {boolean} [options.deleteAllReactionsWhenCollectorEnd] - The Bot will remove reaction after collector end?
+     * @param  {boolean} [options.deleteAllOnEnd] - The Bot will remove reaction after collector end?
      * @example 
      * const botMessage = await message.channel.send('Simple yes/no question');
-     * if (await ReactionCollector.asyncQuestion({ user: message.author, botMessage }))
+     * if (await ReactionCollector.yesNoQuestion({ user: message.author, botMessage }))
      *     message.channel.send('You\'ve clicked in yes button!');
      * else
      *     message.channel.send('You\'ve clicked in no button!');
      * @returns {Promise<boolean>}
      */
-    static async asyncQuestion(options) {
-        return this.__createAsyncReactionCollector(validateOptions(options, 'reactAsyncQuestion'));
+    static async yesNoQuestion(options) {
+        return this.__createYesNoReactionCollector(validateOptions(options, 'yesNoQuestion'));
     }
 
 
@@ -319,22 +307,25 @@ module.exports = class ReactionCollector {
      * @param  {CollectorOptions} _options
      * @returns {DjsReactionCollector}
      */
-    static __createReactionCollector(_options) {
+    static async __createReactionCollector(_options, ...args) {
         try {
-            const { botMessage, reactions, user, collectorOptions, onReact, deleteReaction, deleteAllReactionsWhenCollectorEnd } = _options;
-            Promise.all(reactions.map(r => botMessage.react(r)));
+            const { botMessage, reactionsMap, user, collectorOptions, deleteReaction, deleteAllOnEnd } = _options;
+            const reactions = Object.keys(reactionsMap);
+            await Promise.all(reactions.map(r => botMessage.react(r)));
             const filter = (r, u) => u.id === user.id && (reactions.includes(r.emoji.id) || reactions.includes(r.emoji.name)) && !user.bot;
             const collector = botMessage.createReactionCollector(filter, collectorOptions);
             collector.on('collect', async (reaction) => {
                 const emoji = reaction.emoji.id || reaction.emoji.name;
                 if (deleteReaction)
                     await reaction.users.remove(user.id);
-                await onReact[reactions.indexOf(emoji)](botMessage, reaction);
+                if (typeof reactionsMap[emoji] === 'function')
+                    reactionsMap[emoji](reaction, ...args);
             });
-            collector.on('end', async () => { if (deleteAllReactionsWhenCollectorEnd) await botMessage.reactions.removeAll() });
+            if (deleteAllOnEnd)
+                collector.on('end', async () => await botMessage.reactions.removeAll());
             return collector;
         } catch (e) {
-            throw e;
+            console.error(e);
         }
     }
 
@@ -344,9 +335,9 @@ module.exports = class ReactionCollector {
      * @param  {AsyncCollectorOptions} _options
      * @returns {Promise<boolean>}
      */
-    static async __createAsyncReactionCollector(_options) {
+    static async __createYesNoReactionCollector(_options) {
         return new Promise(async (resolve) => {
-            const { botMessage, reactions, user, collectorOptions, deleteReaction, deleteAllReactionsWhenCollectorEnd } = _options;
+            const { botMessage, reactions, user, collectorOptions, deleteReaction, deleteAllOnEnd } = _options;
             await Promise.all(reactions.map(r => botMessage.react(r)));
             const filter = (r, u) => u.id === user.id && (reactions.includes(r.emoji.id) || reactions.includes(r.emoji.name)) && !user.bot;
             const caughtReactions = await botMessage.awaitReactions(filter, collectorOptions);
@@ -354,7 +345,7 @@ module.exports = class ReactionCollector {
                 const reactionCollected = caughtReactions.first();
                 if (deleteReaction)
                     await reactionCollected.users.remove(user.id);
-                if (deleteAllReactionsWhenCollectorEnd)
+                if (deleteAllOnEnd)
                     await reactionCollected.message.reactions.removeAll();
                 return resolve(reactions.indexOf(reactionCollected.emoji ? (reactionCollected.emoji.name || reactionCollected.emoji.id) : (reactionCollected.name || reactionCollected.id)) === 0);
             }

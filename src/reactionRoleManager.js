@@ -1,6 +1,7 @@
 const { Client } = require("discord.js");
 const { Collection, Message } = require('discord.js');
 const fs = require('fs');
+const { EventEmitter } = require("events");
 
 class ReactionRole {
     constructor({ message, channel, guild, role, emoji, winners, max }) {
@@ -54,7 +55,7 @@ class ReactionRole {
  *      });
  * });
  */
-class ReactionRoleManager {
+class ReactionRoleManager extends EventEmitter {
     constructor(client, { store, path, debug, refreshOnBoot } = { refreshOnBoot: true, store: true, path: __dirname + '/data/roles.json', debug: false }) {
         if (!(client instanceof Client))
             throw 'Client param must be a Client object.';
@@ -110,6 +111,7 @@ class ReactionRoleManager {
                     if (reactionRole.winners.indexOf(member.id) <= -1)
                         reactionRole.winners.push(member.id);
                     if (!member.roles.cache.has(reactionRole.role)) {
+                        this.emit('reactionRoleAdd', member, reactionRole.role);
                         await member.roles.add(reactionRole.role);
                         this.__debug('ROLE', `Role '${reactionRole.role}' was given to '${member.id}', it reacted when bot wasn't online.`)
                     }
@@ -125,6 +127,7 @@ class ReactionRoleManager {
 
                     if (!reaction.users.cache.has(winnerId)) {
                         if (member.roles.cache.has(reactionRole.role)) {
+                            this.emit('reactionRoleRemove', member, reactionRole.role);
                             await member.roles.remove(reactionRole.role);
                             this.__debug('ROLE', `Role '${reactionRole.role}' removed from '${member.id}', it removed reaction when bot wasn't online.`)
                         }
@@ -219,6 +222,7 @@ class ReactionRoleManager {
 
         this.__store();
         this.__debug('REACTION', `User '${member.displayName}' won the role '${reactionRole.role}'.`);
+        this.emit('reactionRoleAdd', member, reactionRole.role);
         return await member.roles.add(reactionRole.role).catch(console.error);
     }
 
@@ -249,6 +253,7 @@ class ReactionRoleManager {
         //
         this.__store();
         this.__debug('REACTION', `User '${member.displayName}' lost the role '${reactionRole.role}'.`);
+        this.emit('reactionRoleRemove', member, reactionRole.role);
         return await member.roles.remove(reactionRole.role).catch(console.error);
     }
 
@@ -263,6 +268,7 @@ class ReactionRoleManager {
             }
             this.removeRole(reactionRole);
         }
+        this.emit('allReactionsRemove', message);
         this.__store();
     }
 }
