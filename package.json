@@ -8,9 +8,10 @@
   "scripts": {
     "dev": "nodemon ./test/bot.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "discord.js": "^12.0.0"
+  },
   "devDependencies": {
-    "discord.js": "12.0.0",
     "nodemon": "^2.0.4"
   },
   "homepage": "https://github.com/IDjinn/Discord.js-Collector",
