@@ -1,26 +1,7 @@
 const { Message, User, ClientUser } = require("discord.js");
 const Constants = require('./constants');
 const { isArray, isBoolean, isNumber, isObject } = require('util');
-
-let result = [];
-const findRecursively = (obj, toFind, value = null) => {
-    for (const key in obj) {
-        if (typeof obj[key] === 'object') {
-            findRecursively(obj[key], toFind, value);
-        }
-    }
-    if (obj && obj[toFind]) {
-        if (value && obj[toFind] == value)
-            result.push(obj)
-        else if (typeof obj[toFind] === 'function')
-            result.push(obj[toFind]);
-        else if (obj[toFind].length > 0)
-            result.push(...obj[toFind]);
-        else
-            result.push(obj[toFind]);
-        return true;
-    }
-}
+const findRecursively = require('./find');
 
 /**
  * @description This method verify if collector configuration can be used, avoiding errors.
@@ -116,24 +97,17 @@ module.exports.validateOptions = (options, type) => {
         if (!options.pages)
             throw 'Invalid input: You need add pages to create a react menu.';
 
-        result = [];
-        findRecursively(options.pages, 'reactions');
-        const reactions = [];
-        reactions.push(...Object.keys(options.pages))
+        const reactions = findRecursively({ obj: options.pages, key: 'reactions', result: Object.keys(options.pages), type: 'array' });
         const notEmojis = reactions.filter(emoji => !client.emojis.resolveIdentifier(emoji));
         if (notEmojis.length > 0)
             throw 'Invalid input: These values is\'nt a valid emoji: ' + notEmojis.join(', ');
 
-        result = [];
-        findRecursively(options.pages, 'onReact');
-        const onReacts = result;
+        const onReacts = findRecursively({ obj: options.pages, key: 'onReact', type: 'array' });
         if (onReacts.length > 0 && onReacts.filter(fx => typeof fx !== 'function').length > 0)
             throw 'Invalid input: Some onReact is not a function type.';
 
 
-        result = [];
-        findRecursively(options.pages, 'onMessage');
-        const onMessages = result;
+        const onMessages = findRecursively({ obj: options.pages, key: 'onMessage', type: 'array' });
         if (onMessages.length > 0 && onMessages.filter(fx => typeof fx !== 'function').length > 0)
             throw 'Invalid input: Some onMessage is not a function type.';
     }

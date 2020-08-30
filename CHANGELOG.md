@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.4.3
+
+• Fix unexpected token in Constants.js
+
+---
 # CHANGELOG - V1.4.2
 
 • Fix typings

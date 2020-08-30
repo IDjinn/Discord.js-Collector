@@ -10,9 +10,9 @@ const pages = {
         id: 'first-page', // Page id is used to navigate cross pages.
         content: 'Hello world!',
         embed: { title: "What's happening?", description: "This message is a reaction menu example." },
-        reactions: ['?'], // Reactions to acess next sub-page
+        reactions: ['❓'], // Reactions to acess next sub-page
         onMessage: (controller, message) => { // You can receive message inside every page to make cool things!
-            if (message.startsWith('>hi')) {
+            if (message.content.startsWith('>hi')) {
                 message.reply('Hello!')
                 controller.goTo('second-page'); // With controller, you can go to other pages from menu, back to last page and others funcions...
             }
@@ -20,6 +20,7 @@ const pages = {
         pages: { // Exemple sub-pages
             '❓': {
                 id: 'secret-page',
+                clearReactions: true, // Clear reactions from message, if not have others sub-pages
                 content: '?',
                 embed: {
                     description: 'You\'ve found the secret page.'

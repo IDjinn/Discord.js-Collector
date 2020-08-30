@@ -1,29 +1,8 @@
 const { Message, ReactionCollector: DjsReactionCollector, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
 const { validateOptions } = require('../util/validate');
+const findRecursively = require('../util/find');
 
-
-let result = [];
-const findRecursively = (obj, toFind, value = null) => {
-    for (const key in obj) {
-        if (typeof obj[key] === 'object') {
-            findRecursively(obj[key], toFind, value);
-        }
-    }
-    if (obj && obj[toFind]) {
-        if (value && obj[toFind] == value)
-            result.push(obj)
-        else if (typeof obj[toFind] === 'function')
-            result.push(obj[toFind]);
-        else if (obj[toFind].length > 0)
-            result.push(...obj[toFind]);
-        else
-            result.push(obj[toFind]);
-        return true;
-    }
-}
-
-
-module.exports.Controller = class Controller {
+class Controller {
     constructor(botMessage, collector, pages) {
         this._botMessage = botMessage;
         this._collector = collector;
@@ -42,9 +21,8 @@ module.exports.Controller = class Controller {
         this.collector.resetTimer(options);
     }
     goTo(pageId) {
-        result = [];
-        findRecursively(Object.entries(this.pages), 'id', pageId);
-        const page = result.find(x => typeof x === 'object');
+        const idList = findRecursively({ obj: this.pages, key: 'id', type: 'object' });
+        const page = idList.find(page => page.id === pageId);
         if (!page)
             throw 'Invalid action: Couldn\'t go to page \'' + pageId + '\', this page doens\'t exists.';
         this.currentPage = page;
@@ -62,19 +40,15 @@ module.exports.Controller = class Controller {
         this.update();
     }
     async update(onlyMessage = false) {
-        if (!onlyMessage) {
-            await this.botMessage.reactions.removeAll();
-            await this.botMessage.edit(this.currentPage);
-            if (this.currentPage) {
-                if (this.currentPage.reactions)
-                    await Promise.all(this.currentPage.reactions.map(x => this.botMessage.react(x)));
-                if (this.currentPage.backEmoji)
-                    await this.botMessage.react(this.currentPage.backEmoji)
-            }
-        }
-        else {
-            await this.botMessage.edit(this.currentPage);
-        }
+        if (onlyMessage)
+            return await this.botMessage.edit(this.currentPage);
+
+        await this.botMessage.reactions.removeAll();
+        await this.botMessage.edit(this.currentPage);
+        if (this.currentPage.reactions)
+            await Promise.all(this.currentPage.reactions.map(x => this.botMessage.react(x)));
+        if (this.currentPage.backEmoji)
+            await this.botMessage.react(this.currentPage.backEmoji)
     }
     get botMessage() {
         return this._botMessage;
@@ -106,60 +80,19 @@ module.exports.Controller = class Controller {
     }
 }
 
-module.exports = class ReactionCollector {
+
+class ReactionCollector {
     /**
-     * @description This method can be used to create easier react menu.
-     * @param  {PaginatorOptions} options
-     * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
-     * @param  {UserResolvable} options.user - UserResolvable who will react. 
-     * @param  options.pages - Array with menu pages.
-     * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
-     * @example
-     *  //First step, you need make menu pages like that:
-     *  const pages = {
-     *  '✅': {
-     *        content: 'Hello world!',
-     *        reactions: ['?'], // Reactions to acess next sub-page
-     *        embed: {
-     *          description: 'First page content, you can edit and put your custom embed.'
-     *        },
-     *        pages: { // Exemple sub-pages
-     *          '❓': {
-     *            content: '?',
-     *            embed: {
-     *              description: 'You\'ve found the secret page.'
-     *            }
-     *          }
-     *        }
-     *    },
-     *    '❌': {
-     *        content: 'What\'s happened?',
-     *        embed: {
-     *          description: 'You\'ve clicked in ❌ emoji.'
-     *        }
-     *      }
-     *    }
-     * 
-     *   const botMessage = await message.channel.send('Simple Reaction Menu...');
-     *   ReactionCollector.menu({
-     *       botMessage,
-     *       user: message.author,
-     *       pages
-     *   });
-     * @returns void
+     * See example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/menu.js}
+     * @return {Collector} collector;
      */
     static async menu(options, ...args) {
         const { botMessage, user, pages, collectorOptions } = validateOptions(options, 'reactMenu');
 
         const keys = Object.keys(pages);
-        result = [];
-        findRecursively(pages, 'reactions');
-        findRecursively(pages, 'backEmoji');
-        const allReactions = result;
-        allReactions.push(...keys);
-        result = [];
-        findRecursively(pages, 'onMessage');
-        const needCollectMessages = result.length > 0;
+        const allReactions = findRecursively({ obj: pages, key: 'reactions', result: keys, type: 'array' });
+        findRecursively({ obj: pages, key: 'backEmoji', result: allReactions, type: 'value' });
+        const needCollectMessages = findRecursively({ obj: pages, key: 'onMessage' }).length > 0;
 
         const filter = (r, u) => u.id === user.id && (allReactions.includes(r.emoji.id) || allReactions.includes(r.emoji.name)) && !user.bot;
         const collector = botMessage.createReactionCollector(filter, collectorOptions);
@@ -229,6 +162,7 @@ module.exports = class ReactionCollector {
      * @param  {boolean?} [options.deleteReaction] - Default True - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd] - Default True - The Bot will remove reaction after collector end?
      * @note {Function[]?} options.onReact cannot be set in this method. (yet)
+     * See full example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/paginator.js}
      * @example
      *   const botMessage = await message.channel.send('Simple paginator...');
      *   ReactionCollector.paginator({
@@ -272,9 +206,8 @@ module.exports = class ReactionCollector {
      * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
      * @param  {boolean?} [options.deleteReaction] - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd] - The Bot will remove reaction after collector end?
-     * 
      * See example in {@link https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/reaction-collector/question.js}
-     * @note onReact(botMessage?: Message) - onReact functions can use botMessage argument.
+     * @note onReact(reation, ...args) = When user react, will trigger this function
      * @returns DjsReactionCollector
      */
     static question(options, ...args) {
@@ -290,6 +223,7 @@ module.exports = class ReactionCollector {
      * @param  {DjsCollectorOptions} [options.collectorOptions] - Default discord.js collector options
      * @param  {boolean} [options.deleteReaction] - The Bot will remove reaction after user react?
      * @param  {boolean} [options.deleteAllOnEnd] - The Bot will remove reaction after collector end?
+     * See full example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/yesNoQuestion.js}
      * @example 
      * const botMessage = await message.channel.send('Simple yes/no question');
      * if (await ReactionCollector.yesNoQuestion({ user: message.author, botMessage }))
@@ -304,6 +238,7 @@ module.exports = class ReactionCollector {
 
 
     /**
+     * @description Internal methods, do not use.
      * @param  {CollectorOptions} _options
      * @returns {DjsReactionCollector}
      */
@@ -330,8 +265,7 @@ module.exports = class ReactionCollector {
     }
 
     /**
-     * @private
-     * @static
+     * @description Internal methods, do not use.
      * @param  {AsyncCollectorOptions} _options
      * @returns {Promise<boolean>}
      */
@@ -353,3 +287,6 @@ module.exports = class ReactionCollector {
         });
     }
 }
+
+module.exports = ReactionCollector;
+module.exports.Controller = Controller;
