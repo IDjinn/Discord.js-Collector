@@ -5,9 +5,7 @@
 • Fix max counter in reaction role manager, before this version this number was inc and dec, when reaction add/remove.
 • Fix bots can win roles while reaction role manager boot
 • Improve debug logs in reaction role manager
-• Added support to mongodb (lib mongoose) in reaction role manager, as optional dependency
-
----
+• Added support to mongodb (lib mongoose) in reaction role manager
 
 ---
 # CHANGELOG - V1.4.3

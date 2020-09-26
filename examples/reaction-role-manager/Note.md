@@ -2,14 +2,6 @@
 
 If you want use mongo db to storage reaction roles, you need do some steps.
 
-## Install mongoose
-
-You need install mongoose, with npm or yarn
-
-`npm i mongooose --save`
-
-`yarn add mongoose`
-
 ## Configure mongoose
 
 You will need only mongo database link to connect. The link is something like that:
