@@ -1,9 +1,12 @@
-const { Client, Role, MessageEmbed } = require("discord.js");
+const { Client, Role } = require("discord.js");
 const { Collection, Message } = require('discord.js');
 const fs = require('fs');
 const { EventEmitter } = require("events");
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+/**
+* Structure from reaction role object.
+*/
 class ReactionRole {
     constructor({ message, channel, guild, role, emoji, winners, max }) {
         this.message = message.id ? message.id : message;
@@ -38,85 +41,116 @@ class ReactionRole {
     }
 }
 
-
 /**
- * @example
- * client.on('ready', () => {
- *      client.reactionRoleManager = new ReactionRoleManager(client, { store: true });
- * });
- * 
- * client.on('message', message => {
- * //...
- *      const role = message.mentions.roles.first();
- *      client.reactionRoleManager.addRole({
- *            message, // If you don't have message object, need fetch it.
- *            role, // Role object or Id
- *            emoji: message.guild.emojis.cache.get('706597879523049585'), // Emoji Resolvable or Id
- *            max: 15 // Max roles to give, default is Infinity
- *      });
- * });
+ * Example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-role-manager/basic.js}
  */
 class ReactionRoleManager extends EventEmitter {
-    constructor(client, { store, path, debug, refreshOnBoot } = { refreshOnBoot: true, store: true, path: __dirname + '/data/roles.json', debug: false }) {
+    constructor(client, { storage, store, mongoDbLink, path, debug } = { storage: true, store: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
         super();
         if (!(client instanceof Client))
             throw 'Client param must be a Client object.';
 
         this.client = client;
-        this.store = store;
+        this.storage = store || storage;
         this.DATA_JSON_PATH = path;
         this.debug = debug;
-        this.roles = this.__parseStore();
-        if (refreshOnBoot && this.store)
-            this.client.on('ready', () => this.__resfreshOnBoot());
+        this.mongoDbLink = mongoDbLink;
+        this.roles = new Collection();
+        this.client.on('ready', () => this.__resfreshOnBoot());
 
         this.client.on('messageReactionAdd', (msgReaction, user) => this.__onReactionAdd(msgReaction, user));
         this.client.on('messageReactionRemove', (msgReaction, user) => this.__onReactionRemove(msgReaction, user));
         this.client.on('messageReactionRemoveAll', (message) => this.__onRemoveAllReaction(message));
     }
 
+
+    async __checkMongoose() {
+        if (!this.mongoDbLink)
+            return Promise.resolve('Mongoose is disabled.');
+
+        try {
+            this.mongoose = require('mongoose');
+            await this.mongoose.connect(this.mongoDbLink, { useNewUrlParser: true, useUnifiedTopology: true });
+
+            this.mongoose.model('ReactionRoles', new this.mongoose.Schema({
+                id: String,
+                message: String,
+                channel: String,
+                guild: String,
+                role: String,
+                emoji: String,
+                winners: Array,
+                max: Number
+            }));
+        } catch (e) {
+            return Promise.reject(e);
+        }
+    }
+
     async __resfreshOnBoot() {
+        if (!this.storage)
+            return;
+
+        await this.__checkMongoose().catch(console.error);
         await sleep(1000);
+        await this.__parseStorage();
+
+        const updateQueue = [];
         for (const reactionRole of this.roles.values()) {
             const guild = this.client.guilds.cache.get(reactionRole.guild);
             if (!guild) {
-                this.removeRole(reactionRole);
+                this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, guild wasn't found.`);
+                this.deleteReactionRole(reactionRole);
                 continue;
             }
 
 
             const channel = guild.channels.cache.get(reactionRole.channel);
             if (!channel) {
-                this.removeRole(reactionRole);
+                this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, channel wasn't found.`);
+                this.deleteReactionRole(reactionRole);
                 continue;
             }
 
             const message = await channel.messages.fetch(reactionRole.message);
             if (!message) {
-                this.removeRole(reactionRole);
+                this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, message wasn't found.`);
+                this.deleteReactionRole(reactionRole);
                 continue;
             }
+
+            if (!message.reactions.cache.has(reactionRole.emoji)) // Bot reaction is deleted, and not have any reaction with this reaction role emoji.
+                await message.react(reactionRole.emoji);
 
             for (const reaction of message.reactions.cache.values()) {
                 await reaction.users.fetch(); //Need fetch the users to next for
                 for (const user of reaction.users.cache.values()) {
+                    if (user.bot) // Ignore bots, please!
+                        continue;
+
                     const member = guild.members.cache.get(user.id);
                     if (!member) {
                         await reaction.remove(user);
+                        this.__debug('REACTION', `Member '${user.id}' wasn't found, reaction of his was removed from message.`);
                         continue;
                     }
 
-                    const emoji = reaction.emoji.id || reaction.emoji.name;
+                    const emoji = this.client.emojis.resolveIdentifier(reaction.emoji.id || reaction.emoji.name);
                     const id = `${message.id}-${emoji}`;
-                    if (id != reactionRole.id)
+                    if (id != reactionRole.id) {
+                        this.__debug('ROLE', `Weird problem, some reaction with wrong setup. Id '${id}' from this role is not '${reactionRole.id}'...`);
                         continue;
+                    }
 
                     if (reactionRole.winners.indexOf(member.id) <= -1)
                         reactionRole.winners.push(member.id);
                     if (!member.roles.cache.has(reactionRole.role)) {
                         this.emit('reactionRoleAdd', member, reactionRole.role);
                         await member.roles.add(reactionRole.role);
-                        this.__debug('ROLE', `Role '${reactionRole.role}' was given to '${member.id}', it reacted when bot wasn't online.`)
+                        this.__debug('ROLE', `Role '${reactionRole.role}' was given to '${member.id}', it reacted when bot wasn't online.`);
+                    }
+                    else {
+                        this.__debug('ROLE', `Keeping role '${reactionRole.role}' from '${member.id}', it reacted and already have the role.`);
                     }
                 }
 
@@ -125,56 +159,89 @@ class ReactionRoleManager extends EventEmitter {
                     if (!member) {
                         const index = reactionRole.winners.indexOf(winnerId);
                         reactionRole.winners.splice(index, 1);
+                        this.__debug('BOOT', `Member '${winnerId}' wasn't found, his was removed from winner list.`);
                         continue;
                     }
 
                     if (!reaction.users.cache.has(winnerId)) {
                         if (member.roles.cache.has(reactionRole.role)) {
-                            this.emit('reactionRoleRemove', member, reactionRole.role);
                             await member.roles.remove(reactionRole.role);
-                            this.__debug('ROLE', `Role '${reactionRole.role}' removed from '${member.id}', it removed reaction when bot wasn't online.`)
+                            this.emit('reactionRoleRemove', member, reactionRole.role);
                         }
 
                         const index = reactionRole.winners.indexOf(winnerId);
                         reactionRole.winners.splice(index, 1);
+                        this.__debug('ROLE', `Role '${reactionRole.role}' removed from '${member.id}', it removed reaction when bot wasn't online.`)
                     }
                 }
             }
+            updateQueue.push(reactionRole);
         }
-        this.__store();
+        this.__store(...updateQueue);
     }
 
     __debug(type, message, ...args) {
         if (this.debug)
-            console.debug(`[${new Date().toLocaleString()}] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`)
+            console.log(`[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`)
     }
 
+    /**
+    * Create new reaction role.
+    * @property {object} options - Object with options to create new reaction role.
+    * @property {Message} options.message - Message what will have the reactions.
+    * @property {Role} options.role - Role what the bot will give/take from members when they react.
+    * @property {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
+    * @property {Number} [options.max] - Max roles to give, default is Infinity.
+    */
+    createReactionRole({ message, role, emoji, max } = { max: Number.MAX_SAFE_INTEGER }) {
+        return new Promise(async (resolve, reject) => {
+            if (message instanceof Message) {
+                if (!message.guild)
+                    return reject('Bad input: message must be a guild message, cannot create reaction role in DM channels.');
+
+                role = message.guild.roles.resolve(role);
+                if (!(role instanceof Role))
+                    return reject('Bad input: I canno\'t resolve role ' + role);
+                emoji = message.client.emojis.resolveIdentifier(emoji);
+                if (!emoji)
+                    return reject('Bad input: I canno\'t resolve emoji ' + role);
+
+                await message.react(emoji);
+                const reactionRole = new ReactionRole({ message: message, role, emoji, max });
+                this.roles.set(reactionRole.id, reactionRole);
+                this.__store(reactionRole);
+                this.__debug('ROLE', `Role '${role.id}' added in reactionRoleManager!`);
+                return resolve();
+            }
+            return reject('Bad input: addRole({...}) message must be a Message object.');
+        });
+    }
+
+    /**
+    * @deprecated since 1.4.4, use createReactionRole instead.
+    */
     async addRole({ message, role, emoji, max } = { max: Number.MAX_SAFE_INTEGER }) {
-        if (message instanceof Message) {
-            if (!message.guild)
-                throw 'Bad input: message must be a guild message, cannot create reaction role in DM channels.'
-
-            role = message.guild.roles.resolve(role);
-            if (!(role instanceof Role))
-                throw 'Bad input: I canno\'t resolve role ' + role;
-            emoji = message.client.emojis.resolveIdentifier(emoji);
-            if (!emoji)
-                throw 'Bad input: I canno\'t resolve emoji ' + role;
-
-            
-            await message.react(emoji);
-            const reactionRole = new ReactionRole({ message: message, role, emoji, max });
-            this.roles.set(reactionRole.id, reactionRole);
-            this.__store();
-            this.__debug('ROLE', `Role '${role.id}' added in reactionRoleManager!`);
-            return;
-        }
-        throw 'Bad input: addRole({...}) message must be a Message object.';
+        return this.createReactionRole({ message, role, emoji, max });
     }
 
-    removeRole(role) {
+    /** 
+    * This funcion will delete the reaction role from storage.
+    * @param {ReactionRole} role - Reaction role to delete.
+    * @return {Promise<void>}
+    */
+    async deleteReactionRole(role) {
+        return await this.removeRole(role);
+    }
+
+    /**
+    * @deprecated since 1.4.4, use deleteReactionRole instead.
+    */
+    async removeRole(role) {
         if (role instanceof ReactionRole) {
             this.roles.delete(role.id);
+            if (this.mongoose) {
+                await this.mongoose.model('ReactionRoles').deleteOne({ id: role.id }).exec();
+            }
             this.__debug('ROLE', `Role '${role.role}' removed from reactionRoleManager!`);
             return;
         }
@@ -182,27 +249,39 @@ class ReactionRoleManager extends EventEmitter {
         throw 'Bad input: removeRole(role) must be a ReactionRole object.';
     }
 
-    __store() {
-        if (this.store) {
-            fs.writeFileSync(this.DATA_JSON_PATH, JSON.stringify(this.roles.map(role => role.toJSON())));
-            this.__debug('STORE', `Stored roles saved, contains '${this.roles.size}' roles.`);
-        }
-    }
-
-    __parseStore() {
-        const roles = new Collection();
-        if (this.store) {
-            if (fs.existsSync(this.DATA_JSON_PATH)) {
-                const json = JSON.parse(fs.readFileSync(this.DATA_JSON_PATH).toString());
-                for (const role of json) {
-                    roles.set(role.id, ReactionRole.fromJSON(role));
+    async __store(...roles) {
+        if (this.storage) {
+            if (this.mongoose) {
+                for (const role of roles) {
+                    await this.mongoose.model('ReactionRoles').findOneAndUpdate({ id: role.id }, role, { new: true, upsert: true }).exec();
                 }
-                this.__debug('STORE', `Stored roles parsed, contains '${roles.size}' roles.`);
+            }
+            else {
+                fs.writeFileSync(this.DATA_JSON_PATH, JSON.stringify(this.roles.map(role => role.toJSON())));
+                this.__debug('STORE', `Stored roles saved, contains '${this.roles.size}' roles.`);
             }
         }
-        return roles;
     }
 
+    async __parseStorage() {
+        if (this.storage) {
+            if (this.mongoose) {
+                const reactionRoles = await this.mongoose.model('ReactionRoles').find({});
+                for (const role of reactionRoles) {
+                    this.roles.set(role.id, new ReactionRole(role));
+                }
+            }
+            else {
+                if (fs.existsSync(this.DATA_JSON_PATH)) {
+                    const json = JSON.parse(fs.readFileSync(this.DATA_JSON_PATH).toString());
+                    for (const role of json) {
+                        this.roles.set(role.id, ReactionRole.fromJSON(role));
+                    }
+                    this.__debug('STORE', `Stored roles parsed, contains '${roles.size}' roles.`);
+                }
+            }
+        }
+    }
 
     async __onReactionAdd(msgReaction, user) {
         if (user.bot)
@@ -221,22 +300,24 @@ class ReactionRoleManager extends EventEmitter {
         if (!member)
             return;
 
-        if (reactionRole.max <= 0)
-            return this.removeRole(reactionRole);
+        if (reactionRole.winners.length >= reactionRole.max) {
+            await msgReaction.users.remove(member.id);
+            return this.__debug('ROLE', `Member will not win the reaction role '${reactionRole.role}' because the maximum number of roles to give has been reached`)
+        }
 
         const role = guild.roles.cache.get(reactionRole.role);
-        if (!(role instanceof Role))
-            return this.removeRole(reactionRole);
+        if (!(role instanceof Role)) {
+            this.deleteReactionRole(reactionRole);
+            this.__debug('ROLE', `Role '${reactionRole.role}' wasn't found in guild '${guild.id}', the member '${member.id}' will not won the role.`)
+        }
 
-        reactionRole.max--;
         if (reactionRole.winners.indexOf(member.id) <= -1)
             reactionRole.winners.push(member.id);
 
-
-        this.__store();
-        this.__debug('REACTION', `User '${member.displayName}' won the role '${role.name}'.`);
+        await member.roles.add(role).catch(console.error);
         this.emit('reactionRoleAdd', member, role);
-        return await member.roles.add(role).catch(console.error);
+        this.__debug('REACTION', `User '${member.displayName}' won the role '${role.name}'.`);
+        this.__store(reactionRole);
     }
 
     async __onReactionRemove(msgReaction, user) {
@@ -256,36 +337,46 @@ class ReactionRoleManager extends EventEmitter {
         if (!member)
             return;
 
-        if (reactionRole.max <= 0)
-            return this.removeRole(reactionRole);
-
         const role = guild.roles.cache.get(reactionRole.role);
-        if (!(role instanceof Role))
-            return this.removeRole(reactionRole);
+        if (!(role instanceof Role)) {
+            this.deleteReactionRole(reactionRole);
+            this.__debug('ROLE', `Role '${reactionRole.role}' wasn't found in guild '${guild.id}', the member '${member.id}' will not lose the role.`)
+        }
 
-        reactionRole.max++;
-        // Delete when remove reaction
         const index = reactionRole.winners.indexOf(member.id);
         reactionRole.winners.splice(index, 1);
-        //
-        this.__store();
-        this.__debug('REACTION', `User '${member.displayName}' lost the role '${role.name}'.`);
-        this.emit('reactionRoleRemove', member, role);
-        return await member.roles.remove(role).catch(console.error);
+
+        if (member.roles.cache.has(role)) {
+            await member.roles.remove(role).catch(console.error);
+            this.emit('reactionRoleRemove', member, role);
+            this.__debug('REACTION', `User '${member.displayName}' lost the role '${role.name}'.`);
+        }
+
+        this.__store(reactionRole);
     }
 
     async __onRemoveAllReaction(message) {
-        for (const reactionRole of this.roles.filter(r => r.message == message.id).values()) {
+        const messageReactionsRoles = this.roles.filter(r => r.message == message.id).values();
+        const membersAffected = [];
+        let reactionsTaken = 0;
+        for (const reactionRole of messageReactionsRoles) {
             for (const winnerId of reactionRole.winners) {
                 const member = message.guild.members.cache.get(winnerId);
                 if (!member)
                     continue;
 
                 await member.roles.remove(reactionRole.role);
+                if (!membersAffected.includes(member))
+                    membersAffected.push(member);
+
+                reactionsTaken++;
             }
-            this.removeRole(reactionRole);
+            this.deleteReactionRole(reactionRole);
+            this.__debug('REACTION ROLE', `Reaction role '${reactionRole.id}' was deleted, by someone take off all reactions from message.`);
         }
-        this.emit('allReactionsRemove', message);
+
+        const rolesAffected = messageReactionsRoles.map(rr => message.guild.roles.get(rr.role)).filter(role => role instanceof Role);
+        this.emit('allReactionsRemove', message, rolesAffected, membersAffected, reactionsTaken);
         this.__store();
     }
 }

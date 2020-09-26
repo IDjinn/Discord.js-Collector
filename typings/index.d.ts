@@ -19,7 +19,7 @@ import {
     GuildMember
 } from "discord.js";
 
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 
 declare module 'discord.js-collector' {
 
@@ -27,6 +27,13 @@ declare module 'discord.js-collector' {
         constructor(options: IReactionRoleOptions);
         get id(): string;
         public toJSON(): object;
+        get message(): string;
+        get channel(): string;
+        get guild(): string;
+        get role(): string;
+        get emoji(): string;
+        get winners(): string[];
+        get max(): number;
         static fromJSON(json: JSON): ReactionRole;
     }
 
@@ -44,19 +51,28 @@ declare module 'discord.js-collector' {
         constructor(client: Client, options?: IReactionRoleManagerOptions);
         public roles: Collection<string, ReactionRole>;
         private __resfreshOnBoot(): Promise<void>;
-        private __debug(type: string, message: string, ...args: any)
+        private __debug(type: string, message: string, ...args: any);
+        public createReactionRole(options: IAddRoleOptions): Promise<void>;
+        public deleteReactionRole(role: ReactionRole): void;
+        /**
+    * @deprecated since 1.4.4, use createReactionRole instead.
+    */
         public addRole(options: IAddRoleOptions): Promise<void>;
+        /**
+    * @deprecated since 1.4.4, use deleteReactionRole instead.
+    */
         public removeRole(role: ReactionRole): void;
         private __store(): void;
-        private __parseStore(): Collection<string, any>;
+        private __parseStorage(): Collection<string, any>;
         private __onReactionAdd(msgReaction: MessageReaction, user: User): Promise<void>;
         private __onReactionRemove(msgReaction: MessageReaction, user: User): Promise<void>;
         private __onRemoveAllReaction(message: Message): Promise<void>;
-        
+
         public on(event: string, listener: (...args: any[]) => void): this;
-        public on(event: 'reactionRoleAdd', listener:(member: GuildMember, role: Role) => void): this;
-        public on(event: 'reactionRoleRemove', listener:(member: GuildMember, role: Role) => void): this;
-        public on(event: 'allReactionsRemove', listener:(message: Message) => void): this;
+        public on(event: 'reactionRoleAdd', listener: (member: GuildMember, role: Role) => void): this;
+        public on(event: 'reactionRoleRemove', listener: (member: GuildMember, role: Role) => void): this;
+        public on(event: 'allReactionsRemove', listener: (message: Message, rolesAffected: Role[], membersAffected: GuildMember[], reactionsTaken: number) => void): this;
+
     }
 
     export interface IAddRoleOptions {
@@ -68,9 +84,10 @@ declare module 'discord.js-collector' {
 
     export interface IReactionRoleManagerOptions {
         store: true;
+        storage: true;
         debug: false;
         path: string;
-        refreshOnBoot: true;
+        mongoDbLink: '';
     }
 
     export class MessageCollector {
@@ -89,7 +106,7 @@ declare module 'discord.js-collector' {
         deleteMessage?: boolean;
     }
 
-    export interface ITimerOptions{
+    export interface ITimerOptions {
         time?: number;
         idle?: number;
     }
@@ -148,7 +165,7 @@ declare module 'discord.js-collector' {
         collectorOptions?: CollectorOptions;
     }
 
-    export interface IReactionMapAction{
+    export interface IReactionMapAction {
         [key: string]: (reaction: MessageReaction, ...args: any) => {};
     }
 
