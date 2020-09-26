@@ -4,3 +4,4 @@ tests/*
 yarn-error.log
 yarn.lock
 .npmrc
+package-lock.json
