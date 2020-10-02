@@ -1,5 +1,12 @@
 
 ---
+# CHANGELOG - V1.5.0
+
+• Fix some erros in reactions roles setup
+• Added new mode to reactions roles: Toggled roles. When react and role is toggled role, the user will keep only one of these message roles.
+
+
+---
 # CHANGELOG - V1.4.4
 
 • Fix max counter in reaction role manager, before this version this number was inc and dec, when reaction add/remove.
