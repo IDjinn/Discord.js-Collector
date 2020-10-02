@@ -238,12 +238,16 @@ class ReactionRoleManager extends EventEmitter {
                 if (!message.guild)
                     return reject('Bad input: message must be a guild message, cannot create reaction role in DM channels.');
 
-                role = message.guild.roles.resolve(role);
-                if (!(role instanceof Role))
+                role = message.guild.roles.resolveID(role);
+                if (!role)
                     return reject('Bad input: I canno\'t resolve role ' + role);
-                emoji = message.client.emojis.resolveIdentifier(emoji);
+
+                const matchAnimatedEmoji = emoji.match(/(?<=<a?:.*:)\d*(?=>)/);
+                emoji = message.client.emojis.resolveIdentifier(matchAnimatedEmoji && matchAnimatedEmoji[0] ? matchAnimatedEmoji[0] : emoji);
                 if (!emoji)
                     return reject('Bad input: I canno\'t resolve emoji ' + role);
+                if (!this.client.emojis.resolve(emoji))
+                    return reject('Bad input: I canno\'t find emoji ' + role);
 
                 await message.react(emoji);
                 const reactionRole = new ReactionRole({ message: message, role, emoji, max, toggle });
