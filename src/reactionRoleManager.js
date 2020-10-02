@@ -111,7 +111,7 @@ class ReactionRoleManager extends EventEmitter {
 
         await this.__checkMongoose().catch(console.error);
         await this.__parseStorage();
-        await sleep(1000);
+        await sleep(1500);
 
         const updateQueue = [];
         const checkedRoles = [];
@@ -119,6 +119,13 @@ class ReactionRoleManager extends EventEmitter {
             const guild = this.client.guilds.cache.get(reactionRole.guild);
             if (!guild) {
                 this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, guild wasn't found.`);
+                this.deleteReactionRole(reactionRole);
+                continue;
+            }
+
+            const role = guild.roles.cache.get(reactionRole.role);
+            if (!role) {
+                this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, role wasn't found.`);
                 this.deleteReactionRole(reactionRole);
                 continue;
             }
@@ -140,13 +147,7 @@ class ReactionRoleManager extends EventEmitter {
             if (!message.reactions.cache.has(reactionRole.emoji)) // Bot reaction is deleted, and not have any reaction with this reaction role emoji.
                 await message.react(reactionRole.emoji);
 
-            // for (const reaction of message.reactions.cache.values()) {
             const reaction = message.reactions.cache.find(x => `${message.id}-${this.client.emojis.resolveIdentifier(x.emoji.id || x.emoji.name)}`);
-            /* if (!reaction) {
-                 console.log('not found! wtf');
-                 continue;
-             }*/
-
             await reaction.users.fetch(); //Need fetch the users to next for
             for (const user of reaction.users.cache.values()) {
                 if (user.bot) // Ignore bots, please!
@@ -159,14 +160,7 @@ class ReactionRoleManager extends EventEmitter {
                     continue;
                 }
 
-                /* const emoji = this.client.emojis.resolveIdentifier(reaction.emoji.id || reaction.emoji.name);
-                 const id = `${message.id}-${emoji}`;
-                 if (id != reactionRole.id) {
-                     this.__debug('ROLE', `Weird problem, some reaction with wrong setup. Id '${id}' from this role is not '${reactionRole.id}'...`);
-                     continue;
-                 }
-*/
-                if (reactionRole.toggle) {
+                if (reactionRole.toggle) { // Provisory
                     const uncheckedRoles = this.roles.filter(role => role.message == reactionRole.message).filter(x => !checkedRoles.includes(`${x.role}-${member.id}`));
                     let counter = 0;
                     for (const [_, unchecked] of uncheckedRoles) {
@@ -175,7 +169,7 @@ class ReactionRoleManager extends EventEmitter {
                             await reaction.users.remove(user);
                             if (member.roles.cache.has(unchecked.role)) {
                                 await member.roles.remove(unchecked.role);
-                                this.emit('reactionRoleRemove', member, reactionRole.role);
+                                this.emit('reactionRoleRemove', member, role);
                             }
                         }
                         counter++;
@@ -187,7 +181,7 @@ class ReactionRoleManager extends EventEmitter {
                 if (reactionRole.winners.indexOf(member.id) <= -1)
                     reactionRole.winners.push(member.id);
                 if (!member.roles.cache.has(reactionRole.role)) {
-                    this.emit('reactionRoleAdd', member, reactionRole.role);
+                    this.emit('reactionRoleAdd', member, role);
                     await member.roles.add(reactionRole.role);
                     this.__debug('ROLE', `Role '${reactionRole.role}' was given to '${member.id}', it reacted when bot wasn't online.`);
                 }
@@ -195,7 +189,6 @@ class ReactionRoleManager extends EventEmitter {
                     this.__debug('ROLE', `Keeping role '${reactionRole.role}' from '${member.id}', it reacted and already have the role.`);
                 }
             }
-            //  }
 
             for (const winnerId of reactionRole.winners) {
                 const member = guild.members.cache.get(winnerId);
@@ -212,7 +205,7 @@ class ReactionRoleManager extends EventEmitter {
                 if (!reaction.users.cache.has(winnerId)) { // Delete role if user reacted off
                     if (member.roles.cache.has(reactionRole.role)) {
                         await member.roles.remove(reactionRole.role);
-                        this.emit('reactionRoleRemove', member, reactionRole.role);
+                        this.emit('reactionRoleRemove', member, role);
                     }
 
                     const index = reactionRole.winners.indexOf(winnerId);
