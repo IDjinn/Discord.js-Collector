@@ -34,6 +34,7 @@ declare module 'discord.js-collector' {
         get emoji(): string;
         get winners(): string[];
         get max(): number;
+        get toggle(): boolean;
         static fromJSON(json: JSON): ReactionRole;
     }
 
@@ -45,6 +46,7 @@ declare module 'discord.js-collector' {
         emoji: GuildEmoji | EmojiResolvable;
         winners: string[];
         max: number;
+        toggle: boolean;
     }
 
     export class ReactionRoleManager extends EventEmitter {
@@ -80,6 +82,7 @@ declare module 'discord.js-collector' {
         role: Role;
         emoji: EmojiIdentifierResolvable;
         max: number;
+        toggle: boolean;
     }
 
     export interface IReactionRoleManagerOptions {
