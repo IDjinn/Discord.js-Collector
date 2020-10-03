@@ -89,15 +89,68 @@ class ReactionRoleManager extends EventEmitter {
         this.client.on('messageReactionAdd', (msgReaction, user) => this.__onReactionAdd(msgReaction, user));
         this.client.on('messageReactionRemove', (msgReaction, user) => this.__onReactionRemove(msgReaction, user));
         this.client.on('messageReactionRemoveAll', (message) => this.__onRemoveAllReaction(message));
-        this.client.on('roleDelete', role => {
-            const reactionRole = this.roles.find(reactionRole => reactionRole.role == role.id);
-            if (!reactionRole)
-                return;
 
-            this.deleteReactionRole(reactionRole, true);
+        this.client.on('roleDelete', async role => {
+            const reactionRole = this.roles.find(reactionRole => reactionRole.role == role.id);
+            if (reactionRole)
+                return await this.__handleDeleted(reactionRole, role);
+        });
+
+        this.client.on('emojiDelete', async emoji => {
+            const emojiIdentifier = this.client.emojis.resolveIdentifier(emoji.id || emoji.name);
+            const reactionRole = this.roles.find(reactionRole => reactionRole.emoji == emojiIdentifier);
+            if (reactionRole)
+                return await this.__handleDeleted(reactionRole, emoji);
+        });
+
+        this.client.on('guildDelete', async guild => {
+            const reactionRole = this.roles.find(reactionRole => reactionRole.guild == guild.id);
+            if (reactionRole)
+                return await this.__handleDeleted(reactionRole, guild)
+        });
+
+        this.client.on('channelDelete', async channel => {
+            const reactionRole = this.roles.find(reactionRole => reactionRole.channel == channel.id);
+            if (reactionRole)
+                return await this.__handleDeleted(reactionRole, channel)
+        });
+
+        const messageDeleteHandler = async message => {
+            const reactionRole = this.roles.find(reactionRole => reactionRole.message == message.id);
+            if (reactionRole)
+                return await this.__handleDeleted(reactionRole, message)
+        }
+
+        this.client.on('messageDelete', messageDeleteHandler.bind(this));
+
+        this.client.on('messageDeleteBulk', messages => {
+            for (const message of messages.values()) {
+                messageDeleteHandler(message).bind(this);
+            }
         });
     }
 
+
+    async __handleDeleted(reactionRole, guildResolvable) {
+        const guild = this.client.guilds.resolve(guildResolvable);
+        if (!guild)
+            return this.deleteReactionRole(reactionRole, true);
+
+        const channel = guild.channels.cache.get(reactionRole.channel);
+        if (!channel)
+            return this.deleteReactionRole(reactionRole, true);
+
+        const message = await channel.messages.fetch(reactionRole.message);
+        if (!message)
+            return this.deleteReactionRole(reactionRole, true);
+
+        const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.client.emojis.resolveIdentifier(x.emoji.id || x.emoji.name)}`);
+        if (!reaction)
+            return this.deleteReactionRole(reactionRole, true);
+
+        await reaction.remove();
+        //this.deleteReactionRole(reactionRole, true); not need. will trigger clear reactions event
+    }
 
     async __checkMongoose() {
         if (!this.mongoDbLink)
@@ -142,28 +195,28 @@ class ReactionRoleManager extends EventEmitter {
             const guild = this.client.guilds.cache.get(reactionRole.guild);
             if (!guild) {
                 this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, guild wasn't found.`);
-                this.deleteReactionRole(reactionRole);
+                this.__handleDeleted(reactionRole, guild);
                 continue;
             }
 
             const role = guild.roles.cache.get(reactionRole.role);
             if (!role) {
                 this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, role wasn't found.`);
-                this.deleteReactionRole(reactionRole);
+                this.__handleDeleted(reactionRole, guild);
                 continue;
             }
 
             const channel = guild.channels.cache.get(reactionRole.channel);
             if (!channel) {
                 this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, channel wasn't found.`);
-                this.deleteReactionRole(reactionRole);
+                this.__handleDeleted(reactionRole, guild);
                 continue;
             }
 
             const message = await channel.messages.fetch(reactionRole.message);
             if (!message) {
                 this.__debug('BOOT', `Role '${reactionRole.id}' failed at start, message wasn't found.`);
-                this.deleteReactionRole(reactionRole);
+                this.__handleDeleted(reactionRole, guild);
                 continue;
             }
 
@@ -258,7 +311,7 @@ class ReactionRoleManager extends EventEmitter {
                 emoji = message.client.emojis.resolveIdentifier(matchAnimatedEmoji && matchAnimatedEmoji[0] ? matchAnimatedEmoji[0] : emoji);
                 if (!emoji)
                     return reject('Bad input: I canno\'t resolve emoji ' + role);
-                if (!this.client.emojis.resolve(emoji))
+                if (matchAnimatedEmoji && !this.client.emojis.resolve(emoji))
                     return reject('Bad input: I canno\'t find emoji ' + role);
 
                 await message.react(emoji);
@@ -268,7 +321,7 @@ class ReactionRoleManager extends EventEmitter {
                 /*if (toggle) { not needed?
                     await this.mongoose.model('ReactionRoles').updateMany({ message: message }, { toggle: toggle }).exec();
                 }*/
-                this.__debug('ROLE', `Role '${role.id}' added in reactionRoleManager!`);
+                this.__debug('ROLE', `Role '${role}' added in reactionRoleManager!`);
                 return resolve();
             }
             return reject('Bad input: addRole({...}) message must be a Message object.');
@@ -484,7 +537,7 @@ class ReactionRoleManager extends EventEmitter {
 
                 reactionsTaken++;
             }
-            this.deleteReactionRole(reactionRole);
+            await this.deleteReactionRole(reactionRole, true);
             this.__debug('ROLE', `Reaction role '${reactionRole.id}' was deleted, by someone take off all reactions from message.`);
         }
 
