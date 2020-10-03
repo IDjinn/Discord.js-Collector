@@ -1,5 +1,11 @@
 
 ---
+# CHANGELOG - V1.5.2
+
+• Fix some erros in reactions roles setup (toggled roles)
+• Fix toggled roles when user react on message (now the system use timeout to check roles, prevent overflow)
+
+---
 # CHANGELOG - V1.5.0
 
 • Fix some erros in reactions roles setup
