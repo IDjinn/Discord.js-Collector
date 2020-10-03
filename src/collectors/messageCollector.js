@@ -1,6 +1,10 @@
-const {validateOptions} = require('../util/validate');
-const { Message, MessageCollectorOptions, UserResolvable} = require('discord.js');
-module.exports = class MessageCollector{
+const { validateOptions } = require('../util/validate');
+const { Message, MessageCollectorOptions, UserResolvable } = require('discord.js');
+
+/**
+* Message Collector class
+*/
+class MessageCollector {
     /**
      * @description This method create easier message collector, then collected, will execute your custom function.
      * @param  {Object} options
@@ -31,6 +35,11 @@ module.exports = class MessageCollector{
         return this.__createAsyncMessageCollector(validateOptions(options, 'messageAsyncQuestion'))
     }
 
+
+    /**
+    * Internal method, do not use.
+    * @private
+    */
     static __createMessageCollector(_options) {
         const { botMessage, user, collectorOptions, onMessage, deleteMessage } = validateOptions(_options, 'messageCollector');
         const filter = (message) => message.author.id === user.id && !message.author.bot;
@@ -42,9 +51,13 @@ module.exports = class MessageCollector{
         });
         return collector;
     }
-    
+
+    /** 
+    * Internal method, do not use.
+    * @private
+    */
     static async __createAsyncMessageCollector(_options) {
-        return new Promise(async(resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const { botMessage, user, collectorOptions, deleteMessage } = validateOptions(_options, 'messageAsyncQuestion');
             const filter = (message) => message.author.id === user.id && !message.author.bot;
             const caughtMessages = await botMessage.channel.awaitMessages(filter, collectorOptions);
@@ -57,4 +70,8 @@ module.exports = class MessageCollector{
             return reject(false);
         });
     }
+}
+
+module.exports = {
+    MessageCollector: MessageCollector
 }

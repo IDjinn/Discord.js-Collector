@@ -1,7 +1,6 @@
-const { Message, User, ClientUser } = require("discord.js");
 const Constants = require('./constants');
 const { isArray, isBoolean, isNumber, isObject } = require('util');
-const findRecursively = require('./find');
+const findRecursively = require('./find').findRecursively;
 
 /**
  * @description This method verify if collector configuration can be used, avoiding errors.

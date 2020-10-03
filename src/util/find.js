@@ -1,5 +1,14 @@
 const { isArray } = require('util');
-module.exports = function findRecursively({ obj, key, type = 'array' | 'value' | 'object', result = [] }) {
+/** 
+* Find recursively something inside a object
+* @param {options} options
+* @param {object} options.obj - Object to search a item inside it.
+* @param {object} options.key - Item key name to find.
+* @param {number} [options.type] - Type of value to find.
+* @param {any[]} [options.result] - Array with all results founded.
+* @return {any[]} All results founded.
+*/
+function findRecursively({ obj, key, type = 'array' | 'value' | 'object', result = [] }) {
     for (const k in obj) {
         if (obj[k] instanceof Object) {
             findRecursively({ obj: obj[k], key: key, type, result: result })
@@ -15,4 +24,8 @@ module.exports = function findRecursively({ obj, key, type = 'array' | 'value' |
             result.push(obj[key]);
     }
     return result
+}
+
+module.exports = {
+    findRecursively
 }

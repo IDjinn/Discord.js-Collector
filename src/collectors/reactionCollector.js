@@ -1,8 +1,18 @@
 const { Message, ReactionCollector: DjsReactionCollector, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
 const { validateOptions } = require('../util/validate');
-const findRecursively = require('../util/find');
+const findRecursively = require('../util/find').findRecursively;
 
+/**
+* Reaction Controller class
+*/
 class Controller {
+    /** 
+    * Reaction Controller constructor
+    * @param {Message} botMessage - Message where reaction collector is working.
+    * @param {DjsReactionCollector} collector - Collector from botMessage.
+    * @param {object} pages - All reaction collector pages.
+    * @return {Controller}
+    */
     constructor(botMessage, collector, pages) {
         this._botMessage = botMessage;
         this._collector = collector;
@@ -10,16 +20,32 @@ class Controller {
         this._lastPage = null;
         this._currentPage = null;
     }
+
+    /** 
+    * Stop all collectors funcion
+    * @return {void}
+    */
     stop() {
         if (this.messagesCollector)
             this.messagesCollector.stop();
         return this._collector.stop();
     }
+
+    /** 
+    * Reset collectors timer
+    * @param {object} optins - Options to reset timers.
+    * @return {void}
+    */
     resetTimer(options) {
         if (this.messagesCollector)
             this.messagesCollector.resetTimer(options)
         this.collector.resetTimer(options);
     }
+    /** 
+    * Go to other page
+    * @param {*} pageId - Specific ID to other page.
+    * @return {Promise<void>}
+    */
     goTo(pageId) {
         const idList = findRecursively({ obj: this.pages, key: 'id', type: 'object' });
         const page = idList.find(page => page.id === pageId);
@@ -28,9 +54,15 @@ class Controller {
         this.currentPage = page;
         this.update();
     }
+
     get canBack() {
         return this.lastPage != null;
     }
+
+    /** 
+    * Back to last page
+    * @return {Promise<void>} 
+    */
     back() {
         if (!this.canBack)
             throw 'Invalid action: Cannot back without last page valid.';
@@ -39,6 +71,12 @@ class Controller {
         this.lastPage = aux;
         this.update();
     }
+
+    /** 
+    * Update botMessage when page was changed.
+    * @param {boolean} onlyMessage - Do you need update only message, without reactions? Default false.
+    * @return {Promise<void>}
+    */
     async update(onlyMessage = false) {
         if (onlyMessage)
             return await this.botMessage.edit(this.currentPage);
@@ -80,8 +118,10 @@ class Controller {
     }
 }
 
-
-module.exports = class ReactionCollector {
+/**
+* Reaction Collector class
+*/
+class ReactionCollector {
     /**
      * See example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/menu.js}
      * @return {Collector} collector;
@@ -239,6 +279,7 @@ module.exports = class ReactionCollector {
 
     /**
      * @description Internal methods, do not use.
+     * @private
      * @param  {CollectorOptions} _options
      * @returns {DjsReactionCollector}
      */
@@ -266,6 +307,7 @@ module.exports = class ReactionCollector {
 
     /**
      * @description Internal methods, do not use.
+     * @private
      * @param  {AsyncCollectorOptions} _options
      * @returns {Promise<boolean>}
      */
@@ -288,4 +330,7 @@ module.exports = class ReactionCollector {
     }
 }
 
-module.exports.Controller = Controller;
+module.exports = {
+    Controller,
+    ReactionCollector
+}
