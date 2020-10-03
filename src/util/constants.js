@@ -36,7 +36,7 @@ class Constants {
         },
     };
     /** 
-     * @constant {funcion}
+     * @constant {Funcion}
      * @default true
      */
     static DEFAULT_RETURN_FUNCTION = () => { return true; };

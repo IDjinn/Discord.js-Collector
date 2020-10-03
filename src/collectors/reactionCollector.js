@@ -158,7 +158,13 @@ class Controller {
 class ReactionCollector {
     /**
      * See example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/menu.js}
-     * @return {Collector} collector;
+     * @summary Create a reaction menu.
+     * @param {object} options - Options to create a reaction menu.
+     * @param {Message} options.botMessage - Bot message where collector will start work.
+     * @param {object} options.pages - Reaction menu pages.
+     * @param {UserResolvable} options.user - User who can react this menu.
+     * @param {object} [options.collectorOptions] - Options to create discord.js reaction collector.
+     * @return {Controller}
      */
     static async menu(options, ...args) {
         const { botMessage, user, pages, collectorOptions } = validateOptions(options, 'reactMenu');
@@ -227,6 +233,8 @@ class ReactionCollector {
 
     /**
      * @description This method can be used to create easier react pagination, with multiple embeds pages.
+     * @sumary {Function[]?} options.onReact cannot be set in this method. (yet)
+     * See full example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/paginator.js}
      * @param  {PaginatorOptions} options
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
@@ -235,8 +243,6 @@ class ReactionCollector {
      * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
      * @param  {boolean?} [options.deleteReaction] - Default True - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd] - Default True - The Bot will remove reaction after collector end?
-     * @note {Function[]?} options.onReact cannot be set in this method. (yet)
-     * See full example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/paginator.js}
      * @example
      *   const botMessage = await message.channel.send('Simple paginator...');
      *   ReactionCollector.paginator({
@@ -280,6 +286,7 @@ class ReactionCollector {
      * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
      * @param  {boolean?} [options.deleteReaction] - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd] - The Bot will remove reaction after collector end?
+     * @param {...*} args - All args given at trigger onReact() funcion.
      * See example in {@link https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/reaction-collector/question.js}
      * @note onReact(reation, ...args) = When user react, will trigger this function
      * @returns DjsReactionCollector
@@ -290,6 +297,7 @@ class ReactionCollector {
 
     /**
      * @description This method can be used in async methods, returning only boolean value, more easier to use inside if tratament or two choices.
+     * @summary See full example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/yesNoQuestion.js}
      * @param  {AsyncCollectorOptions} options
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
@@ -297,14 +305,14 @@ class ReactionCollector {
      * @param  {DjsCollectorOptions} [options.collectorOptions] - Default discord.js collector options
      * @param  {boolean} [options.deleteReaction] - The Bot will remove reaction after user react?
      * @param  {boolean} [options.deleteAllOnEnd] - The Bot will remove reaction after collector end?
-     * See full example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/yesNoQuestion.js}
-     * @example 
+     * @returns {Promise<boolean>}
+     * 
+     * @example
      * const botMessage = await message.channel.send('Simple yes/no question');
      * if (await ReactionCollector.yesNoQuestion({ user: message.author, botMessage }))
      *     message.channel.send('You\'ve clicked in yes button!');
      * else
      *     message.channel.send('You\'ve clicked in no button!');
-     * @returns {Promise<boolean>}
      */
     static async yesNoQuestion(options) {
         return this.__createYesNoReactionCollector(validateOptions(options, 'yesNoQuestion'));

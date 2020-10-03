@@ -51,7 +51,8 @@ declare module 'discord.js-collector' {
 
     export class ReactionRoleManager extends EventEmitter {
         constructor(client: Client, options?: IReactionRoleManagerOptions);
-        public roles: Collection<string, ReactionRole>;
+        public reactionRoles: Collection<string, ReactionRole>;
+        public timeouts: Collection<string, Function>;
         public createReactionRole(options: IAddRoleOptions): Promise<void>;
         public deleteReactionRole(role: ReactionRole): void;
         private __store(): void;
