@@ -81,7 +81,7 @@ class Controller {
 }
 
 
-class ReactionCollector {
+module.exports = class ReactionCollector {
     /**
      * See example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/menu.js}
      * @return {Collector} collector;
@@ -288,5 +288,4 @@ class ReactionCollector {
     }
 }
 
-module.exports = ReactionCollector;
 module.exports.Controller = Controller;

@@ -5,6 +5,7 @@ const findRecursively = require('./find');
 
 /**
  * @description This method verify if collector configuration can be used, avoiding errors.
+ * @private
  * @param  {CollectorOptions | AsyncCollectorOptions} options
  * @param {COLLECTOR_TYPE} type
  * @returns {CollectorOptions | AsyncCollectorOptions} options  
