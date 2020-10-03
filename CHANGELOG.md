@@ -1,8 +1,14 @@
 
 ---
+# CHANGELOG - V1.5.31
+
+• Remove deprecated funcions in reaction role manager
+
+---
 # CHANGELOG - V1.5.3
 
 • Added handle delete events in reaction role manager
+
 ---
 # CHANGELOG - V1.5.2
 

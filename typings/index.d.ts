@@ -54,14 +54,6 @@ declare module 'discord.js-collector' {
         public roles: Collection<string, ReactionRole>;
         public createReactionRole(options: IAddRoleOptions): Promise<void>;
         public deleteReactionRole(role: ReactionRole): void;
-        /**
-    * @deprecated since 1.4.4, use createReactionRole instead.
-    */
-        public addRole(options: IAddRoleOptions): Promise<void>;
-        /**
-    * @deprecated since 1.4.4, use deleteReactionRole instead.
-    */
-        public removeRole(role: ReactionRole): void;
         private __store(): void;
         private __parseStorage(): Collection<string, any>;
         private __onReactionAdd(msgReaction: MessageReaction, user: User): Promise<void>;

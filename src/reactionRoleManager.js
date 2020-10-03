@@ -328,13 +328,6 @@ class ReactionRoleManager extends EventEmitter {
         });
     }
 
-    /**
-    * @deprecated since 1.4.4, use createReactionRole instead.
-    */
-    async addRole({ message, role, emoji, max } = { max: Number.MAX_SAFE_INTEGER }) {
-        return this.createReactionRole({ message, role, emoji, max });
-    }
-
     /** 
     * This funcion will delete the reaction role from storage.
     * @param {ReactionRole} role - Reaction role to delete.
@@ -342,13 +335,6 @@ class ReactionRoleManager extends EventEmitter {
     * @return {Promise<void>}
     */
     async deleteReactionRole(role, deleted = false) {
-        return await this.removeRole(role, deleted);
-    }
-
-    /**
-    * @deprecated since 1.4.4, use deleteReactionRole instead.
-    */
-    async removeRole(role, deleted = false) {
         if (role instanceof ReactionRole) {
             this.roles.delete(role.id);
             if (this.mongoose) {
