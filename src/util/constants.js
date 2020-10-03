@@ -47,6 +47,11 @@ class Constants {
         '✅': () => { return true; },
         '❌': () => { return true; }
     }
+    /** 
+     * @constant {number}
+     * @default 1500
+     */
+    static DEFAULT_TIMEOUT_TOGGLED_ROLES = 1500;
 }
 
 module.exports = Constants;

@@ -1,4 +1,4 @@
-const { Message, ReactionCollector: DjsReactionCollector, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
+const { Message, ReactionCollector: DjsReactionCollector, MessageCollector: DjsMessageCollector, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
 const { validateOptions } = require('../util/validate');
 const findRecursively = require('../util/find').findRecursively;
 
@@ -55,10 +55,6 @@ class Controller {
         this.update();
     }
 
-    get canBack() {
-        return this.lastPage != null;
-    }
-
     /** 
     * Back to last page
     * @return {Promise<void>} 
@@ -88,21 +84,45 @@ class Controller {
         if (this.currentPage.backEmoji)
             await this.botMessage.react(this.currentPage.backEmoji)
     }
+    /**
+    * Bot message of reaction collector.
+    * @type {Message}
+    * @readonly
+    */
     get botMessage() {
         return this._botMessage;
     }
+    /**
+* Last page visualized by user.
+* @type {object?}
+* @readonly
+*/
     get lastPage() {
         return this._lastPage;
     }
     set messagesCollector(value) {
         this._messagesCollector = value;
-    }
+  /**
+* Discord.js message collector, if pages have funcion to catch messages.
+* @type {DjsMessageCollector?}
+* @readonly
+*/  }
     get messagesCollector() {
         return this._messagesCollector;
     }
+    /**
+* Discord.js reaction collector
+* @type {DjsReactionCollector}
+* @readonly
+*/
     get collector() {
         return this._collector;
     }
+    /**
+* Current page.
+* @type {object}
+* @readonly
+*/
     get currentPage() {
         return this._currentPage;
     }
@@ -113,8 +133,22 @@ class Controller {
     set lastPage(value) {
         this._lastPage = value;
     }
+    /**
+* All pages object
+* @type {object}
+* @readonly
+*/
     get pages() {
         return this._pages;
+    }
+
+    /**
+    * Can use funcion back()? 
+    * @type {boolean}
+    * @readonly
+    */
+    get canBack() {
+        return this.lastPage != null;
     }
 }
 

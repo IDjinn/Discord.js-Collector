@@ -1,8 +1,9 @@
 const { Client, Role, Message, Collection } = require("discord.js");
 const fs = require('fs');
 const { EventEmitter } = require("events");
+const Constants = require("./util/constants");
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const TIMEOUT = 2500;
+
 
 /** 
 * Reaction role object structure.
@@ -27,9 +28,79 @@ class ReactionRole {
         this.toggle = Boolean(toggle);
     }
 
+    /**
+    * Reaction Role ID (messageId-emojiId)
+    * @type string
+    * @readonly
+    */
     get id() {
         return `${this.message}-${this.emoji}`;
     }
+    /**
+    * Message ID of reaction role
+    * @type string
+    * @readonly
+    */
+    get message() {
+        return this.message;
+    }
+    /**
+* Guild ID of message
+* @type string
+* @readonly
+*/
+    get guild() {
+        return this.guild;
+    }
+    /**
+* Channel ID of message
+* @type string
+* @readonly
+*/
+    get channel() {
+        return this.channel;
+    }
+    /**
+* Role ID 
+* @type string
+* @readonly
+*/
+    get role() {
+        return this.role;
+    }
+    /**
+* Emoji identifier
+* @type string
+* @readonly
+*/
+    get emoji() {
+        return this.emoji;
+    }
+    /**
+* List of who won this role
+* @type string[]
+* @readonly
+*/
+    get winners() {
+        return this.winners;
+    }
+    /**
+* Max roles to give
+* @type number
+* @readonly
+*/
+    get max() {
+        return this.max;
+    }
+    /**
+* Is this a toggle reaction role?
+* @type boolean
+* @readonly
+*/
+    get toggle() {
+        return this.toggle;
+    }
+
     /** 
     * Convert Reaction Role object to JSON.
     * @return {JSON} - Parsed json object.
@@ -72,6 +143,16 @@ class ReactionRole {
  * @extends EventEmitter
  */
 class ReactionRoleManager extends EventEmitter {
+    /** 
+    * Reaction Role Manager constructor
+    * @param {Client} client - Discord js client object.
+    * @param {object} options -
+    * @param {object} [options.storage] - Enable/disable storage of reaction role. Default is true.
+    * @param {object} [options.mongoDbLink] - Link to connect with mongodb. Default is null.
+    * @param {object} [options.path] - Path to save json data of reactions roles. Default is null.
+    * @param {object} [options.debug] - Enable/Disable debug of reaction role manager.
+    * @return {ReactionRoleManager}
+    */
     constructor(client, { storage, store, mongoDbLink, path, debug } = { storage: true, store: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
         super();
         if (!(client instanceof Client))
@@ -290,12 +371,12 @@ class ReactionRoleManager extends EventEmitter {
 
     /**
     * Create new reaction role.
-    * @property {object} options - Object with options to create new reaction role.
-    * @property {Message} options.message - Message what will have the reactions.
-    * @property {Role} options.role - Role what the bot will give/take from members when they react.
-    * @property {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
-    * @property {Number} [options.max] - Max roles to give, default is Infinity.
-    * @property {Boolean} [options.toggle] - User will have only one of these message roles, default false.
+    * @param {object} options - Object with options to create new reaction role.
+    * @param {Message} options.message - Message what will have the reactions.
+    * @param {Role} options.role - Role what the bot will give/take from members when they react.
+    * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
+    * @param {Number} [options.max] - Max roles to give, default is Infinity.
+    * @param {Boolean} [options.toggle] - User will have only one of these message roles, default false.
     */
     createReactionRole({ message, role, emoji, max, toggle } = { max: Number.MAX_SAFE_INTEGER, toggle: false }) {
         return new Promise(async (resolve, reject) => {
@@ -465,7 +546,7 @@ class ReactionRoleManager extends EventEmitter {
             }
 
             await this.__store(...toggledRoles);
-        }, TIMEOUT));
+        }, Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES));
     }
 
     async __onReactionRemove(msgReaction, user) {

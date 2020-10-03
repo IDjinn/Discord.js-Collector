@@ -73,70 +73,17 @@ ReactionCollector.menu({
 });
 ```
 
-### Options param
-
-`ReactionCollector.menu(options);`
-
-```js
-{
-    botMessage: Message // Message sent from bot.
-    user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
-    pages: IMenuPage {// Object with menu pages.
-      content?: string; // Message content.
-      embed?: {} | MessageEmbed; // Embed, you can use JSON or MessageEmbed.
-      reactions?: Array<EmojiResolvable>; // These emojis will use to acess next subpages.
-      pages?: IMenuPage; // Recursive pages inside pages.
-    } 
-    collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
-}
-```
-
 ## Simple reaction collector
 
 To use in multiple actions, react and then trigger one function to do things.
 
 ![Question Gif](./assets/reactQuestion.gif)
 
-### Options param
-Example [here](./examples/reaction-collector/question.js)
-
-`ReactionCollector.question(options, ...args);`
-
-```js
-{
-    botMessage: Message // Message sent from bot.
-    user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
-    collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
-    reactions?: {
-        'emoji': async (reaction) => {} // Key must be Emoji and value one funcion with MessageReaction param. When user react, will trigger this funcion.
-    }
-    deleteReaction?: boolean // Default true, when user react if it's enabled will remove user reaction.
-    deleteAllOnEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
-},
-...args // All these arguments will send in react() function, after reaction param.
-```
-
 ## Simple boolean reaction collector
 
 To use in `if` statements, the asynchronous reaction collector returning Promise <boolean> is more practical
 
 ![Question Gif](./assets/reactYesNoQuestion.gif)
-
-### Options param
-Example [here](./examples/reaction-collector/yesNoQuestion.js)
-
-`ReactionCollector.yesNoQuestion(options);`
-
-```js
-{
-    botMessage: Message // Message sent from bot.
-    user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
-    collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
-    reactions?: Array<EmojiResolvable> // Max 2 emojis - List of emojis will use to create reaction question.
-    deleteReaction?: boolean // Default true, when user react if it's enabled will remove user reaction.
-    deleteAllOnEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
-}
-```
 
 ## Embeds pagination
 Example [here](./examples/reaction-collector/paginator.js)
@@ -159,23 +106,6 @@ ReactionCollector.paginator({
 });
 ```
 
-### Options param
-
-`ReactionCollector.paginator(options);`
-
-```js
-{
-    botMessage: Message // Message sent from bot.
-    user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
-    collectorOptions?: ReactionCollectorOptions // Default discord.js collector options.
-    reactions?: Array<EmojiResolvable> // List of emojis will use to create reaction question. First emoji will be use to back page, second to skip page.
-    deleteReaction?: boolean // Default true, when user react if it's enabled will remove user reaction.
-    deleteAllOnEnd?: boolean // Default true, when collector end, if it's enabled will remove all reactions in botMessage.
-}
-```
-
----
-
 ## Simple messages collector
 
 Await for messages from user, and when it's send will fire a trigger to do things.
@@ -194,20 +124,6 @@ MessageCollector.question({
 });
 ```
 
-### Options param
-
-`MessageCollector.question(options);`
-
-```js
-{
-    botMessage: Message // Message sent from bot.
-    user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
-    collectorOptions?: MessageCollectorOptions // Default discord.js collector options.
-    onMessage?: async(botMessage, message) => {} // Trigger fired when user send a message.
-    deleteMessage?: boolean // Default true, when user send a message if it's enabled will delete it.
-}
-```
-
 ## Async message collector
 
 Await for message from user, and when user send, will return user message as Promise<Message>.
@@ -224,18 +140,5 @@ const userMessage = await MessageCollector.asyncQuestion({
 });
 if (userMessage.content === "ping") {
   await message.channel.send("pong!");
-}
-```
-
-### Options param
-
-`MessageCollector.asyncQuestion(options);`
-
-```js
-{
-    botMessage: Message // Message sent from bot.
-    user: UserResolvable // User who will react, must be User | Snowflake | Message | GuildMember.
-    collectorOptions?: MessageCollectorOptions // Default discord.js collector options.
-    deleteMessage?: boolean // Default true, when user send a message if it's enabled will delete it.
 }
 ```
