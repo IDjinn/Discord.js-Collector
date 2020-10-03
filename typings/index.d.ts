@@ -16,7 +16,7 @@ import {
     Guild,
     GuildEmoji,
     EmojiResolvable,
-    GuildMember
+    GuildMember, GuildManager, GuildResolvable
 } from "discord.js";
 
 import { EventEmitter } from 'events';
@@ -52,8 +52,6 @@ declare module 'discord.js-collector' {
     export class ReactionRoleManager extends EventEmitter {
         constructor(client: Client, options?: IReactionRoleManagerOptions);
         public roles: Collection<string, ReactionRole>;
-        private __resfreshOnBoot(): Promise<void>;
-        private __debug(type: string, message: string, ...args: any);
         public createReactionRole(options: IAddRoleOptions): Promise<void>;
         public deleteReactionRole(role: ReactionRole): void;
         /**
@@ -69,6 +67,10 @@ declare module 'discord.js-collector' {
         private __onReactionAdd(msgReaction: MessageReaction, user: User): Promise<void>;
         private __onReactionRemove(msgReaction: MessageReaction, user: User): Promise<void>;
         private __onRemoveAllReaction(message: Message): Promise<void>;
+        private __resfreshOnBoot(): Promise<void>;
+        private __debug(type: string, message: string, ...args: any): void;
+        private __timeoutToggledRoles(member: GuildMember, message: Message): void;
+        private __handleDeleted(reactionRole: ReactionRole, guildResolvable: GuildResolvable)
 
         public on(event: string, listener: (...args: any[]) => void): this;
         public on(event: 'reactionRoleAdd', listener: (member: GuildMember, role: Role) => void): this;
