@@ -32,6 +32,8 @@
     "reaction role",
     "reaction collector",
     "reaction menu",
-    "discord paginator"
+    "discord paginator",
+    "reaction role toggle",
+    "reaction-role"
   ]
 }
