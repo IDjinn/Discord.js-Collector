@@ -157,13 +157,16 @@ class Controller {
 */
 class ReactionCollector {
     /**
-     * See example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/menu.js}
-     * @summary Create a reaction menu.
+     * Create a reaction menu. See example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/menu.js}
      * @param {object} options - Options to create a reaction menu.
      * @param {Message} options.botMessage - Bot message where collector will start work.
      * @param {object} options.pages - Reaction menu pages.
      * @param {UserResolvable} options.user - User who can react this menu.
      * @param {object} [options.collectorOptions] - Options to create discord.js reaction collector.
+     * @param {...*} args - Arguments given when onReact or onMessage function was triggered.
+     * @static
+     * @async
+
      * @return {Controller}
      */
     static async menu(options, ...args) {
