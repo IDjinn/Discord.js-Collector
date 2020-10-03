@@ -7,3 +7,6 @@ yarn.lock
 package-lock.json
 .npmrc
 out/*
+examples/*
+assets/*
+.vscode/*
