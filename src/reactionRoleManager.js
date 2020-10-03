@@ -318,9 +318,6 @@ class ReactionRoleManager extends EventEmitter {
                 const reactionRole = new ReactionRole({ message: message, role, emoji, max, toggle });
                 this.roles.set(reactionRole.id, reactionRole);
                 await this.__store(reactionRole);
-                /*if (toggle) { not needed?
-                    await this.mongoose.model('ReactionRoles').updateMany({ message: message }, { toggle: toggle }).exec();
-                }*/
                 this.__debug('ROLE', `Role '${role}' added in reactionRoleManager!`);
                 return resolve();
             }
