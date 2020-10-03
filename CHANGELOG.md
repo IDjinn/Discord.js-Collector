@@ -1,5 +1,9 @@
 
 ---
+# CHANGELOG - V1.5.3
+
+• Added handle delete events in reaction role manager
+---
 # CHANGELOG - V1.5.2
 
 • Fix some erros in reactions roles setup (toggled roles)
