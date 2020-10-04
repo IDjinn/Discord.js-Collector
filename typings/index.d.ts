@@ -81,11 +81,11 @@ declare module 'discord.js-collector' {
     }
 
     export interface IReactionRoleManagerOptions {
-        store: true;
-        storage: true;
-        debug: false;
+        storage: boolean | true;
+        debug: boolean | false;
         path: string;
-        mongoDbLink: '';
+        mongoDbLink?: string;
+        storageJsonPath?: string;
     }
 
     export class MessageCollector {

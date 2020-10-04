@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.5.32
+
+• Added JSDocs support, fix types.
+
+---
 # CHANGELOG - V1.5.31
 
 • Remove deprecated funcions in reaction role manager
