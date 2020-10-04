@@ -93,36 +93,37 @@ class Controller {
         return this._botMessage;
     }
     /**
-* Last page visualized by user.
-* @type {object?}
-* @readonly
-*/
+    * Last page visualized by user.
+    * @type {object?}
+    * @readonly
+    */
     get lastPage() {
         return this._lastPage;
     }
     set messagesCollector(value) {
         this._messagesCollector = value;
-  /**
-* Discord.js message collector, if pages have funcion to catch messages.
-* @type {DjsMessageCollector?}
-* @readonly
-*/  }
+    }
+    /**
+    * Discord.js message collector, if pages have funcion to catch messages.
+    * @type {DjsMessageCollector?}
+    * @readonly
+    */
     get messagesCollector() {
         return this._messagesCollector;
     }
     /**
-* Discord.js reaction collector
-* @type {DjsReactionCollector}
-* @readonly
-*/
+    * Discord.js reaction collector
+    * @type {DjsReactionCollector}
+    * @readonly
+    */
     get collector() {
         return this._collector;
     }
     /**
-* Current page.
-* @type {object}
-* @readonly
-*/
+    * Current page.
+    * @type {object}
+    * @readonly
+    */
     get currentPage() {
         return this._currentPage;
     }
@@ -134,10 +135,10 @@ class Controller {
         this._lastPage = value;
     }
     /**
-* All pages object
-* @type {object}
-* @readonly
-*/
+    * All pages object
+    * @type {object}
+    * @readonly
+    */
     get pages() {
         return this._pages;
     }

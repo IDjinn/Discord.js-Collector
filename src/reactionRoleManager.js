@@ -7,98 +7,76 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /** 
 * Reaction role object structure.
-* @param {Object} data
-* @param {string} data.message - Message ID of reaction role.
-* @param {string} data.channel - Channel ID of message.
-* @param {string} data.guild - Guild ID of channel.
-* @param {string} data.emoji - Emoji ID of reaction role.
-* @param {string[]} data.winners - List with role winners ID;
-* @param {number} data.max - Max roles available to give.
-* @param {boolean} data.toggle - User will have only one of these message roles.
 */
 class ReactionRole {
+    /** 
+    * Reaction Role constructor.
+    * @param {Object} data
+    * @param {string} data.message - Message ID of reaction role.
+    * @param {string} data.channel - Channel ID of message.
+    * @param {string} data.guild - Guild ID of channel.
+    * @param {string} data.emoji - Emoji ID of reaction role.
+    * @param {string[]} data.winners - List with role winners ID;
+    * @param {number} data.max - Max roles available to give.
+    * @param {boolean} data.toggle - User will have only one of these message roles.
+    * @return {ReactionRole}
+    */
     constructor({ message, channel, guild, role, emoji, winners, max, toggle }) {
-        this.message = message.id ? message.id : message;
-        this.channel = message.channel ? message.channel.id : channel;
+        /**
+        * Guild ID of message
+        * @type {string}
+        * @readonly
+        */
         this.guild = message.guild ? message.guild.id : guild;
+        /**
+        * Channel ID of message
+        * @type {string}
+        * @readonly
+        */
+        this.channel = message.channel ? message.channel.id : channel;
+        /**
+        * Message ID of reaction role
+        * @type {string}
+        * @readonly
+        */
+        this.message = message.id ? message.id : message;
+        /**
+        * Role ID
+        * @type {string}
+        * @readonly
+        */
         this.role = role.id ? role.id : role;
+        /**
+        * Emoji identifier
+        * @type {string}
+        * @readonly
+        */
         this.emoji = emoji.id ? emoji.id : emoji.name || emoji;
+        /**
+        * List of who won this role
+        * @type {string[]}
+        * @readonly
+        */
         this.winners = winners || [];
+        /**
+        * Max roles available to give
+        * @type {number}
+        */
         this.max = isNaN(max) ? Number.MAX_SAFE_INTEGER : max;
+        /**
+        * Is it toggled role?
+        * @type {number}
+        */
         this.toggle = Boolean(toggle);
     }
 
     /**
     * Reaction Role ID (messageId-emojiId)
-    * @type string
+    * @type {string}
     * @readonly
     */
     get id() {
         return `${this.message}-${this.emoji}`;
-    }
-    /**
-    * Message ID of reaction role
-    * @type string
-    * @readonly
-    */
-    get message() {
-        return this.message;
-    }
-    /**
-* Guild ID of message
-* @type string
-* @readonly
-*/
-    get guild() {
-        return this.guild;
-    }
-    /**
-* Channel ID of message
-* @type string
-* @readonly
-*/
-    get channel() {
-        return this.channel;
-    }
-    /**
-* Role ID 
-* @type string
-* @readonly
-*/
-    get role() {
-        return this.role;
-    }
-    /**
-* Emoji identifier
-* @type string
-* @readonly
-*/
-    get emoji() {
-        return this.emoji;
-    }
-    /**
-* List of who won this role
-* @type string[]
-* @readonly
-*/
-    get winners() {
-        return this.winners;
-    }
-    /**
-* Max roles to give
-* @type number
-* @readonly
-*/
-    get max() {
-        return this.max;
-    }
-    /**
-* Is this a toggle reaction role?
-* @type boolean
-* @readonly
-*/
-    get toggle() {
-        return this.toggle;
     }
 
     /** 
@@ -122,6 +100,7 @@ class ReactionRole {
     /** 
     * Transform json to Reaction Role object.
     * @param {object} json - Reaction role data.
+    * @static
     * @return {ReactionRole}
     */
     static fromJSON(json) {
@@ -190,6 +169,7 @@ class ReactionRoleManager extends EventEmitter {
     * @param {object} [options.mongoDbLink] - Link to connect with mongodb. Default is null.
     * @param {object} [options.path] - Path to save json data of reactions roles. Default is null.
     * @param {object} [options.debug] - Enable/Disable debug of reaction role manager.
+    * @extends EventEmitter
     * @return {ReactionRoleManager}
     */
     constructor(client, { storage, store, mongoDbLink, path, debug } = { storage: true, store: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
@@ -197,13 +177,47 @@ class ReactionRoleManager extends EventEmitter {
         if (!(client instanceof Client))
             throw 'Client param must be a Client object.';
 
+        /**
+        * Discord client.
+        * @type {Client}
+        * @readonly
+        */
         this.client = client;
-        this.storage = store || storage;
-        this.DATA_JSON_PATH = path;
-        this.debug = debug;
+        /**
+        * Is storage enabled?
+        * @type {boolean}
+        * @default true
+        */
+        this.storage = Boolean(store || storage);
+        /**
+        * Is debug enabled?
+        * @type {boolean}
+        * @default false
+        */
+        this.debug = Boolean(debug);
+        /**
+        * Mongo db connection link.
+        * @type {string?}
+        * @readonly
+        */
         this.mongoDbLink = mongoDbLink;
+        /**
+        * ReactionRoles collection
+        * @type {Collection<string, ReactionRole>}
+        * @readonly
+        */
         this.reactionRoles = new Collection();
+        /**
+        * Timeouts to check toggled roles collection - Internal use.
+        * @type {Collection<string, Function>}
+        * @readonly
+        */
         this.timeouts = new Collection();
+        /**
+        * Json storage path
+        * @type {string?}
+        */
+        this.storageJsonPath = path;
 
         this.client.on('ready', () => this.__resfreshOnBoot());
         this.client.on('messageReactionAdd', (msgReaction, user) => this.__onReactionAdd(msgReaction, user));
@@ -250,61 +264,6 @@ class ReactionRoleManager extends EventEmitter {
         });
     }
 
-    /**
-    * Discord client.
-    * @type {Client}
-    * @readonly
-    */
-    get client() {
-        return this.client;
-    }
-
-    /**
-    * Is storage enabled?
-    * @type {boolean}
-    * @readonly
-    */
-    get storage() {
-        return this.storage;
-    }
-
-    /**
-    * Is debug enabled?
-    * @type {boolean}
-    * @readonly
-    */
-    get debug() {
-        return this.debug;
-    }
-
-    /**
-    * Mongo db connection link.
-    * @type {string?}
-    * @readonly
-    */
-    get mongoDbLink() {
-        return this.mongoDbLink;
-    }
-
-    /**
-    * ReactionRoles collection
-    * @type {Collection<string, ReactionRole>}
-    * @readonly
-    */
-    get reactionRoles() {
-        return this.reactionRoles;
-    }
-
-    /**
-    * Timeouts to check toggled roles collection - Internal use.
-    * @type {Collection<string, Function>}
-    * @readonly
-    */
-    get timeouts() {
-        return this.timeouts;
-    }
-
-
     async __handleDeleted(reactionRole, guildResolvable) {
         const guild = this.client.guilds.resolve(guildResolvable);
         if (!guild)
@@ -323,7 +282,6 @@ class ReactionRoleManager extends EventEmitter {
             return this.deleteReactionRole(reactionRole, true);
 
         await reaction.remove();
-        //this.deleteReactionRole(reactionRole, true); not need. will trigger clear reactions event
     }
 
     async __checkMongoose() {
@@ -530,8 +488,8 @@ class ReactionRoleManager extends EventEmitter {
                 this.__debug('STORE', `Stored ${roles.length} updated roles.`);
             }
 
-            if (fs.existsSync(this.DATA_JSON_PATH)) {
-                fs.writeFileSync(this.DATA_JSON_PATH, JSON.stringify(this.reactionRoles.map(role => role.toJSON())));
+            if (fs.existsSync(this.storageJsonPath)) {
+                fs.writeFileSync(this.storageJsonPath, JSON.stringify(this.reactionRoles.map(role => role.toJSON())));
                 this.__debug('STORE', `Stored roles saved, contains '${this.reactionRoles.size}' roles.`);
             }
         }
@@ -540,8 +498,8 @@ class ReactionRoleManager extends EventEmitter {
     async __parseStorage() {
         if (this.storage) {
             const roles = [];
-            if (fs.existsSync(this.DATA_JSON_PATH)) {
-                const json = JSON.parse(fs.readFileSync(this.DATA_JSON_PATH).toString());
+            if (fs.existsSync(this.storageJsonPath)) {
+                const json = JSON.parse(fs.readFileSync(this.storageJsonPath).toString());
                 roles.push(...json);
             }
 
