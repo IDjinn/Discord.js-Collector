@@ -27,6 +27,11 @@ reactionRoleManager.on('allReactionsRemove', (message) => {
     console.log(`All reactions from message ${message.id} was removed, all roles was taken and reactions roles deleted.`)
 });
 
+// If member doesn't have all requirements, this event is triggered.
+reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
+    console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requierement ${type}`);
+});
+
 client.on("message", async (message) => {
     const client = message.client;
     const args = message.content.split(' ').slice(1);
