@@ -163,7 +163,7 @@ class ReactionCollector {
      * @param {Message} options.botMessage - Bot message where collector will start work.
      * @param {object} options.pages - Reaction menu pages.
      * @param {UserResolvable} options.user - User who can react this menu.
-     * @param {object} [options.collectorOptions] - Options to create discord.js reaction collector.
+     * @param {object} [options.collectorOptions=null] - Options to create discord.js reaction collector.
      * @param {...*} args - Arguments given when onReact or onMessage function was triggered.
      * @static
      * @async
@@ -243,10 +243,10 @@ class ReactionCollector {
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
      * @param  {MessageEmbed[]} options.pages - Array with embeds.
-     * @param  {EmojiResolvable[]} [options.reactions] - Array with back/skip reactions.
-     * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
-     * @param  {boolean?} [options.deleteReaction] - Default True - The Bot will remove reaction after user react?
-     * @param  {boolean?} [options.deleteAllOnEnd] - Default True - The Bot will remove reaction after collector end?
+     * @param  {EmojiResolvable[]} [options.reactions=['✅','❌']] - Array with back/skip reactions.
+     * @param  {DjsCollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {boolean?} [options.deleteReaction=true] - The Bot will remove reaction after user react?
+     * @param  {boolean?} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @example
      *   const botMessage = await message.channel.send('Simple paginator...');
      *   ReactionCollector.paginator({
@@ -286,10 +286,10 @@ class ReactionCollector {
      * @param  {CollectorOptions} options
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
-     * @param  [options.reactions] - Object with reactions and functions.
-     * @param  {DjsCollectorOptions?} [options.collectorOptions] - Default discord.js collector options
-     * @param  {boolean?} [options.deleteReaction] - The Bot will remove reaction after user react?
-     * @param  {boolean?} [options.deleteAllOnEnd] - The Bot will remove reaction after collector end?
+     * @param  {EmojiResolvable[]} [options.reactions=['✅','❌']] - Object with reactions and functions.
+     * @param  {DjsCollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {boolean?} [options.deleteReaction=true] - The Bot will remove reaction after user react?
+     * @param  {boolean?} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @param {...*} args - All args given at trigger onReact() funcion.
      * See example in {@link https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/reaction-collector/question.js}
      * @note onReact(reation, ...args) = When user react, will trigger this function
@@ -305,10 +305,10 @@ class ReactionCollector {
      * @param  {AsyncCollectorOptions} options
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
-     * @param  {EmojiResolvable[]} [options.reactions] - Array with 2 emojis, first one is "Yes" and second one is "No".
-     * @param  {DjsCollectorOptions} [options.collectorOptions] - Default discord.js collector options
-     * @param  {boolean} [options.deleteReaction] - The Bot will remove reaction after user react?
-     * @param  {boolean} [options.deleteAllOnEnd] - The Bot will remove reaction after collector end?
+     * @param  {EmojiResolvable[]} [options.reactions=['✅','❌']] - Array with 2 emojis, first one is "Yes" and second one is "No".
+     * @param  {DjsCollectorOptions} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {boolean} [options.deleteReaction=true] - The Bot will remove reaction after user react?
+     * @param  {boolean} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @returns {Promise<boolean>}
      * 
      * @example

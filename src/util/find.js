@@ -4,8 +4,8 @@ const { isArray } = require('util');
 * @param {options} options
 * @param {object} options.obj - Object to search a item inside it.
 * @param {object} options.key - Item key name to find.
-* @param {number} [options.type] - Type of value to find.
-* @param {any[]} [options.result] - Array with all results founded.
+* @param {string} [options.type='array'] - Type of value to find.
+* @param {any[]} [options.result=[]] - Array with all results founded.
 * @return {any[]} All results founded.
 */
 function findRecursively({ obj, key, type = 'array' | 'value' | 'object', result = [] }) {
