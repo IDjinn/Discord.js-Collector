@@ -1,5 +1,13 @@
 
 ---
+# CHANGELOG - V1.5.4
+
+• Improve documentation
+• Added requierements to reaction roles: booster or verified developer
+• Fixed types
+• New event in reaction roles manager: missingRequirements
+
+---
 # CHANGELOG - V1.5.32
 
 • Added JSDocs support, fix types.

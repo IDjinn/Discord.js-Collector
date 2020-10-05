@@ -23,7 +23,7 @@ import { EventEmitter } from 'events';
 
 declare module 'discord.js-collector' {
 
-    class ReactionRole {
+    export class ReactionRole {
         constructor(options: IReactionRoleOptions);
         get id(): string;
         public toJSON(): object;
@@ -35,10 +35,16 @@ declare module 'discord.js-collector' {
         get winners(): string[];
         get max(): number;
         get toggle(): boolean;
+        get requierements(): IRequierements;
         static fromJSON(json: JSON): ReactionRole;
     }
 
-    interface IReactionRoleOptions {
+    export interface IRequierements {
+        boost: boolean;
+        verifiedDeveloper: boolean;
+    }
+
+    export interface IReactionRoleOptions {
         message: Message | Snowflake;
         channel: TextChannel | Snowflake;
         guild: Guild | Snowflake;
@@ -69,15 +75,21 @@ declare module 'discord.js-collector' {
         public on(event: 'reactionRoleAdd', listener: (member: GuildMember, role: Role) => void): this;
         public on(event: 'reactionRoleRemove', listener: (member: GuildMember, role: Role) => void): this;
         public on(event: 'allReactionsRemove', listener: (message: Message, rolesAffected: Role[], membersAffected: GuildMember[], reactionsTaken: number) => void): this;
+        public on(event: 'missingRequirements', listener: (type: IRequierementType, member: GuildMember, reactionRole: ReactionRole) => void): this;
+    }
 
+    export enum IRequierementType {
+        BOOST = 'BOOST',
+        VERIFIED_DEVELOPER = 'VERIFIED_DEVELOPER'
     }
 
     export interface IAddRoleOptions {
         message: Message;
         role: Role;
         emoji: EmojiIdentifierResolvable;
-        max: number;
-        toggle: boolean;
+        max?: number;
+        toggle?: boolean;
+        requierements?: IRequierements;
     }
 
     export interface IReactionRoleManagerOptions {
