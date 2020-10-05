@@ -2,9 +2,9 @@
 ---
 # CHANGELOG - V1.5.4
 
-• Improve documentation
-• Added requierements to reaction roles: booster or verified developer
-• Fixed types
+• Improve documentation\
+• Added requierements to reaction roles: booster or verified developer\
+• Fixed types\
 • New event in reaction roles manager: missingRequirements
 
 ---
@@ -25,22 +25,22 @@
 ---
 # CHANGELOG - V1.5.2
 
-• Fix some erros in reactions roles setup (toggled roles)
+• Fix some erros in reactions roles setup (toggled roles)\
 • Fix toggled roles when user react on message (now the system use timeout to check roles, prevent overflow)
 
 ---
 # CHANGELOG - V1.5.0
 
-• Fix some erros in reactions roles setup
+• Fix some erros in reactions roles setup\
 • Added new mode to reactions roles: Toggled roles. When react and role is toggled role, the user will keep only one of these message roles.
 
 
 ---
 # CHANGELOG - V1.4.4
 
-• Fix max counter in reaction role manager, before this version this number was inc and dec, when reaction add/remove.
-• Fix bots can win roles while reaction role manager boot
-• Improve debug logs in reaction role manager
+• Fix max counter in reaction role manager, before this version this number was inc and dec, when reaction add/remove.\
+• Fix bots can win roles while reaction role manager boot\
+• Improve debug logs in reaction role manager\
 • Added support to mongodb (lib mongoose) in reaction role manager
 
 ---
@@ -56,10 +56,10 @@
 ---
 # CHANGELOG - V1.4.1
 
-• Reactions arrays now is object, key value with key is Emoji and value is function when user react.
-• Now you can give more params to react functions, all ...args given in question(options, ...args) for e.g.g will be available in reactions functions after default params.
-• Improve examples in docs, improve [README.md](./README.md)
-• Fix typings
+• Reactions arrays now is object, key value with key is Emoji and value is function when user react.\
+• Now you can give more params to react functions, all ...args given in question(options, ...args) for e.g.g will be available in reactions functions after default params.\
+• Improve examples in docs, improve [README.md](./README.md)\
+• Fix typings\
 • Reactions roles will emit events when user win/lose role or all reactions was removed from message.
 
 ---
@@ -85,7 +85,7 @@
 ---
 # CHANGELOG - V1.3.4
 
-• Fixed types, changed how react menu works, now suport for multiple pages and subpages.
+• Fixed types, changed how react menu works, now suport for multiple pages and subpages.\
 • Improve README with links and Sumary.
 
 ---
@@ -101,5 +101,5 @@
 ---
 # CHANGELOG - V1.1.0
 
-• Now collectors work in DM Channels, but cannot delete user reaction/message
+• Now collectors work in DM Channels, but cannot delete user reaction/message\
 • [BETA] Added ReactionRoleManager, easy mode to create reactions roles with storage system, when finish i will share examples and gifs explaining how this work.
