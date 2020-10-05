@@ -18,7 +18,7 @@ Library to easily create message collector, reactions collector and reactions ro
 | [Reaction Role Manager](./examples/reaction-role-manager/basic.js)\
 | [Reaction Menu](./examples/reaction-collector/menu.js)\
 ◘ Others\
-| [Changelog](CHANGELOG.md)\
+| [Changelog](CHANGELOG.md)
 
 
 ## Documentation
@@ -33,7 +33,9 @@ You can create reactions roles, with amazing functions:\
 | • If you bot turns off, when it turns on all users reacted in messages will win the role.\
 | • If you bot turns off, if any user remove reaction, when the bot turns on will remove the role from him.\
 | • You can store the roles in a JSON file and migrate the reaction role data.\
-| • You can limit max roles given by bot, like 10 roles.
+| • You can limit max roles given by bot, like 10 roles.\
+| • Toggled roles: Limit one of these roles to use (Util for colors reaction roles, only get one of roles)\
+| • Requirements: Limit roles to only boosters or discord developers win roles!
 
 ![Reaction Role Gif](./assets/reactionRoles.gif)
 
