@@ -1,195 +1,18 @@
 const { Client, Role, Message, Collection, GuildMember } = require("discord.js");
-const fs = require('fs');
+const Constants = require("../util/constants");
 const { EventEmitter } = require("events");
-const Constants = require("./util/constants");
+const { ReactionRole } = require('./reactionRole');
+const { REACTIONROLE_EVENT, REQUIEREMENT_TYPE } = require('./constants');
+
+const fs = require('fs');
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-/**
-* Reaction role manager events.
-* @typedef {Object} REACTIONROLE_EVENT
-* @property {string} REACTION_ROLE_ADD='reactionRoleAdd' - Triggered when a member won some role.
-* @property {string} REACTION_ROLE_REMOVE='reactionRoleRemove' - Triggered when a member lost some role.
-* @property {string} ALL_REACTIONS_REMOVE='allReactionsRemove' - Triggered when all reactions from message was removed.
-* @property {string} MISSING_REQUIEREMENTS='missingRequirements' - Triggered when a member hasn't all requirements to win some role.
-* @readonly
-*/
-const REACTIONROLE_EVENT = Object.freeze({
-    REACTION_ROLE_ADD: 'reactionRoleAdd',
-    REACTION_ROLE_REMOVE: 'reactionRoleRemove',
-    ALL_REACTIONS_REMOVE: 'allReactionsRemove',
-    MISSING_REQUIEREMENTS: 'missingRequirements'
-});
-
-/**
-* Requierement type to win some role.
-* @typedef {Object} REQUIEREMENT_TYPE
-* @property {string} BOOST - Need be a booster to win this role.
-* @property {string} VERIFIED_DEVELOPER - Need be a verified developer to win this role.
-* @readonly
-*/
-const REQUIEREMENT_TYPE = Object.freeze({
-    BOOST: 'BOOST',
-    VERIFIED_DEVELOPER: 'VERIFIED_DEVELOPER'
-})
-
-
-/** 
-* Reaction role object structure.
-*/
-class ReactionRole {
-    /** 
-    * Reaction Role constructor.
-    * @param {Object} data
-    * @param {string} data.message - Message ID of reaction role.
-    * @param {string} data.channel - Channel ID of message.
-    * @param {string} data.guild - Guild ID of channel.
-    * @param {string} data.emoji - Emoji ID of reaction role.
-    * @param {string[]} data.winners - List with role winners ID;
-    * @param {number} data.max - Max roles available to give.
-    * @param {boolean} data.toggle - User will have only one of these message roles.
-    * @return {ReactionRole}
-    */
-    constructor({ message, channel, guild, role, emoji, winners, max, toggle, requirements }) {
-        /**
-        * Guild ID of message
-        * @type {string}
-        * @readonly
-        */
-        this.guild = message.guild ? message.guild.id : guild;
-        /**
-        * Channel ID of message
-        * @type {string}
-        * @readonly
-        */
-        this.channel = message.channel ? message.channel.id : channel;
-        /**
-        * Message ID of reaction role
-        * @type {string}
-        * @readonly
-        */
-        this.message = message.id ? message.id : message;
-        /**
-        * Role ID
-        * @type {string}
-        * @readonly
-        */
-        this.role = role.id ? role.id : role;
-        /**
-        * Emoji identifier
-        * @type {string}
-        * @readonly
-        */
-        this.emoji = emoji.id || emoji.name ? emoji.id : emoji.name || emoji;
-        /**
-        * List of who won this role
-        * @type {string[]}
-        * @readonly
-        */
-        this.winners = winners || [];
-        /**
-        * Max roles available to give
-        * @type {number}
-        */
-        this.max = isNaN(max) ? Number.MAX_SAFE_INTEGER : Number(max);
-        /**
-        * Is it toggled role?
-        * @type {number}
-        */
-        this.toggle = Boolean(toggle);
-        /**
-        * Requirement to win this role.
-        * @property {boolean} [boost=false] - Need be a booster to win this role.
-        * @property {boolean} [verifiedDeveloper=false] - Need be a verified bot developer to win this role.
-        */
-        this.requirements = {
-            boost: Boolean(requirements ? requirements.boost : null),
-            verifiedDeveloper: Boolean(requirements ? requirements.verifiedDeveloper : null),
-        };
-    }
-
-    /**
-    * Reaction Role ID (messageId-emojiId)
-    * @type {string}
-    * @readonly
-    */
-    get id() {
-        return `${this.message}-${this.emoji}`;
-    }
-
-    /** 
-    * Convert Reaction Role object to JSON.
-    * @return {JSON} - Parsed json object.
-    */
-    toJSON() {
-        return {
-            id: this.id,
-            message: this.message,
-            channel: this.channel,
-            guild: this.guild,
-            role: this.role,
-            emoji: this.emoji,
-            winners: this.winners,
-            max: this.max > Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : this.max,
-            toggle: this.toggle,
-            requirements: {
-                boost: this.requirements.boost,
-                verifiedDeveloper: this.requirements.verifiedDeveloper,
-            }
-        };
-    }
-
-    /** 
-    * Check if member have developer requirement to win this role.
-    * @param {GuildMember} member - The member to check.
-    * @return {Promise<boolean>} 
-    */
-    async checkDeveloperRequirement(member) {
-        const flags = await member.user.fetchFlags();
-        const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
-        if (this.requirements.verifiedDeveloper)
-            return isVerifiedDeveloper;
-        return true;
-    }
-
-    /** 
-    * Check if member have boost requierement to win this role.
-    * @param {GuildMember} member - The member to check.
-    * @return {boolean} 
-    */
-    checkBoostRequirement(member) {
-        const isBoost = member.premiumSinceTimestamp != null && member.premiumSince != null;
-        if (this.requirements.boost)
-            return isBoost;
-        return true;
-    }
-
-    /** 
-    * Transform json to Reaction Role object.
-    * @param {object} json - Reaction role data.
-    * @static
-    * @return {ReactionRole}
-    */
-    static fromJSON(json) {
-        return new ReactionRole({
-            message: json.message,
-            channel: json.channel,
-            guild: json.guild,
-            role: json.role,
-            emoji: json.emoji,
-            winners: json.winners,
-            max: json.max,
-            toggle: json.toggle,
-            requirements: json.requirements
-        })
-    }
-}
 
 /**
  * Example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-role-manager/basic.js}
  * @extends EventEmitter
  */
 class ReactionRoleManager extends EventEmitter {
-
     /**
     * Triggered when member won a reaction role.
     * @event ReactionRoleManager#reactionRoleAdd
@@ -206,7 +29,7 @@ class ReactionRoleManager extends EventEmitter {
     * @event ReactionRoleManager#reactionRoleRemove
     * @property {GuildMember} member - The guild member who lost the role.
     * @property {Role} role - The guild role what member was lost.
-    * 
+    *
     * @example
     * reactionRoleManager.on('reactionRoleRemove', (member, role) => {
     *   console.log(member.displayName + ' lose the role ' + role.name)
@@ -220,7 +43,7 @@ class ReactionRoleManager extends EventEmitter {
     * @property {Role[]} rolesAffected - Roles affected when reactions was removed.
     * @property {GuildMember[]} membersAffected - Members affected when reactions was removed.
     * @property {number} reactionsTaken - Count of reactions removed from message.
-    * 
+    *
     * @example
     * reactionRoleManager.on('allReactionsRemove', (message) => {
     *   console.log(`All reactions from message ${message.id} was removed, all roles was taken and reactions roles deleted.`)
@@ -548,9 +371,9 @@ class ReactionRoleManager extends EventEmitter {
     * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
     * @param {Number} [options.max=Infinity] - Max roles to give.
     * @param {Boolean} [options.toggle=false] - User will have only one of these message roles.
-    * @param {object?} [options.requierements={}] - Requierements to win this role.
-    * @param {boolean?} [options.requierements.boost=false] - Need be a booster to win this role?
-    * @param {boolean?} [options.requierements.verifiedDeveloper=false] - Need be a verified developer to win this role?
+    * @param {object} [options.requierements={}] - Requierements to win this role.
+    * @param {boolean} [options.requierements.boost=false] - Need be a booster to win this role?
+    * @param {boolean} [options.requierements.verifiedDeveloper=false] - Need be a verified developer to win this role?
     */
     createReactionRole({ message, role, emoji, max, toggle, requierements } = { max: Number.MAX_SAFE_INTEGER, toggle: false, requierements: { boost: false, verifiedDeveloper: false } }) {
         return new Promise(async (resolve, reject) => {
@@ -724,7 +547,7 @@ class ReactionRoleManager extends EventEmitter {
             let skippedRole = null;
             const toggledRoles = this.reactionRoles.filter(rr => rr.message == message.id && rr.toggle);
             for (const toggledRole of toggledRoles.values()) {
-                if (!skippedRole) {
+                if (!skippedRole) { // TODO: remove this
                     skippedRole = toggledRole;
                     continue;
                 }
@@ -741,31 +564,33 @@ class ReactionRoleManager extends EventEmitter {
                 this.__debug('REACTION', `Take off role '${toggledRole.role}' from user '${member.id}', it's a toggled role.`);
             }
 
-            const reaction = message.reactions.cache.find(reaction => this.client.emojis.resolveIdentifier(reaction.emoji.id || reaction.emoji.name) == skippedRole.emoji)
-            if (!skippedRole.checkBoostRequirement(member)) {
-                this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.BOOST, member, skippedRole);
-                await reaction.users.remove(user);
-                this.__debug('BOOT', `Member '${user.id}' not have boost requierement, will not win this role.`);
-            }
-            else if (!await skippedRole.checkDeveloperRequirement(member)) {
-                this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.VERIFIED_DEVELOPER, member, skippedRole);
-                await reaction.users.remove(user);
-                this.__debug('BOOT', `Member '${user.id}' not have verified developer requierement, will not win this role.`);
-            }
-            else {
-                if (skippedRole.winners.indexOf(member.id) <= -1)
-                    skippedRole.winners.push(member.id);
-                if (!member.roles.cache.has(skippedRole.role)) {
-                    await member.roles.add(skippedRole.role);
-                    const role = message.guild.roles.cache.get(skippedRole.role);
-                    this.emit(REACTIONROLE_EVENT.REACTION_ROLE_ADD, member, role);
-                    this.__debug('BOOT', `Role '${skippedRole.role}' was given to '${member.id}' after check toggle roles, it reacted when bot wasn't online.`);
+            if (skippedRole instanceof ReactionRole) {
+                const reaction = message.reactions.cache.find(reaction => this.client.emojis.resolveIdentifier(reaction.emoji.id || reaction.emoji.name) == skippedRole.emoji)
+                if (!skippedRole.checkBoostRequirement(member)) {
+                    this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.BOOST, member, skippedRole);
+                    await reaction.users.remove(user);
+                    this.__debug('BOOT', `Member '${user.id}' not have boost requierement, will not win this role.`);
+                }
+                else if (!await skippedRole.checkDeveloperRequirement(member)) {
+                    this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.VERIFIED_DEVELOPER, member, skippedRole);
+                    await reaction.users.remove(user);
+                    this.__debug('BOOT', `Member '${user.id}' not have verified developer requierement, will not win this role.`);
                 }
                 else {
-                    this.__debug('BOOT', `Keeping role '${skippedRole.role}' after check toggle roles. The member '${member.id}' reacted and already have the role.`);
+                    if (skippedRole.winners.indexOf(member.id) <= -1)
+                        skippedRole.winners.push(member.id);
+                    if (!member.roles.cache.has(skippedRole.role)) {
+                        await member.roles.add(skippedRole.role);
+                        const role = message.guild.roles.cache.get(skippedRole.role);
+                        this.emit(REACTIONROLE_EVENT.REACTION_ROLE_ADD, member, role);
+                        this.__debug('BOOT', `Role '${skippedRole.role}' was given to '${member.id}' after check toggle roles, it reacted when bot wasn't online.`);
+                    }
+                    else {
+                        this.__debug('BOOT', `Keeping role '${skippedRole.role}' after check toggle roles. The member '${member.id}' reacted and already have the role.`);
+                    }
                 }
+                await this.__store(...toggledRoles);
             }
-            await this.__store(...toggledRoles);
         }, Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES));
     }
 
