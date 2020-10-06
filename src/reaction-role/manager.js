@@ -74,7 +74,7 @@ class ReactionRoleManager extends EventEmitter {
     * @extends EventEmitter
     * @return {ReactionRoleManager}
     */
-    constructor(client, { storage, store, mongoDbLink, path, debug } = { storage: true, store: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
+    constructor(client, { storage, mongoDbLink, path, debug } = { storage: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
         super();
         if (!(client instanceof Client))
             throw 'Client param must be a Client object.';
@@ -90,7 +90,7 @@ class ReactionRoleManager extends EventEmitter {
         * @type {boolean}
         * @default true
         */
-        this.storage = Boolean(store || storage);
+        this.storage = Boolean(storage);
         /**
         * Is debug enabled?
         * @type {boolean}
@@ -395,7 +395,7 @@ class ReactionRoleManager extends EventEmitter {
                 await message.react(emoji);
                 const reactionRole = new ReactionRole({ message: message, role, emoji, max, toggle, requierements });
                 this.reactionRoles.set(reactionRole.id, reactionRole);
-                await this.__store(reactionRole);
+                await this.store(reactionRole);
                 this.__debug('ROLE', `Role '${role}' added in reactionRoleManager!`);
                 return resolve();
             }
@@ -426,11 +426,11 @@ class ReactionRoleManager extends EventEmitter {
     }
 
     /** 
-    * Store updated roles funcion.
-    * @private
+    * Store updated roles funcion. Note: for json storage, doesn't need give arguments to this funcion.
+    * @param {...ReactionRole} roles - All roles to update in database.
     * @return {Promise<void>}
     */
-    async __store(...roles) {
+    async store(...roles) {
         if (this.storage) {
             if (this.mongoose) {
                 for (const role of roles) {
@@ -529,7 +529,7 @@ class ReactionRoleManager extends EventEmitter {
                 this.__timeoutToggledRoles(member, message);
             }
             else {
-                this.__store(...[reactionRole]);
+                this.store(...[reactionRole]);
             }
         }
     }
@@ -589,7 +589,7 @@ class ReactionRoleManager extends EventEmitter {
                         this.__debug('BOOT', `Keeping role '${skippedRole.role}' after check toggle roles. The member '${member.id}' reacted and already have the role.`);
                     }
                 }
-                await this.__store(...toggledRoles);
+                await this.store(...toggledRoles);
             }
         }, Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES));
     }
@@ -633,7 +633,7 @@ class ReactionRoleManager extends EventEmitter {
         const index = reactionRole.winners.indexOf(member.id);
         if (index >= 0) {
             reactionRole.winners.splice(index, 1);
-            this.__store(...[reactionRole]);
+            this.store(...[reactionRole]);
         }
     }
 
@@ -664,7 +664,7 @@ class ReactionRoleManager extends EventEmitter {
 
         const rolesAffected = messageReactionsRoles.map(rr => message.guild.roles.get(rr.role)).filter(role => role instanceof Role);
         this.emit(REACTIONROLE_EVENT.ALL_REACTIONS_REMOVE, message, rolesAffected, membersAffected, reactionsTaken);
-        this.__store();
+        this.store();
     }
 }
 
