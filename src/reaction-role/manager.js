@@ -79,6 +79,8 @@ class ReactionRoleManager extends EventEmitter {
         super();
         if (!(client instanceof Client))
             throw 'Client param must be a Client object.';
+        
+        if(client.ws.intent)
 
         /**
         * Discord client.
@@ -368,7 +370,7 @@ class ReactionRoleManager extends EventEmitter {
     * @return {Promise<boolean>}
     */
     async __checkRequirements(reactionRole, reaction, member) {
-        return Promise(async resolve => {
+        return new Promise(async resolve => {
             if (!reactionRole.checkBoostRequirement(member)) {
                 this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.BOOST, member, reactionRole);
                 await reaction.users.remove(member.user);
@@ -428,7 +430,7 @@ class ReactionRoleManager extends EventEmitter {
     /** 
     * This funcion will delete the reaction role from storage.
     * @param {ReactionRole} role - Reaction role to delete.
-    * @param {boolean} deleted=false - Is role deleted from guild.
+    * @param {boolean} deleted=false - Is role deleted from guild?
     * @return {Promise<void>}
     */
     async deleteReactionRole(role, deleted = false) {
