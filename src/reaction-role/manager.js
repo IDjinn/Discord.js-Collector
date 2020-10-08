@@ -80,8 +80,6 @@ class ReactionRoleManager extends EventEmitter {
         if (!(client instanceof Client))
             throw 'Client param must be a Client object.';
         
-        if(client.ws.intent)
-
         /**
         * Discord client.
         * @type {Client}
