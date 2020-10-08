@@ -5,6 +5,7 @@ const { ReactionRole } = require('./reactionRole');
 const { REACTIONROLE_EVENT, REQUIEREMENT_TYPE } = require('./constants');
 
 const fs = require('fs');
+const { resolve } = require("path");
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 
@@ -297,19 +298,7 @@ class ReactionRoleManager extends EventEmitter {
                     continue;
                 }
 
-                if (!reactionRole.checkBoostRequirement(member)) {
-                    this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.BOOST, member, reactionRole);
-                    await reaction.users.remove(user);
-                    this.__debug('BOOT', `Member '${user.id}' not have boost requierement, will not win this role.`);
-                    continue;
-                }
-                else if (!await reactionRole.checkDeveloperRequirement(member)) {
-                    this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.VERIFIED_DEVELOPER, member, reactionRole);
-                    await reaction.users.remove(user);
-                    this.__debug('BOOT', `Member '${user.id}' not have verified developer requierement, will not win this role.`);
-                    continue;
-                }
-                else {
+                if (this.__checkRequirements(reactionRole, reaction, member)) {
                     if (reactionRole.toggle) {
                         this.__debug('BOOT', `Skiping role '${reactionRole.role}' of give role assembly, need check if is it toggle role.`);
                     }
@@ -325,7 +314,6 @@ class ReactionRoleManager extends EventEmitter {
                             this.__debug('BOOT', `Keeping role '${reactionRole.role}' from '${member.id}', it reacted and already have the role.`);
                         }
                     }
-
                     this.__timeoutToggledRoles(member, message);
                 }
             }
@@ -361,6 +349,24 @@ class ReactionRoleManager extends EventEmitter {
     __debug(type, message, ...args) {
         if (this.debug)
             console.log(`[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`)
+    }
+
+    async __checkRequirements(reactionRole, reaction, member) {
+        return Promise(async resolve => {
+            if (!reactionRole.checkBoostRequirement(member)) {
+                this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.BOOST, member, reactionRole);
+                await reaction.users.remove(member.user);
+                this.__debug('BOOT', `Member '${user.id}' not have boost requierement, will not win this role.`);
+                return resolve(false);
+            }
+            else if (!await reactionRole.checkDeveloperRequirement(member)) {
+                this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.VERIFIED_DEVELOPER, member, reactionRole);
+                await reaction.users.remove(member.user);
+                this.__debug('BOOT', `Member '${member.user.id}' not have verified developer requierement, will not win this role.`);
+                return resolve(false);
+            }
+            return resolve(true);
+        });
     }
 
     /**
@@ -507,17 +513,7 @@ class ReactionRoleManager extends EventEmitter {
             return await message.reactions.removeAll();
         }
 
-        if (!reactionRole.checkBoostRequirement(member)) {
-            this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.BOOST, member, reactionRole);
-            await msgReaction.users.remove(user);
-            this.__debug('ROLE', `Member '${user.id}' not have boost requierement, will not win this role.`);
-        }
-        else if (!await reactionRole.checkDeveloperRequirement(member)) {
-            this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.VERIFIED_DEVELOPER, member, reactionRole);
-            await msgReaction.users.remove(user);
-            this.__debug('ROLE', `Member '${user.id}' not have verified developer requierement, will not win this role.`);
-        }
-        else {
+        if (this.__checkRequirements(reactionRole, msgReaction, member)) {
             if (reactionRole.winners.indexOf(member.id) <= -1)
                 reactionRole.winners.push(member.id);
 
@@ -566,19 +562,10 @@ class ReactionRoleManager extends EventEmitter {
 
             if (skippedRole instanceof ReactionRole) {
                 const reaction = message.reactions.cache.find(reaction => this.client.emojis.resolveIdentifier(reaction.emoji.id || reaction.emoji.name) == skippedRole.emoji)
-                if (!skippedRole.checkBoostRequirement(member)) {
-                    this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.BOOST, member, skippedRole);
-                    await reaction.users.remove(user);
-                    this.__debug('BOOT', `Member '${user.id}' not have boost requierement, will not win this role.`);
-                }
-                else if (!await skippedRole.checkDeveloperRequirement(member)) {
-                    this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.VERIFIED_DEVELOPER, member, skippedRole);
-                    await reaction.users.remove(user);
-                    this.__debug('BOOT', `Member '${user.id}' not have verified developer requierement, will not win this role.`);
-                }
-                else {
+                if (this.__checkRequirements(skippedRole, reaction, member)) {
                     if (skippedRole.winners.indexOf(member.id) <= -1)
                         skippedRole.winners.push(member.id);
+
                     if (!member.roles.cache.has(skippedRole.role)) {
                         await member.roles.add(skippedRole.role);
                         const role = message.guild.roles.cache.get(skippedRole.role);
@@ -589,8 +576,9 @@ class ReactionRoleManager extends EventEmitter {
                         this.__debug('BOOT', `Keeping role '${skippedRole.role}' after check toggle roles. The member '${member.id}' reacted and already have the role.`);
                     }
                 }
-                await this.store(...toggledRoles);
             }
+
+            await this.store(...toggledRoles);
         }, Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES));
     }
 

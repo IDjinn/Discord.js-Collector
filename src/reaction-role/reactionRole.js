@@ -114,11 +114,13 @@ class ReactionRole {
     * @return {Promise<boolean>} 
     */
     async checkDeveloperRequirement(member) {
-        const flags = await member.user.fetchFlags();
-        const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
-        if (this.requirements.verifiedDeveloper)
-            return isVerifiedDeveloper;
-        return true;
+        return new Promise(async (resolve) => {
+            const flags = await member.user.fetchFlags();
+            const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
+            if (this.requirements.verifiedDeveloper)
+                return resolve(isVerifiedDeveloper);
+            return resolve(true);
+        });
     }
 
     /** 
