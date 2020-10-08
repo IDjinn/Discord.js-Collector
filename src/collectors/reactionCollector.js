@@ -164,10 +164,7 @@ class ReactionCollector {
      * @param {object} options.pages - Reaction menu pages.
      * @param {UserResolvable} options.user - User who can react this menu.
      * @param {object} [options.collectorOptions=null] - Options to create discord.js reaction collector.
-     * @param {...*} args - Arguments given when onReact or onMessage function was triggered.
-     * @static
-     * @async
-
+     * @param {...*} [args] - Arguments given when onReact or onMessage function was triggered.
      * @return {Controller}
      */
     static async menu(options, ...args) {
@@ -290,7 +287,7 @@ class ReactionCollector {
      * @param  {DjsCollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
      * @param  {boolean?} [options.deleteReaction=true] - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
-     * @param {...*} args - All args given at trigger onReact() funcion.
+     * @param {...*} [args] - All args given at trigger onReact() funcion.
      * See example in {@link https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/reaction-collector/question.js}
      * @note onReact(reation, ...args) = When user react, will trigger this function
      * @returns DjsReactionCollector

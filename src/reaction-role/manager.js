@@ -346,11 +346,27 @@ class ReactionRoleManager extends EventEmitter {
         this.__debug('READY', 'Reaction role manager is ready.');
     }
 
+    /** 
+    * Print messages in console if it's in debug mode.
+    * @private
+    * @param {string} type - Type or location in code where you are debugging.
+    * @param {string} message - Message to print.
+    * @param {...*} args - Other args to print after message.
+    * @return {ReturnValueDataTypeHere} Brief description of the returning value here.
+    */
     __debug(type, message, ...args) {
         if (this.debug)
             console.log(`[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`)
     }
 
+    /** 
+    * Check if members have all requirements and handle if it doesn't have it.
+    * @private
+    * @param {ReactionRole} reactionRole - Reaction role to check requirements.
+    * @param {MessageReaction} reaction - Message reaction to remove reaction if it dosn't have requirements.
+    * @param {GuildMember} member - Member to check requirements.
+    * @return {Promise<boolean>}
+    */
     async __checkRequirements(reactionRole, reaction, member) {
         return Promise(async resolve => {
             if (!reactionRole.checkBoostRequirement(member)) {
@@ -412,7 +428,7 @@ class ReactionRoleManager extends EventEmitter {
     /** 
     * This funcion will delete the reaction role from storage.
     * @param {ReactionRole} role - Reaction role to delete.
-    * @param {boolean} [deleted=false] - Is role deleted from guild.
+    * @param {boolean} deleted=false - Is role deleted from guild.
     * @return {Promise<void>}
     */
     async deleteReactionRole(role, deleted = false) {
