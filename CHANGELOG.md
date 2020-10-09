@@ -1,5 +1,19 @@
 
 ---
+# CHANGELOG - V1.5.5
+
+• Reaction Role Manager\
+    - `store` setting in constructor was removed (use storage instead).\
+    - `addRole()` is renamed to `createReactionRole()`.\
+    - `deleteRole()` is renamed to `deleteReactionRole()`.\
+    - `storage()` now is public to update reaction roles.\
+• Messages collector\
+    - `max` messages in  `question()` is default Infinity now.\
+•  `findRecursively()`\
+    - now it's possible find items with a `value`.\
+• Fix types, typos and improved documentation.
+
+---
 # CHANGELOG - V1.5.4
 
 • Improve documentation\
