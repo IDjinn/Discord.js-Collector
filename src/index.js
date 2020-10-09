@@ -5,6 +5,6 @@ module.exports = {
     ReactionRoleManager: require('./reaction-role/manager.js').ReactionRoleManager,
     ReactionRole: require('./reaction-role/reactionRole.js').ReactionRole,
     REACTIONROLE_EVENT: require('./reaction-role/constants.js').REACTIONROLE_EVENT,
-    REQUIEREMENT_TYPE: require('./reaction-role/constants.js').REQUIEREMENT_TYPE,
+    REQUIREMENT_TYPE: require('./reaction-role/constants.js').REQUIREMENT_TYPE,
     findRecursively: require('./util/find').findRecursively,
 }

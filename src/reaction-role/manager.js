@@ -2,10 +2,9 @@ const { Client, Role, Message, Collection, GuildMember } = require("discord.js")
 const Constants = require("../util/constants");
 const { EventEmitter } = require("events");
 const { ReactionRole } = require('./reactionRole');
-const { REACTIONROLE_EVENT, REQUIEREMENT_TYPE } = require('./constants');
+const { REACTIONROLE_EVENT, REQUIREMENT_TYPE } = require('./constants');
 
 const fs = require('fs');
-const { resolve } = require("path");
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 
@@ -54,13 +53,13 @@ class ReactionRoleManager extends EventEmitter {
     /**
     * Triggered when someone tried won role, but not have it requirements.
     * @event ReactionRoleManager#missingRequirements
-    * @property {REQUIEREMENT_TYPE} requierementType - The missing requierement to win this role.
+    * @property {REQUIREMENT_TYPE} requirementType - The missing requirement to win this role.
     * @property {GuildMember} member - Member who will not win this role.
     * @property {ReactionRole} reactionRole - This reaction role what the member hasn't the requirements.
     *
     * @example
     * reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
-    *   console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requierement ${type}`);
+    *   console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requirement ${type}`);
     * });
     */
 
@@ -200,44 +199,46 @@ class ReactionRoleManager extends EventEmitter {
     * @return {Promise<void>}
     */
     async __checkMongoose() {
-        if (!this.mongoDbLink)
-            return Promise.resolve('Mongoose is disabled.');
+        return new Promise(async (resolve, reject) => {
+            if (!this.mongoDbLink)
+                return resolve('Mongoose is disabled.');
 
-        try {
-            this.mongoose = require('mongoose');
-            await this.mongoose.connect(this.mongoDbLink, { useNewUrlParser: true, useUnifiedTopology: true });
+            try {
+                this.mongoose = require('mongoose');
+                await this.mongoose.connect(this.mongoDbLink, { useNewUrlParser: true, useUnifiedTopology: true });
 
-            this.mongoose.model('ReactionRoles', new this.mongoose.Schema({
-                id: String,
-                message: String,
-                channel: String,
-                guild: String,
-                role: String,
-                emoji: String,
-                winners: Array,
-                max: {
-                    type: Number,
-                    default: Number.MAX_SAFE_INTEGER
-                },
-                toggle: {
-                    type: Boolean,
-                    default: false
-                },
-                requirements: {
-                    boost: {
+                this.mongoose.model('ReactionRoles', new this.mongoose.Schema({
+                    id: String,
+                    message: String,
+                    channel: String,
+                    guild: String,
+                    role: String,
+                    emoji: String,
+                    winners: Array,
+                    max: {
+                        type: Number,
+                        default: Number.MAX_SAFE_INTEGER
+                    },
+                    toggle: {
                         type: Boolean,
                         default: false
                     },
-                    verifiedDeveloper: {
-                        type: Boolean,
-                        default: false
-                    },
-                }
-            }));
-            return Promise.resolve();
-        } catch (e) {
-            return Promise.reject(e);
-        }
+                    requirements: {
+                        boost: {
+                            type: Boolean,
+                            default: false
+                        },
+                        verifiedDeveloper: {
+                            type: Boolean,
+                            default: false
+                        },
+                    }
+                }));
+                return resolve(true);
+            } catch (e) {
+                return reject(e);
+            }
+        });
     }
 
     /**
@@ -370,15 +371,15 @@ class ReactionRoleManager extends EventEmitter {
     async __checkRequirements(reactionRole, reaction, member) {
         return new Promise(async resolve => {
             if (!reactionRole.checkBoostRequirement(member)) {
-                this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.BOOST, member, reactionRole);
+                this.emit(REACTIONROLE_EVENT.MISSING_REQUIREMENTS, REQUIREMENT_TYPE.BOOST, member, reactionRole);
                 await reaction.users.remove(member.user);
-                this.__debug('BOOT', `Member '${user.id}' not have boost requierement, will not win this role.`);
+                this.__debug('BOOT', `Member '${user.id}' not have boost requirement, will not win this role.`);
                 return resolve(false);
             }
             else if (!await reactionRole.checkDeveloperRequirement(member)) {
-                this.emit(REACTIONROLE_EVENT.MISSING_REQUIEREMENTS, REQUIEREMENT_TYPE.VERIFIED_DEVELOPER, member, reactionRole);
+                this.emit(REACTIONROLE_EVENT.MISSING_REQUIREMENTS, REQUIREMENT_TYPE.VERIFIED_DEVELOPER, member, reactionRole);
                 await reaction.users.remove(member.user);
-                this.__debug('BOOT', `Member '${member.user.id}' not have verified developer requierement, will not win this role.`);
+                this.__debug('BOOT', `Member '${member.user.id}' not have verified developer requirement, will not win this role.`);
                 return resolve(false);
             }
             return resolve(true);
@@ -393,11 +394,12 @@ class ReactionRoleManager extends EventEmitter {
     * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
     * @param {Number} [options.max=Infinity] - Max roles to give.
     * @param {Boolean} [options.toggle=false] - User will have only one of these message roles.
-    * @param {Object} [options.requierements={}] - Requierements to win this role.
-    * @param {boolean} [options.requierements.boost=false] - Need be a booster to win this role?
-    * @param {boolean} [options.requierements.verifiedDeveloper=false] - Need be a verified developer to win this role?
+    * @param {Object} [options.requirements={}] - Requirements to win this role.
+    * @param {boolean} [options.requirements.boost=false] - Need be a booster to win this role?
+    * @param {boolean} [options.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
+    * @return {Promise<void>}
     */
-    createReactionRole({ message, role, emoji, max, toggle, requierements } = { max: Number.MAX_SAFE_INTEGER, toggle: false, requierements: { boost: false, verifiedDeveloper: false } }) {
+    createReactionRole({ message, role, emoji, max, toggle, requirements } = { max: Number.MAX_SAFE_INTEGER, toggle: false, requirements: { boost: false, verifiedDeveloper: false } }) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
                 if (!message.guild)
@@ -415,7 +417,7 @@ class ReactionRoleManager extends EventEmitter {
                     return reject('Bad input: I canno\'t find emoji ' + role);
 
                 await message.react(emoji);
-                const reactionRole = new ReactionRole({ message: message, role, emoji, max, toggle, requierements });
+                const reactionRole = new ReactionRole({ message: message, role, emoji, max, toggle, requirements });
                 this.reactionRoles.set(reactionRole.id, reactionRole);
                 await this.store(reactionRole);
                 this.__debug('ROLE', `Role '${role}' added in reactionRoleManager!`);
@@ -428,23 +430,25 @@ class ReactionRoleManager extends EventEmitter {
     /** 
     * This funcion will delete the reaction role from storage.
     * @param {ReactionRole} role - Reaction role to delete.
-    * @param {boolean} deleted=false - Is role deleted from guild?
+    * @param {boolean} [deleted=false] - Is role deleted from guild?
     * @return {Promise<void>}
     */
     async deleteReactionRole(role, deleted = false) {
-        if (role instanceof ReactionRole) {
-            this.reactionRoles.delete(role.id);
-            if (this.mongoose) {
-                await this.mongoose.model('ReactionRoles').deleteOne({ id: role.id }).exec();
-            }
+        return new Promise(async (resolve, reject) => {
+            if (role instanceof ReactionRole) {
+                this.reactionRoles.delete(role.id);
+                if (this.mongoose) {
+                    await this.mongoose.model('ReactionRoles').deleteOne({ id: role.id }).exec();
+                }
 
-            if (deleted)
-                this.__debug('ROLE', `Role '${role.role}' deleted, so it was removed from reactionRoleManager!`);
-            else
-                this.__debug('ROLE', `Role '${role.role}' removed from reactionRoleManager!`);
-        }
-        else
-            throw 'Bad input: removeRole(role) must be a ReactionRole Object.';
+                if (deleted)
+                    this.__debug('ROLE', `Role '${role.role}' deleted, so it was removed from reactionRoleManager!`);
+                else
+                    this.__debug('ROLE', `Role '${role.role}' removed from reactionRoleManager!`);
+                return resolve();
+            }
+               return reject('Bad input: removeRole(role) must be a ReactionRole Object.');
+        });
     }
 
     /** 
@@ -453,19 +457,22 @@ class ReactionRoleManager extends EventEmitter {
     * @return {Promise<void>}
     */
     async store(...roles) {
-        if (this.storage) {
-            if (this.mongoose) {
-                for (const role of roles) {
-                    await this.mongoose.model('ReactionRoles').findOneAndUpdate({ id: role.id }, role, { new: true, upsert: true }).exec();
+        return new Promise(async resolve => {
+            if (this.storage) {
+                if (this.mongoose) {
+                    for (const role of roles) {
+                        await this.mongoose.model('ReactionRoles').findOneAndUpdate({ id: role.id }, role, { new: true, upsert: true }).exec();
+                    }
+                    this.__debug('STORE', `Stored ${roles.length} updated roles.`);
                 }
-                this.__debug('STORE', `Stored ${roles.length} updated roles.`);
-            }
 
-            if (fs.existsSync(this.storageJsonPath)) {
-                fs.writeFileSync(this.storageJsonPath, JSON.stringify(this.reactionRoles.map(role => role.toJSON())));
-                this.__debug('STORE', `Stored roles saved, contains '${this.reactionRoles.size}' roles.`);
+                if (fs.existsSync(this.storageJsonPath)) {
+                    fs.writeFileSync(this.storageJsonPath, JSON.stringify(this.reactionRoles.map(role => role.toJSON())));
+                    this.__debug('STORE', `Stored roles saved, contains '${this.reactionRoles.size}' roles.`);
+                }
             }
-        }
+            return resolve();
+        });
     }
 
     /**
@@ -474,24 +481,27 @@ class ReactionRoleManager extends EventEmitter {
     * @return {Promise<void>}
     */
     async __parseStorage() {
-        if (this.storage) {
-            const roles = [];
-            if (fs.existsSync(this.storageJsonPath)) {
-                const json = JSON.parse(fs.readFileSync(this.storageJsonPath).toString());
-                roles.push(...json);
-            }
+        return new Promise(async resolve => {
+            if (this.storage) {
+                const roles = [];
+                if (fs.existsSync(this.storageJsonPath)) {
+                    const json = JSON.parse(fs.readFileSync(this.storageJsonPath).toString());
+                    roles.push(...json);
+                }
 
-            if (this.mongoose) {
-                roles.push(...await this.mongoose.model('ReactionRoles').find({}));
-            }
+                if (this.mongoose) {
+                    roles.push(...await this.mongoose.model('ReactionRoles').find({}));
+                }
 
-            for (const role of roles) {
-                if (!role || !role.message) // TODO: Temporary, need find where have update/insert mongoose error.
-                    continue;
-                this.reactionRoles.set(role.id, ReactionRole.fromJSON(role));
+                for (const role of roles) {
+                    if (!role || !role.message) // TODO: Temporary, need find where have update/insert mongoose error.
+                        continue;
+                    this.reactionRoles.set(role.id, ReactionRole.fromJSON(role));
+                }
             }
-        }
-        this.__debug('STORE', `Stored roles parsed, contains '${this.reactionRoles.size}' roles.`);
+            this.__debug('STORE', `Stored roles parsed, contains '${this.reactionRoles.size}' roles.`);
+            return resolve();
+        });
     }
 
     /**
@@ -675,6 +685,6 @@ class ReactionRoleManager extends EventEmitter {
 module.exports = {
     ReactionRoleManager,
     ReactionRole,
-    REQUIEREMENT_TYPE,
+    REQUIREMENT_TYPE,
     REACTIONROLE_EVENT
 }

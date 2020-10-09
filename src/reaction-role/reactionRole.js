@@ -13,9 +13,9 @@ class ReactionRole {
     * @param {string[]} [data.winners=[]] - List with role winners ID;
     * @param {number} [data.max=Number.MAX_SAFE_INTEGER] - Max roles available to give.
     * @param {boolean} [data.toggle=false] - User will have only one of these message roles.
-    * @param {object} [data.requierements={}] - Requierements to win this role.
-    * @param {boolean} [data.requierements.boost=false] - Need be a booster to win this role?
-    * @param {boolean} [data.requierements.verifiedDeveloper=false] - Need be a verified developer to win this role?
+    * @param {object} [data.requirements={}] - Requirements to win this role.
+    * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
+    * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
 
     * @return {ReactionRole}
     */
@@ -124,7 +124,7 @@ class ReactionRole {
     }
 
     /** 
-    * Check if member have boost requierement to win this role.
+    * Check if member have boost requirement to win this role.
     * @param {GuildMember} member - The member to check.
     * @return {boolean} 
     */

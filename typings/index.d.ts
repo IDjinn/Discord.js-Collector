@@ -36,13 +36,13 @@ declare module "discord.js-collector" {
     get winners(): string[];
     get max(): number;
     get toggle(): boolean;
-    get requierements(): IRequierements;
+    get requirements(): IRequirements;
     static fromJSON(json: JSON): ReactionRole;
     public checkDeveloperRequirement(member: GuildMember): Promise<boolean>;
     public checkBoostRequirement(member: GuildMember): boolean;
   }
 
-  export interface IRequierements {
+  export interface IRequirements {
     boost: boolean;
     verifiedDeveloper: boolean;
   }
@@ -109,14 +109,14 @@ declare module "discord.js-collector" {
     public on(
       event: "missingRequirements",
       listener: (
-        type: IRequierementType,
+        type: IRequirementType,
         member: GuildMember,
         reactionRole: ReactionRole
       ) => void
     ): this;
   }
 
-  export enum IRequierementType {
+  export enum IRequirementType {
     BOOST = "BOOST",
     VERIFIED_DEVELOPER = "VERIFIED_DEVELOPER",
   }
@@ -127,7 +127,7 @@ declare module "discord.js-collector" {
     emoji: EmojiIdentifierResolvable;
     max?: number;
     toggle?: boolean;
-    requierements?: IRequierements;
+    requirements?: IRequirements;
   }
 
   export interface IReactionRoleManagerOptions {
