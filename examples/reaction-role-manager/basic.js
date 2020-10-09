@@ -29,7 +29,7 @@ reactionRoleManager.on('allReactionsRemove', (message) => {
 
 // If member doesn't have all requirements, this event is triggered.
 reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
-    console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requierement ${type}`);
+    console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requirement ${type}`);
 });
 
 client.on("message", async (message) => {
