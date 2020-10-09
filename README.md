@@ -115,21 +115,9 @@ ReactionCollector.paginator({
 
 ## Simple messages collector
 
-Await for messages from user, and when it's send will fire a trigger to do things.
+Await for messages from user, and when it's send will fire a trigger to do things. See exemple [here](https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/message-collector/question.js) 
 
 ![Question Gif](./assets/messageQuestion.gif)
-
-```js
-const { MessageCollector } = require("discord.js-collector");
-
-const botMessage = await message.channel.send("Awaiting a message");
-MessageCollector.question({
-  botMessage,
-  user: message.author.id,
-  onMessage: async (botMessage, message) =>
-    await botMessage.channel.send(`Your answer was ${message.content}`),
-});
-```
 
 ## Async message collector
 
