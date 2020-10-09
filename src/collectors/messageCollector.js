@@ -39,7 +39,7 @@ class MessageCollector {
     * @private
     */
     static __createMessageCollector(_options) {
-        const { botMessage, user, collectorOptions, onMessage, deleteMessage } = validateOptions(_options, 'messageCollector');
+        const { botMessage, user, collectorOptions, onMessage, deleteMessage } = _options;
         const filter = (message) => message.author.id === user.id && !message.author.bot;
         const collector = botMessage.channel.createMessageCollector(filter, collectorOptions);
         collector.on('collect', async (message) => {
@@ -56,7 +56,7 @@ class MessageCollector {
     */
     static async __createAsyncMessageCollector(_options) {
         return new Promise(async (resolve, reject) => {
-            const { botMessage, user, collectorOptions, deleteMessage } = validateOptions(_options, 'messageAsyncQuestion');
+            const { botMessage, user, collectorOptions, deleteMessage } = _options;
             const filter = (message) => message.author.id === user.id && !message.author.bot;
             const caughtMessages = await botMessage.channel.awaitMessages(filter, collectorOptions);
             if (caughtMessages.size > 0) {

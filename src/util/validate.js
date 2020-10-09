@@ -82,7 +82,7 @@ module.exports.validateOptions = (options, type) => {
 
             if (!options.onMessage)
                 options.onMessage = Constants.DEFAULT_RETURN_FUNCTION;
-
+            
             if (options.botMessage.channel.type == 'dm')
                 options.deleteMessage = false;
             else if (!isBoolean(options.deleteMessage))
@@ -113,19 +113,19 @@ module.exports.validateOptions = (options, type) => {
     }
 
     if (!options.collectorOptions || !isObject(options.collectorOptions))
-        options.collectorOptions = { time: Constants.DEFAULT_COLLECTOR_TIME, max: (type === 'reactPaginator' || type === 'reactMenu') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT };
+        options.collectorOptions = { time: Constants.DEFAULT_COLLECTOR_TIME, max: (type === 'reactPaginator' || type === 'reactMenu' || type === 'messageQuestion') ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT };
 
-    if (!isNumber(options.collectorOptions.time)) {
+    if (isNaN(options.collectorOptions.time)) {
         options.collectorOptions.time = parseInt(options.collectorOptions.time);
         if (isNaN(options.collectorOptions.time)) {
             options.collectorOptions.time = Constants.DEFAULT_COLLECTOR_TIME;
         }
     }
 
-    if (!isNumber(options.collectorOptions.max)) {
+    if (isNaN(options.collectorOptions.max)) {
         options.collectorOptions.max = parseInt(options.collectorOptions.max);
         if (isNaN(options.collectorOptions.max)) {
-            if (type === 'reactPaginator' || type === 'reactMenu') {
+            if (type === 'reactPaginator' || type === 'reactMenu' || type === 'messageQuestion') {
                 options.collectorOptions.max = Constants.DEFAULT_PAGINATOR_MAX_REACT;
             } else {
                 options.collectorOptions.max = Constants.DEFAULT_COLLECTOR_MAX_REACT;
