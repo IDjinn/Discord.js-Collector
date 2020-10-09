@@ -63,8 +63,8 @@ declare module "discord.js-collector" {
     public reactionRoles: Collection<string, ReactionRole>;
     public timeouts: Collection<string, Function>;
     public createReactionRole(options: IAddRoleOptions): Promise<void>;
-    public deleteReactionRole(role: ReactionRole): void;
-    private __store(): void;
+    public deleteReactionRole(role: ReactionRole): Promise<void>;
+    public store(...roles: ReactionRole): Promise<void>;
     private __parseStorage(): Collection<string, any>;
     private __onReactionAdd(
       msgReaction: MessageReaction,
