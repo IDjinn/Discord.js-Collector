@@ -10,7 +10,7 @@ class Controller {
     * Reaction Controller constructor
     * @param {Message} botMessage - Message where reaction collector is working.
     * @param {DjsReactionCollector} collector - Collector from botMessage.
-    * @param {object} pages - All reaction collector pages.
+    * @param {Object} pages - All reaction collector pages.
     * @return {Controller}
     */
     constructor(botMessage, collector, pages) {
@@ -23,17 +23,20 @@ class Controller {
 
     /** 
     * Stop all collectors funcion
+    * @param {string?} [reason='user'] - The reason this collector is ending
     * @return {void}
     */
-    stop() {
+    stop(reason = 'user') {
         if (this.messagesCollector)
-            this.messagesCollector.stop();
-        return this._collector.stop();
+            this.messagesCollector.stop(reason);
+        return this._collector.stop(reason);
     }
 
     /** 
     * Reset collectors timer
-    * @param {object} optins - Options to reset timers.
+    * @param {Object} [options] -
+    * @param {number} [options.time] - How long to run the collector for in milliseconds.
+    * @param {number} [options.idle] -How long to stop the collector after inactivity in milliseconds.
     * @return {void}
     */
     resetTimer(options) {
@@ -43,34 +46,38 @@ class Controller {
     }
     /** 
     * Go to other page
-    * @param {*} pageId - Specific ID to other page.
+    * @param {string|number} pageId - Specific ID to other page.
+    * @throws {string} Invalid action if page id given doesn't exists.
     * @return {Promise<void>}
     */
-    goTo(pageId) {
-        const idList = findRecursively({ obj: this.pages, key: 'id', type: 'object' });
-        const page = idList.find(page => page.id === pageId);
+    async goTo(pageId) {
+        const pages = [];
+        findRecursively({ obj: this.pages, key: 'id', value: pageId, type: 'object', result: pages });
+        const page = pages.shift();
         if (!page)
             throw 'Invalid action: Couldn\'t go to page \'' + pageId + '\', this page doens\'t exists.';
+        
         this.currentPage = page;
-        this.update();
+        await this.update();
     }
 
     /** 
     * Back to last page
+    * @throws {string} - Invalid action if tou cannot back without a last page valid.
     * @return {Promise<void>} 
     */
-    back() {
+    async back() {
         if (!this.canBack)
             throw 'Invalid action: Cannot back without last page valid.';
         let aux = this.currentPage;
         this.currentPage = this.lastPage;
         this.lastPage = aux;
-        this.update();
+        await this.update();
     }
 
     /** 
     * Update botMessage when page was changed.
-    * @param {boolean} onlyMessage - Do you need update only message, without reactions? Default false.
+    * @param {boolean} [onlyMessage=false] - Do you need update only message, without reactions? Default false.
     * @return {Promise<void>}
     */
     async update(onlyMessage = false) {
@@ -94,7 +101,7 @@ class Controller {
     }
     /**
     * Last page visualized by user.
-    * @type {object?}
+    * @type {Object?}
     * @readonly
     */
     get lastPage() {
@@ -121,7 +128,7 @@ class Controller {
     }
     /**
     * Current page.
-    * @type {object}
+    * @type {Object}
     * @readonly
     */
     get currentPage() {
@@ -135,8 +142,8 @@ class Controller {
         this._lastPage = value;
     }
     /**
-    * All pages object
-    * @type {object}
+    * All pages Object
+    * @type {Object}
     * @readonly
     */
     get pages() {
@@ -159,11 +166,11 @@ class Controller {
 class ReactionCollector {
     /**
      * Create a reaction menu. See example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/menu.js}
-     * @param {object} options - Options to create a reaction menu.
+     * @param {Object} options - Options to create a reaction menu.
      * @param {Message} options.botMessage - Bot message where collector will start work.
-     * @param {object} options.pages - Reaction menu pages.
+     * @param {Object} options.pages - Reaction menu pages.
      * @param {UserResolvable} options.user - User who can react this menu.
-     * @param {object} [options.collectorOptions=null] - Options to create discord.js reaction collector.
+     * @param {Object} [options.collectorOptions=null] - Options to create discord.js reaction collector.
      * @param {...*} [args] - Arguments given when onReact or onMessage function was triggered.
      * @return {Controller}
      */

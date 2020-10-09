@@ -66,19 +66,19 @@ class ReactionRoleManager extends EventEmitter {
 
     /**
     * Reaction Role Manager constructor
-    * @param {Client} client - Discord js client object.
-    * @param {object} options -
-    * @param {object} [options.storage=true] - Enable/disable storage of reaction role.
-    * @param {object} [options.mongoDbLink=null] - Link to connect with mongodb.
-    * @param {object} [options.path=null] - Path to save json data of reactions roles.
-    * @param {object} [options.debug=false] - Enable/Disable debug of reaction role manager.
+    * @param {Client} client - Discord js client Object.
+    * @param {Object} [options] -
+    * @param {Object} [options.storage=true] - Enable/disable storage of reaction role.
+    * @param {Object} [options.mongoDbLink=null] - Link to connect with mongodb.
+    * @param {Object} [options.path=null] - Path to save json data of reactions roles.
+    * @param {Object} [options.debug=false] - Enable/Disable debug of reaction role manager.
     * @extends EventEmitter
     * @return {ReactionRoleManager}
     */
     constructor(client, { storage, mongoDbLink, path, debug } = { storage: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
         super();
         if (!(client instanceof Client))
-            throw 'Client param must be a Client object.';
+            throw 'Client param must be a Client Object.';
         
         /**
         * Discord client.
@@ -387,13 +387,13 @@ class ReactionRoleManager extends EventEmitter {
 
     /**
     * Create new reaction role.
-    * @param {object} options - Object with options to create new reaction role.
+    * @param {Object} options - Object with options to create new reaction role.
     * @param {Message} options.message - Message what will have the reactions.
     * @param {Role} options.role - Role what the bot will give/take from members when they react.
     * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
     * @param {Number} [options.max=Infinity] - Max roles to give.
     * @param {Boolean} [options.toggle=false] - User will have only one of these message roles.
-    * @param {object} [options.requierements={}] - Requierements to win this role.
+    * @param {Object} [options.requierements={}] - Requierements to win this role.
     * @param {boolean} [options.requierements.boost=false] - Need be a booster to win this role?
     * @param {boolean} [options.requierements.verifiedDeveloper=false] - Need be a verified developer to win this role?
     */
@@ -421,7 +421,7 @@ class ReactionRoleManager extends EventEmitter {
                 this.__debug('ROLE', `Role '${role}' added in reactionRoleManager!`);
                 return resolve();
             }
-            return reject('Bad input: addRole({...}) message must be a Message object.');
+            return reject('Bad input: addRole({...}) message must be a Message Object.');
         });
     }
 
@@ -444,7 +444,7 @@ class ReactionRoleManager extends EventEmitter {
                 this.__debug('ROLE', `Role '${role.role}' removed from reactionRoleManager!`);
         }
         else
-            throw 'Bad input: removeRole(role) must be a ReactionRole object.';
+            throw 'Bad input: removeRole(role) must be a ReactionRole Object.';
     }
 
     /** 

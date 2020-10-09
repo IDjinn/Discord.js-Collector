@@ -170,11 +170,11 @@ declare module "discord.js-collector" {
       pages: IMenuPage
     );
     public stop(): void;
-    public back(): void;
     public restTimer(options?: ITimerOptions): void;
-    public goTo(pageId: string | number): void;
+    public async back(): Promise<void>;
+    public async goTo(pageId: string | number): Promise<void>;
+    public async update(bool: boolean): Promise<void>;
     public get canBack(): boolean;
-    public update(bool: boolean): Promise<void>;
     get botMessage(): Message;
     get lastPage(): IMenuPage;
     set messagesCollector(value);
