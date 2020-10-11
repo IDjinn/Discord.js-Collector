@@ -50,7 +50,7 @@ client.on("message", async (message) => {
         if (!role)
             return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1_000 }));
 
-        reactionRoleManager.addRole({
+        reactionRoleManager.createReactionRole({
             message: msg,
             role,
             emoji
