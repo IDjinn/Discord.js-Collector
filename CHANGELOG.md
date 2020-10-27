@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.6.2
+
+• Reaction Role Manager: Fix TypeError: messageReactionsRoles.map is not a function
+
+---
 # CHANGELOG - V1.6.1
 
 • Reaction Role Manager: Fix error if client param is class extends client

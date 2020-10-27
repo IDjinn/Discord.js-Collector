@@ -76,7 +76,7 @@ class ReactionRoleManager extends EventEmitter {
     */
     constructor(client, { storage, mongoDbLink, path, debug } = { storage: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
         super();
-        
+
         /**
         * Discord client.
         * @type {Client}
@@ -445,7 +445,7 @@ class ReactionRoleManager extends EventEmitter {
                     this.__debug('ROLE', `Role '${role.role}' removed from reactionRoleManager!`);
                 return resolve();
             }
-               return reject('Bad input: removeRole(role) must be a ReactionRole Object.');
+            return reject('Bad input: removeRole(role) must be a ReactionRole Object.');
         });
     }
 
@@ -620,7 +620,7 @@ class ReactionRoleManager extends EventEmitter {
         const { guild } = message;
         const id = `${message.id}-${emoji}`;
 
-        const member = guild.members.cache.get(user.id);
+        const member = await guild.members.fetch(user.id); // TODO: .cache wasn't working... Idk why 
         if (!member)
             return;
 
@@ -655,10 +655,10 @@ class ReactionRoleManager extends EventEmitter {
     * @return {Promise<void>}
     */
     async __onRemoveAllReaction(message) {
-        const messageReactionsRoles = this.reactionRoles.filter(r => r.message == message.id).values();
+        const messageReactionsRoles = this.reactionRoles.filter(r => r.message == message.id);
         const membersAffected = [];
         let reactionsTaken = 0;
-        for (const reactionRole of messageReactionsRoles) {
+        for (const [_id, reactionRole] of messageReactionsRoles) {
             for (const winnerId of reactionRole.winners) {
                 const member = message.guild.members.cache.get(winnerId);
                 if (!member)
@@ -674,7 +674,7 @@ class ReactionRoleManager extends EventEmitter {
             this.__debug('ROLE', `Reaction role '${reactionRole.id}' was deleted, by someone take off all reactions from message.`);
         }
 
-        const rolesAffected = messageReactionsRoles.map(rr => message.guild.roles.get(rr.role)).filter(role => role instanceof Role);
+        const rolesAffected = messageReactionsRoles.map((rr) => message.guild.roles.cache.get(rr.role));
         this.emit(REACTIONROLE_EVENT.ALL_REACTIONS_REMOVE, message, rolesAffected, membersAffected, reactionsTaken);
         this.store();
     }
