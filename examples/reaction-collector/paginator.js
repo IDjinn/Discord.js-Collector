@@ -1,5 +1,5 @@
 const { ReactionCollector } = require('discord.js-collector')
-const { Client, MessageEmbed} = require("discord.js");
+const { Client, MessageEmbed } = require("discord.js");
 const client = new Client();
 client.on("ready", () => {
     console.log("ready");
@@ -14,15 +14,30 @@ client.on("message", async (message) => {
             user: message.author,
             pages: [
                 new MessageEmbed()
-                .setTitle('Moderation')
-                .addField('Kick', 'Kick one member from the server')
-                .addField('Ban', 'Ban one member from server')
-                .addField('Mute', 'Remove permissions from member to talk in chats while is muted')
-                .addField('Clear', 'Clear messages from text channel'),
-                new MessageEmbed({ title: 'We need make second page lol' })
-            ]
+                    .setTitle('Moderation')
+                    .addField('Kick', 'Kick one member from the server')
+                    .addField('Ban', 'Ban one member from server')
+                    .addField('Mute', 'Remove permissions from member to talk in chats while is muted')
+                    .addField('Clear', 'Clear messages from text channel'),
+                new MessageEmbed()
+                    .setTitle('Util')
+                    .addField('Ping', 'Bot ping latency')
+                    .addField('Botinfo', 'Ban one member from server')
+                    .addField('Avatar', 'Show a user avatar'),
+                new MessageEmbed()
+                    .setTitle('Economy')
+                    .addField('Daily', 'Pick up daily reward')
+                    .addField('Pay', 'Pay some amount to other user'),
+                new MessageEmbed()
+                    .setTitle('Administration')
+                    .addField('Autorole', 'Configure autorole in this server')
+                    .addField('Prefix', 'Change bot prefix')
+            ],
+            collectorOptions: {
+                time: 60_000
+            }
         });
     }
 });
 
-client.login("Token");
+client.login('Token');

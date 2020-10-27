@@ -27,6 +27,6 @@
         "destination": "./out/",
         "encoding": "utf8",
         "recurse": true,
-        "template": "./node_modules/jsdoc-baseline"
+        "template": "./node_modules/minami"
     }
 }

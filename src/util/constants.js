@@ -26,13 +26,28 @@ class Constants {
      * @constant {object}
      */
     static DEFAULT_PAGINATOR_REACTIONS_MAP = {
-        '⏪': async (_reaction, botMessage, i, pages) => {
-            i = i > 0 ? i-- : 0;
-            await botMessage.edit({ embed: pages[i] });
+        '⏮️': async (_reaction, _collector, botMessage, pages) => {
+            pages.index = 0;
+            await botMessage.edit({ embed: pages[pages.index] });
         },
-        '⏩': async (_reaction, botMessage, i, pages) => {
-            i = i + 1 < pages.length ? i++ : pages.length;
-            await botMessage.edit({ embed: pages[i] });
+        '⏪': async (_reaction, _collector, botMessage, pages) => {
+            pages.index--;
+            if (pages.index <= 0)
+                pages.index = 0;
+            await botMessage.edit({ embed: pages[pages.index] });
+        },
+        '⏹️': async (_reaction, collector,  _botMessage, _pages) => {
+            collector.stop();
+        },
+        '⏩': async (_reaction, _collector, botMessage, pages) => {
+            pages.index++;
+            if (pages.index >= pages.length)
+                pages.index = pages.length - 1;
+            await botMessage.edit({ embed: pages[pages.index] });
+        },
+        '⏭️': async (_reaction, _collector, botMessage, pages) => {
+            pages.index = pages.length - 1;
+            await botMessage.edit({ embed: pages[pages.index] });
         },
     };
     /** 

@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.6.0
+
+• Reaction Paginator is working now, with more emojis (Soon it will be possible use custom emojis!)
+
+---
 # CHANGELOG - V1.5.5
 
 • Reaction Role Manager\

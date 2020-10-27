@@ -247,7 +247,7 @@ class ReactionCollector {
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
      * @param  {MessageEmbed[]} options.pages - Array with embeds.
-     * @param  {EmojiResolvable[]} [options.reactions=['✅','❌']] - Array with back/skip reactions.
+     * @param  {EmojiResolvable[]} [options.reactions] - Array with back/skip reactions.
      * @param  {DjsCollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
      * @param  {boolean?} [options.deleteReaction=true] - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
@@ -268,8 +268,8 @@ class ReactionCollector {
         if (!pages || pages.length === 0)
             throw 'Invalid input: pages is null or empty';
 
-        let i = 0;
-        await botMessage.edit({ embed: pages[0] });
+        pages.index = 0;
+        await botMessage.edit({ embed: pages[pages.index] });
         const collector = this.__createReactionCollector({
             botMessage,
             user,
@@ -279,8 +279,8 @@ class ReactionCollector {
             deleteAllOnEnd,
         },
             botMessage,
-            i,
-            pages
+            pages,
+            'isPaginator'
         );
         return collector;
     }
@@ -344,8 +344,12 @@ class ReactionCollector {
                 const emoji = reaction.emoji.id || reaction.emoji.name;
                 if (deleteReaction)
                     await reaction.users.remove(user.id);
-                if (typeof reactionsMap[emoji] === 'function')
+                if (typeof reactionsMap[emoji] === 'function') {
+                    if ([...args].includes('isPaginator')) // TODO: REMOVE-ME / Gambiarra, mas resolve o problema.
+                        reactionsMap[emoji](reaction, collector, ...args);
+                    else
                     reactionsMap[emoji](reaction, ...args);
+                }
             });
             if (deleteAllOnEnd)
                 collector.on('end', async () => await botMessage.reactions.removeAll());
