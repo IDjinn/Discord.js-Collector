@@ -76,8 +76,6 @@ class ReactionRoleManager extends EventEmitter {
     */
     constructor(client, { storage, mongoDbLink, path, debug } = { storage: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
         super();
-        if (!(client instanceof Client))
-            throw 'Client param must be a Client Object.';
         
         /**
         * Discord client.

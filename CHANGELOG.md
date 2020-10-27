@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.6.1
+
+• Reaction Role Manager: Fix error if client param is class extends client
+
+---
 # CHANGELOG - V1.6.0
 
 • Reaction Paginator is working now, with more emojis (Soon it will be possible use custom emojis!)
