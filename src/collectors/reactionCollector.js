@@ -1,4 +1,5 @@
-const Discord, { Message, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
+const { Message, MessageEmbed, EmojiResolvable, UserResolvable } = require("discord.js");
+const Discord = require('discord.js');
 const { validateOptions } = require('../util/validate');
 const findRecursively = require('../util/find').findRecursively;
 
@@ -56,7 +57,7 @@ class Controller {
         const page = pages.shift();
         if (!page)
             throw 'Invalid action: Couldn\'t go to page \'' + pageId + '\', this page doens\'t exists.';
-        
+
         this.currentPage = page;
         await this.update();
     }
@@ -248,7 +249,7 @@ class ReactionCollector {
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
      * @param  {MessageEmbed[]} options.pages - Array with embeds.
      * @param  {EmojiResolvable[]} [options.reactions] - Array with back/skip reactions.
-     * @param  {DjsCollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {Discord.CollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
      * @param  {boolean?} [options.deleteReaction=true] - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @example
@@ -291,7 +292,7 @@ class ReactionCollector {
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
      * @param  {EmojiResolvable[]} [options.reactions=['✅','❌']] - Object with reactions and functions.
-     * @param  {DjsCollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {Discord.CollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
      * @param  {boolean?} [options.deleteReaction=true] - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @param {...*} [args] - All args given at trigger onReact() funcion.
@@ -310,7 +311,7 @@ class ReactionCollector {
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
      * @param  {EmojiResolvable[]} [options.reactions=['✅','❌']] - Array with 2 emojis, first one is "Yes" and second one is "No".
-     * @param  {DjsCollectorOptions} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {Discord.CollectorOptions} [options.collectorOptions=null] - Default discord.js collector options
      * @param  {boolean} [options.deleteReaction=true] - The Bot will remove reaction after user react?
      * @param  {boolean} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @returns {Promise<boolean>}
@@ -348,7 +349,7 @@ class ReactionCollector {
                     if ([...args].includes('isPaginator')) // TODO: REMOVE-ME / Gambiarra, mas resolve o problema.
                         reactionsMap[emoji](reaction, collector, ...args);
                     else
-                    reactionsMap[emoji](reaction, ...args);
+                        reactionsMap[emoji](reaction, ...args);
                 }
             });
             if (deleteAllOnEnd)

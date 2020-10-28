@@ -1,8 +1,8 @@
 
 ---
-# CHANGELOG - V1.6.3
+# CHANGELOG - V1.6.3-4
 
-• Types: fix types imported (MessageCollector and ReactionCollector) from Discord.js
+• Types: fix types imported (MessageCollector and ReactionCollector, CollectorOptions) from Discord.js
 
 ---
 # CHANGELOG - V1.6.2
