@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.6.3
+
+• Types: fix types imported (MessageCollector and ReactionCollector) from Discord.js
+
+---
 # CHANGELOG - V1.6.2
 
 • Reaction Role Manager: Fix TypeError: messageReactionsRoles.map is not a function

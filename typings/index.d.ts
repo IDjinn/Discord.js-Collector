@@ -1,7 +1,5 @@
-import {
+import Discord, {
   CollectorOptions,
-  MessageCollector as DjsMessageCollector,
-  ReactionCollector as DjsReactionCollector,
   EmojiIdentifierResolvable,
   Message,
   MessageEmbed,
@@ -141,11 +139,11 @@ declare module "discord.js-collector" {
   export class MessageCollector {
     public static question(
       options: IMessageQuestionOptions
-    ): DjsMessageCollector;
+    ): Discord.MessageCollector;
     public static asyncQuestion(
       options: IMessageQuestionOptions
     ): Promise<Message>;
-    private __createMessageCollector(_options): DjsMessageCollector;
+    private __createMessageCollector(_options): Discord.MessageCollector;
     private __createAsyncMessageCollector(_options): Promise<Message>;
   }
 
@@ -166,7 +164,7 @@ declare module "discord.js-collector" {
   export class Controller {
     constructor(
       botMessage: Message,
-      collector: DjsReactionCollector,
+      collector: Discord.ReactionCollector,
       pages: IMenuPage
     );
     public stop(): void;
@@ -178,8 +176,8 @@ declare module "discord.js-collector" {
     get botMessage(): Message;
     get lastPage(): IMenuPage;
     set messagesCollector(value);
-    get messagesCollector(): DjsMessageCollector;
-    get collector(): DjsReactionCollector;
+    get messagesCollector(): Discord.MessageCollector;
+    get collector(): Discord.ReactionCollector;
     get currentPage(): IMenuPage;
     set currentPage(value);
     set lastPage(value);
@@ -188,18 +186,18 @@ declare module "discord.js-collector" {
 
   export class ReactionCollector {
     public static menu(options: IReactMenuOptions): Controller;
-    public static paginator(options: IPaginatorOptions): DjsReactionCollector;
+    public static paginator(options: IPaginatorOptions): Discord.ReactionCollector;
     public static question(
       options: IReactQuestionOptions,
       ...args: any
-    ): DjsReactionCollector;
+    ): Discord.ReactionCollector;
     public static yesNoQuestion(
       options: IReactQuestionOptions
     ): Promise<boolean>;
     private static __createReactionCollector(
       _options,
       ...args: any
-    ): DjsReactionCollector;
+    ): Discord.ReactionCollector;
     private static __createYesNoReactionCollector(_options): Promise<boolean>;
   }
 

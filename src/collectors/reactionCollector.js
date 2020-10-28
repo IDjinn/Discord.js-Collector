@@ -1,4 +1,4 @@
-const { Message, ReactionCollector: DjsReactionCollector, MessageCollector: DjsMessageCollector, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
+const Discord, { Message, MessageEmbed, EmojiResolvable, CollectorOptions: DjsCollectorOptions, UserResolvable } = require("discord.js");
 const { validateOptions } = require('../util/validate');
 const findRecursively = require('../util/find').findRecursively;
 
@@ -9,7 +9,7 @@ class Controller {
     /** 
     * Reaction Controller constructor
     * @param {Message} botMessage - Message where reaction collector is working.
-    * @param {DjsReactionCollector} collector - Collector from botMessage.
+    * @param {Discord.ReactionCollector} collector - Collector from botMessage.
     * @param {Object} pages - All reaction collector pages.
     * @return {Controller}
     */
@@ -112,7 +112,7 @@ class Controller {
     }
     /**
     * Discord.js message collector, if pages have funcion to catch messages.
-    * @type {DjsMessageCollector?}
+    * @type {Discord.MessageCollector?}
     * @readonly
     */
     get messagesCollector() {
@@ -120,7 +120,7 @@ class Controller {
     }
     /**
     * Discord.js reaction collector
-    * @type {DjsReactionCollector}
+    * @type {Discord.ReactionCollector}
     * @readonly
     */
     get collector() {
@@ -297,7 +297,7 @@ class ReactionCollector {
      * @param {...*} [args] - All args given at trigger onReact() funcion.
      * See example in {@link https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/reaction-collector/question.js}
      * @note onReact(reation, ...args) = When user react, will trigger this function
-     * @returns DjsReactionCollector
+     * @returns Discord.ReactionCollector
      */
     static question(options, ...args) {
         return this.__createReactionCollector(validateOptions(options, 'reactQuestion'), ...args);
@@ -331,7 +331,7 @@ class ReactionCollector {
      * @description Internal methods, do not use.
      * @private
      * @param  {CollectorOptions} _options
-     * @returns {DjsReactionCollector}
+     * @returns {Discord.ReactionCollector}
      */
     static async __createReactionCollector(_options, ...args) {
         try {
