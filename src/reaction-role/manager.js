@@ -1,4 +1,4 @@
-const { Client, Role, Message, Collection, GuildMember } = require("discord.js");
+const { Client, Role, Message, Collection, GuildMember, Util } = require("discord.js");
 const Constants = require("../util/constants");
 const { EventEmitter } = require("events");
 const { ReactionRole } = require('./reactionRole');
@@ -131,7 +131,7 @@ class ReactionRoleManager extends EventEmitter {
         });
 
         this.client.on('emojiDelete', async emoji => {
-            const emojiIdentifier = this.client.emojis.resolveIdentifier(emoji.id || emoji.name);
+            const emojiIdentifier = this.__resolveReactionEmoji(emoji);
             const reactionRole = this.reactionRoles.find(reactionRole => reactionRole.emoji == emojiIdentifier);
             if (reactionRole)
                 return await this.__handleDeleted(reactionRole, emoji);
@@ -184,7 +184,7 @@ class ReactionRoleManager extends EventEmitter {
         if (!message)
             return this.deleteReactionRole(reactionRole, true);
 
-        const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.client.emojis.resolveIdentifier(x.emoji.id || x.emoji.name)}`);
+        const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.__resolveReactionEmoji(x)}`);
         if (!reaction)
             return this.deleteReactionRole(reactionRole, true);
 
@@ -203,7 +203,7 @@ class ReactionRoleManager extends EventEmitter {
 
             try {
                 this.mongoose = require('mongoose');
-                await this.mongoose.connect(this.mongoDbLink, { useNewUrlParser: true, useUnifiedTopology: true });
+                await this.mongoose.connect(this.mongoDbLink, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
                 this.mongoose.model('ReactionRoles', new this.mongoose.Schema({
                     id: String,
@@ -284,7 +284,9 @@ class ReactionRoleManager extends EventEmitter {
             if (!message.reactions.cache.has(reactionRole.emoji)) // Bot reaction is deleted, and not have any reaction with this reaction role emoji.
                 await message.react(reactionRole.emoji);
 
-            const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.client.emojis.resolveIdentifier(x.emoji.id || x.emoji.name)}`);
+            const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.__parseStorage}`);
+            if (!reaction)
+                continue;
             await reaction.users.fetch(); //Need fetch the users to next for
             for (const user of reaction.users.cache.values()) {
                 if (user.bot) // Ignore bots, please!
@@ -407,11 +409,10 @@ class ReactionRoleManager extends EventEmitter {
                 if (!role)
                     return reject('Bad input: I canno\'t resolve role ' + role);
 
-                const matchAnimatedEmoji = emoji.match(/(?<=<a?:.*:)\d*(?=>)/);
-                emoji = message.client.emojis.resolveIdentifier(matchAnimatedEmoji && matchAnimatedEmoji[0] ? matchAnimatedEmoji[0] : emoji);
+                emoji = this.__resolveReactionEmoji(Util.parseEmoji(emoji));
                 if (!emoji)
                     return reject('Bad input: I canno\'t resolve emoji ' + role);
-                if (matchAnimatedEmoji && !this.client.emojis.resolve(emoji))
+                if (!this.client.emojis.resolve(emoji))
                     return reject('Bad input: I canno\'t find emoji ' + role);
 
                 await message.react(emoji);
@@ -511,7 +512,7 @@ class ReactionRoleManager extends EventEmitter {
         if (user.bot)
             return;
 
-        const emoji = this.client.emojis.resolveIdentifier(msgReaction.emoji.id || msgReaction.emoji.name);
+        const emoji = this.__resolveReactionEmoji(msgReaction.emoji);
         const { message } = msgReaction;
         const { guild } = message;
         const id = `${message.id}-${emoji}`;
@@ -522,7 +523,7 @@ class ReactionRoleManager extends EventEmitter {
 
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole)) {
-            await message.reactions.removeAll();
+            await msgReaction.remove();
             return this.__debug('ROLE', `Reaction Role '${id}' wasn't found in guild '${guild.id}', so the member '${member.id}' will not win this role.`)
         }
 
@@ -534,7 +535,7 @@ class ReactionRoleManager extends EventEmitter {
         const role = guild.roles.cache.get(reactionRole.role);
         if (!(role instanceof Role)) {
             this.__debug('ROLE', `Role '${reactionRole.role}' wasn't found in guild '${guild.id}', the member '${member.id}' will not won the role.`)
-            return await message.reactions.removeAll();
+            return await msgReaction.remove();
         }
 
         if (this.__checkRequirements(reactionRole, msgReaction, member)) {
@@ -549,7 +550,7 @@ class ReactionRoleManager extends EventEmitter {
                 this.__timeoutToggledRoles(member, message);
             }
             else {
-                this.store(...[reactionRole]);
+                this.store(reactionRole);
             }
         }
     }
@@ -579,13 +580,13 @@ class ReactionRoleManager extends EventEmitter {
                 if (member.roles.cache.has(toggledRole.id))
                     await member.roles.remove(toggledRole.role);
 
-                const reaction = message.reactions.cache.find(reaction => this.client.emojis.resolveIdentifier(reaction.emoji.id || reaction.emoji.name) == toggledRole.emoji)
+                const reaction = message.reactions.cache.find(reaction => this.__resolveReactionEmoji(reaction.emoji) == toggledRole.emoji)
                 await reaction.users.remove(member.user);
                 this.__debug('REACTION', `Take off role '${toggledRole.role}' from user '${member.id}', it's a toggled role.`);
             }
 
             if (skippedRole instanceof ReactionRole) {
-                const reaction = message.reactions.cache.find(reaction => this.client.emojis.resolveIdentifier(reaction.emoji.id || reaction.emoji.name) == skippedRole.emoji)
+                const reaction = message.reactions.cache.find(reaction => this.__resolveReactionEmoji(reaction.emoji) == skippedRole.emoji)
                 if (this.__checkRequirements(skippedRole, reaction, member)) {
                     if (skippedRole.winners.indexOf(member.id) <= -1)
                         skippedRole.winners.push(member.id);
@@ -615,25 +616,25 @@ class ReactionRoleManager extends EventEmitter {
         if (user.bot)
             return;
 
-        const emoji = this.client.emojis.resolveIdentifier(msgReaction.emoji.id || msgReaction.emoji.name);
+        const emoji = this.__resolveReactionEmoji(msgReaction.emoji);
         const { message } = msgReaction;
         const { guild } = message;
         const id = `${message.id}-${emoji}`;
 
-        const member = await guild.members.fetch(user.id); // TODO: .cache wasn't working... Idk why 
+        const member = await guild.members.cache.get(user.id);
         if (!member)
             return;
 
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole)) {
             this.__debug('ROLE', `Reaction Role '${id}' wasn't found in guild '${guild.id}', so this role will be deleted.`);
-            return await message.reactions.removeAll();
+            return await msgReaction.remove();
         }
 
         const role = guild.roles.cache.get(reactionRole.role);
         if (!(role instanceof Role)) {
             this.__debug('ROLE', `Role '${reactionRole.role}' wasn't found in guild '${guild.id}', the member '${member.id}' will not lose the role.`)
-            return await msgReaction.removeAll();
+            return await msgReaction.remove();
         }
 
         if (member.roles.cache.has(role.id)) {
@@ -645,7 +646,7 @@ class ReactionRoleManager extends EventEmitter {
         const index = reactionRole.winners.indexOf(member.id);
         if (index >= 0) {
             reactionRole.winners.splice(index, 1);
-            this.store(...[reactionRole]);
+            this.store(reactionRole);
         }
     }
 
@@ -677,6 +678,10 @@ class ReactionRoleManager extends EventEmitter {
         const rolesAffected = messageReactionsRoles.map((rr) => message.guild.roles.cache.get(rr.role));
         this.emit(REACTIONROLE_EVENT.ALL_REACTIONS_REMOVE, message, rolesAffected, membersAffected, reactionsTaken);
         this.store();
+    }
+
+    __resolveReactionEmoji(emoji) {
+        return emoji.id || this.client.emojis.resolveIdentifier(emoji.name);
     }
 }
 

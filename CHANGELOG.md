@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.6.5
+
+• Fix Reaction Role Manager: Problems with animated emojis and auto deleting rr
+
+---
 # CHANGELOG - V1.6.3-4
 
 • Types: fix types imported (MessageCollector and ReactionCollector, CollectorOptions) from Discord.js

@@ -57,7 +57,7 @@ class Controller {
         const page = pages.shift();
         if (!page)
             throw 'Invalid action: Couldn\'t go to page \'' + pageId + '\', this page doens\'t exists.';
-
+        
         this.currentPage = page;
         await this.update();
     }
@@ -171,7 +171,7 @@ class ReactionCollector {
      * @param {Message} options.botMessage - Bot message where collector will start work.
      * @param {Object} options.pages - Reaction menu pages.
      * @param {UserResolvable} options.user - User who can react this menu.
-     * @param {Object} [options.collectorOptions=null] - Options to create discord.js reaction collector.
+     * @param {Discord.ReactionCollectorOptions} [options.collectorOptions] - Options to create discord.js reaction collector options.
      * @param {...*} [args] - Arguments given when onReact or onMessage function was triggered.
      * @return {Controller}
      */
@@ -249,7 +249,7 @@ class ReactionCollector {
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
      * @param  {MessageEmbed[]} options.pages - Array with embeds.
      * @param  {EmojiResolvable[]} [options.reactions] - Array with back/skip reactions.
-     * @param  {Discord.CollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {Discord.ReactionCollectorOptions?} [options.collectorOptions] - Default discord.js reaction collector options
      * @param  {boolean?} [options.deleteReaction=true] - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @example
@@ -292,7 +292,7 @@ class ReactionCollector {
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
      * @param  {EmojiResolvable[]} [options.reactions=['✅','❌']] - Object with reactions and functions.
-     * @param  {Discord.CollectorOptions?} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {Discord.ReactionCollectorOptions?} [options.collectorOptions] - Default discord.js reaction collector options
      * @param  {boolean?} [options.deleteReaction=true] - The Bot will remove reaction after user react?
      * @param  {boolean?} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @param {...*} [args] - All args given at trigger onReact() funcion.
@@ -311,7 +311,7 @@ class ReactionCollector {
      * @param  {Message} options.botMessage - Message from Bot to create reaction collector.
      * @param  {UserResolvable} options.user - UserResolvable who will react. 
      * @param  {EmojiResolvable[]} [options.reactions=['✅','❌']] - Array with 2 emojis, first one is "Yes" and second one is "No".
-     * @param  {Discord.CollectorOptions} [options.collectorOptions=null] - Default discord.js collector options
+     * @param  {Discord.ReactionCollectorOptions} [options.collectorOptions] - Default discord.js reaction collector options
      * @param  {boolean} [options.deleteReaction=true] - The Bot will remove reaction after user react?
      * @param  {boolean} [options.deleteAllOnEnd=true] - The Bot will remove reaction after collector end?
      * @returns {Promise<boolean>}
@@ -349,7 +349,7 @@ class ReactionCollector {
                     if ([...args].includes('isPaginator')) // TODO: REMOVE-ME / Gambiarra, mas resolve o problema.
                         reactionsMap[emoji](reaction, collector, ...args);
                     else
-                        reactionsMap[emoji](reaction, ...args);
+                    reactionsMap[emoji](reaction, ...args);
                 }
             });
             if (deleteAllOnEnd)
