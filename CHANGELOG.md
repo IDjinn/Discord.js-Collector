@@ -1,5 +1,11 @@
 
 ---
+# CHANGELOG - V1.6.6
+
+• Fix Reaction Collector TypeError: Cannot read property 'map' of undefined
+• Reaction Role Manager: wrong typo in createReactionRole()
+
+---
 # CHANGELOG - V1.6.5
 
 • Fix Reaction Role Manager: Problems with animated emojis and auto deleting rr

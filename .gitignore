@@ -1,8 +1,15 @@
+# Ignore node modules
 node_modules/*
+
+# Ignore output files
 build/*
-tests/*
+out/*
+
+# Ignore unsefull files
 yarn-error.log
 yarn.lock
-.npmrc
-out/*
 .vscode/*
+
+# Ignore settings files
+**/process.env
+.npmrc

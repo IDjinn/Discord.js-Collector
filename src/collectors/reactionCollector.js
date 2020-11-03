@@ -337,7 +337,7 @@ class ReactionCollector {
     static async __createReactionCollector(_options, ...args) {
         try {
             const { botMessage, reactionsMap, user, collectorOptions, deleteReaction, deleteAllOnEnd } = _options;
-            const reactions = Object.keys(reactionsMap);
+            const reactions = Object.keys(reactionsMap) || reactionsMap;
             await Promise.all(reactions.map(r => botMessage.react(r)));
             const filter = (r, u) => u.id === user.id && (reactions.includes(r.emoji.id) || reactions.includes(r.emoji.name)) && !user.bot;
             const collector = botMessage.createReactionCollector(filter, collectorOptions);
@@ -368,7 +368,8 @@ class ReactionCollector {
      */
     static async __createYesNoReactionCollector(_options) {
         return new Promise(async (resolve) => {
-            const { botMessage, reactions, user, collectorOptions, deleteReaction, deleteAllOnEnd } = _options;
+            const { botMessage, reactionsMap, user, collectorOptions, deleteReaction, deleteAllOnEnd } = _options;
+            const reactions = Object.keys(reactionsMap) || reactionsMap;
             await Promise.all(reactions.map(r => botMessage.react(r)));
             const filter = (r, u) => u.id === user.id && (reactions.includes(r.emoji.id) || reactions.includes(r.emoji.name)) && !user.bot;
             const caughtReactions = await botMessage.awaitReactions(filter, collectorOptions);
