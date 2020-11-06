@@ -409,10 +409,11 @@ class ReactionRoleManager extends EventEmitter {
                 if (!role)
                     return reject('Bad input: I canno\'t resolve role ' + role);
 
-                emoji = this.__resolveReactionEmoji(Util.parseEmoji(emoji));
+                const emojiParsed = Util.parseEmoji(emoji);
+                emoji = this.__resolveReactionEmoji(emojiParsed);
                 if (!emoji)
                     return reject('Bad input: I canno\'t resolve emoji ' + emoji);
-                if (!this.client.emojis.resolve(emoji))
+                if (emojiParsed && emojiParsed.id && !this.client.emojis.resolve(emojiParsed.id))
                     return reject('Bad input: I canno\'t find emoji ' + emoji);
 
                 await message.react(emoji);

@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.6.7
+
+• Fix Reaction Role Manager: Bad input: I canno't find emoji {identifier}
+
+---
 # CHANGELOG - V1.6.6
 
 • Fix Reaction Collector TypeError: Cannot read property 'map' of undefined
