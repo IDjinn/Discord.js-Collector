@@ -74,7 +74,7 @@ class ReactionRoleManager extends EventEmitter {
     * @extends EventEmitter
     * @return {ReactionRoleManager}
     */
-    constructor(client, { storage, mongoDbLink, path, debug } = { storage: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
+    constructor(client, { storage, mongoDbLink, path, debug, disabledProperty } = { storage: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false, disabledProperty: true }) {
         super();
 
         /**
@@ -118,6 +118,12 @@ class ReactionRoleManager extends EventEmitter {
         * @type {string?}
         */
         this.storageJsonPath = path;
+        /**
+         * Disable RR instead delete?
+         * @default true
+         * @type {boolean}
+         */
+        this.disabledProperty = disabledProperty;
 
         this.client.on('ready', () => this.__resfreshOnBoot());
         this.client.on('messageReactionAdd', (msgReaction, user) => this.__onReactionAdd(msgReaction, user));
@@ -230,7 +236,7 @@ class ReactionRoleManager extends EventEmitter {
                             type: Boolean,
                             default: false
                         },
-                    }
+                    },
                 }));
                 return resolve(true);
             } catch (e) {
@@ -438,7 +444,11 @@ class ReactionRoleManager extends EventEmitter {
             if (role instanceof ReactionRole) {
                 this.reactionRoles.delete(role.id);
                 if (this.mongoose) {
-                    await this.mongoose.model('ReactionRoles').deleteOne({ id: role.id }).exec();
+                    if (this.disabledProperty) {
+                        await this.mongoose.model('ReactionRoles').findOneAndUpdate({ id: role.id }, { disabled: true }).exec();
+                    } else {
+                        await this.mongoose.model('ReactionRoles').deleteOne({ id: role.id }).exec();
+                    }
                 }
 
                 if (deleted)
