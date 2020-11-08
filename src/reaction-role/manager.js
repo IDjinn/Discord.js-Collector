@@ -237,6 +237,10 @@ class ReactionRoleManager extends EventEmitter {
                             default: false
                         },
                     },
+                    disabled: {
+                        type: Boolean,
+                        default: false
+                    }
                 }));
                 return resolve(true);
             } catch (e) {
@@ -500,7 +504,7 @@ class ReactionRoleManager extends EventEmitter {
                 }
 
                 if (this.mongoose) {
-                    roles.push(...await this.mongoose.model('ReactionRoles').find({}));
+                    roles.push(...await this.mongoose.model('ReactionRoles').find({ disabled: false }));
                 }
 
                 for (const role of roles) {
