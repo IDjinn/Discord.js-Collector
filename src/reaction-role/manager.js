@@ -297,6 +297,7 @@ class ReactionRoleManager extends EventEmitter {
             const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.__parseStorage}`);
             if (!reaction)
                 continue;
+            
             await reaction.users.fetch(); //Need fetch the users to next for
             for (const user of reaction.users.cache.values()) {
                 if (user.bot) // Ignore bots, please!
@@ -446,6 +447,7 @@ class ReactionRoleManager extends EventEmitter {
     async deleteReactionRole(role, deleted = false) {
         return new Promise(async (resolve, reject) => {
             if (role instanceof ReactionRole) {
+                role.disabled = true;
                 this.reactionRoles.delete(role.id);
                 if (this.mongoose) {
                     if (this.disabledProperty) {
@@ -508,8 +510,9 @@ class ReactionRoleManager extends EventEmitter {
                 }
 
                 for (const role of roles) {
-                    if (!role || !role.message) // TODO: Temporary, need find where have update/insert mongoose error.
+                    if (!role || !role.message || role.disabled) // TODO: Temporary, need find where have update/insert mongoose error.
                         continue;
+                    
                     this.reactionRoles.set(role.id, ReactionRole.fromJSON(role));
                 }
             }
@@ -538,6 +541,9 @@ class ReactionRoleManager extends EventEmitter {
 
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole))
+            return;
+        
+        if (reactionRole.disabled)
             return;
 
         if (reactionRole.winners.length >= reactionRole.max) {
@@ -581,6 +587,9 @@ class ReactionRoleManager extends EventEmitter {
             let skippedRole = null;
             const toggledRoles = this.reactionRoles.filter(rr => rr.message == message.id && rr.toggle);
             for (const toggledRole of toggledRoles.values()) {
+                if (toggledRole.disabled)
+                    continue;
+                
                 if (!skippedRole) { // TODO: remove this
                     skippedRole = toggledRole;
                     continue;
@@ -642,6 +651,9 @@ class ReactionRoleManager extends EventEmitter {
         if (!(reactionRole instanceof ReactionRole))
             return;
 
+        if (reactionRole.disabled)
+            return;
+        
         const role = guild.roles.cache.get(reactionRole.role);
         if (!(role instanceof Role)) {
             this.__debug('ROLE', `Role '${reactionRole.role}' wasn't found in guild '${guild.id}', the member '${member.id}' will not lose the role.`)
