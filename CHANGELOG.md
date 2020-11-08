@@ -1,5 +1,13 @@
 
 ---
+# CHANGELOG - V1.6.8
+
+• Reaction Role Manager:
+    - Fix json storage
+    - Removed unecessary debug logs
+    - Conflict if not have rr, don't remove user reaction
+
+---
 # CHANGELOG - V1.6.7
 
 • Fix Reaction Role Manager: Bad input: I canno't find emoji {identifier}

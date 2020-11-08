@@ -375,10 +375,10 @@ class ReactionCollector {
             const caughtReactions = await botMessage.awaitReactions(filter, collectorOptions);
             if (caughtReactions.size > 0) {
                 const reactionCollected = caughtReactions.first();
-                if (deleteReaction)
-                    await reactionCollected.users.remove(user.id);
                 if (deleteAllOnEnd)
                     await reactionCollected.message.reactions.removeAll();
+                else if (deleteReaction)
+                    await reactionCollected.users.remove(user.id);
                 return resolve(reactions.indexOf(reactionCollected.emoji ? (reactionCollected.emoji.name || reactionCollected.emoji.id) : (reactionCollected.name || reactionCollected.id)) === 0);
             }
             return resolve(false);

@@ -466,7 +466,7 @@ class ReactionRoleManager extends EventEmitter {
                     this.__debug('STORE', `Stored ${roles.length} updated roles.`);
                 }
 
-                if (fs.existsSync(this.storageJsonPath)) {
+                if (this.storageJsonPath) {
                     fs.writeFileSync(this.storageJsonPath, JSON.stringify(this.reactionRoles.map(role => role.toJSON())));
                     this.__debug('STORE', `Stored roles saved, contains '${this.reactionRoles.size}' roles.`);
                 }
@@ -523,10 +523,8 @@ class ReactionRoleManager extends EventEmitter {
             return;
 
         const reactionRole = this.reactionRoles.get(id);
-        if (!(reactionRole instanceof ReactionRole)) {
-            await msgReaction.remove();
-            return this.__debug('ROLE', `Reaction Role '${id}' wasn't found in guild '${guild.id}', so the member '${member.id}' will not win this role.`)
-        }
+        if (!(reactionRole instanceof ReactionRole))
+            return;
 
         if (reactionRole.winners.length >= reactionRole.max) {
             await msgReaction.users.remove(member.id);
@@ -627,10 +625,8 @@ class ReactionRoleManager extends EventEmitter {
             return;
 
         const reactionRole = this.reactionRoles.get(id);
-        if (!(reactionRole instanceof ReactionRole)) {
-            this.__debug('ROLE', `Reaction Role '${id}' wasn't found in guild '${guild.id}', so this role will be deleted.`);
-            return await msgReaction.remove();
-        }
+        if (!(reactionRole instanceof ReactionRole))
+            return;
 
         const role = guild.roles.cache.get(reactionRole.role);
         if (!(role instanceof Role)) {
