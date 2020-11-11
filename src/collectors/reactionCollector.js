@@ -280,8 +280,7 @@ class ReactionCollector {
             deleteAllOnEnd,
         },
             botMessage,
-            pages,
-            'isPaginator'
+            pages
         );
         return collector;
     }
@@ -345,12 +344,8 @@ class ReactionCollector {
                 const emoji = reaction.emoji.id || reaction.emoji.name;
                 if (deleteReaction)
                     await reaction.users.remove(user.id);
-                if (typeof reactionsMap[emoji] === 'function') {
-                    if ([...args].includes('isPaginator')) // TODO: REMOVE-ME / Gambiarra, mas resolve o problema.
-                        reactionsMap[emoji](reaction, collector, ...args);
-                    else
-                    reactionsMap[emoji](reaction, ...args);
-                }
+                if (typeof reactionsMap[emoji] === 'function')
+                    reactionsMap[emoji](reaction, collector, ...args);
             });
             if (deleteAllOnEnd)
                 collector.on('end', async () => await botMessage.reactions.removeAll());
