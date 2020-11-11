@@ -284,9 +284,8 @@ class ReactionRoleManager extends EventEmitter {
             if (!message.reactions.cache.has(reactionRole.emoji)) // Bot reaction is deleted, and not have any reaction with this reaction role emoji.
                 await message.react(reactionRole.emoji);
 
-            const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.__parseStorage}`);
-            if (!reaction)
-                continue;
+            const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`);
+            
             await reaction.users.fetch(); //Need fetch the users to next for
             for (const user of reaction.users.cache.values()) {
                 if (user.bot) // Ignore bots, please!
