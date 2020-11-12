@@ -15,4 +15,4 @@ jobs:
     - name: yarn install
       run: yarn install
     - name: eslint
-      uses: icrawl/action-eslint@v1=
+      uses: icrawl/action-eslint@v1
