@@ -6,6 +6,9 @@ assets/*
 node_modules/*
 .github/*
 tests/*
+test/*
+examples/*
+assets/*
 .jsdoc.json
 tsconfig.json
 .eslint.json
@@ -13,6 +16,7 @@ tsconfig.json
 # Ignore output files
 build/*
 out/*
+docs/*
 
 # Ignore unsefull files
 yarn-error.log
