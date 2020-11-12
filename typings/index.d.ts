@@ -134,6 +134,7 @@ declare module "discord.js-collector" {
     path: string;
     mongoDbLink?: string;
     storageJsonPath?: string;
+    disabledProperty: boolean | true;
   }
 
   export class MessageCollector {

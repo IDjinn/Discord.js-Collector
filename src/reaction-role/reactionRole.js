@@ -16,10 +16,11 @@ class ReactionRole {
     * @param {object} [data.requirements={}] - Requirements to win this role.
     * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
     * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
-
+    * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
+    * 
     * @return {ReactionRole}
     */
-    constructor({ message, channel, guild, role, emoji, winners, max, toggle, requirements }) {
+    constructor({ message, channel, guild, role, emoji, winners, max, toggle, requirements, disabled }) {
         /**
         * Guild ID of message
         * @type {string}
@@ -75,6 +76,11 @@ class ReactionRole {
             boost: Boolean(requirements ? requirements.boost : null),
             verifiedDeveloper: Boolean(requirements ? requirements.verifiedDeveloper : null),
         };
+        /**
+         * Is this reaction role disabled?
+         * @type {boolean}
+         */
+        this.disabled = Boolean(disabled);
     }
 
     /**
@@ -104,7 +110,8 @@ class ReactionRole {
             requirements: {
                 boost: this.requirements.boost,
                 verifiedDeveloper: this.requirements.verifiedDeveloper,
-            }
+            },
+            disabled: this.disabled
         };
     }
 
@@ -151,7 +158,8 @@ class ReactionRole {
             winners: json.winners,
             max: json.max,
             toggle: json.toggle,
-            requirements: json.requirements
+            requirements: json.requirements,
+            disabled: json.disabled
         })
     }
 }

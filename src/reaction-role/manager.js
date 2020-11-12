@@ -74,7 +74,7 @@ class ReactionRoleManager extends EventEmitter {
     * @extends EventEmitter
     * @return {ReactionRoleManager}
     */
-    constructor(client, { storage, mongoDbLink, path, debug } = { storage: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false }) {
+    constructor(client, { storage, mongoDbLink, path, debug, disabledProperty } = { storage: true, mongoDbLink: null, path: __dirname + '/data/roles.json', debug: false, disabledProperty: true }) {
         super();
 
         /**
@@ -88,19 +88,19 @@ class ReactionRoleManager extends EventEmitter {
         * @type {boolean}
         * @default true
         */
-        this.storage = Boolean(storage);
+        this.storage = typeof storage === 'boolean' ? storage : true;
         /**
         * Is debug enabled?
         * @type {boolean}
         * @default false
         */
-        this.debug = Boolean(debug);
+        this.debug = typeof debug === 'boolean' ? debug : false;
         /**
         * Mongo db connection link.
         * @type {string?}
         * @readonly
         */
-        this.mongoDbLink = mongoDbLink;
+        this.mongoDbLink = mongoDbLink || null;
         /**
         * ReactionRoles collection
         * @type {Collection<string, ReactionRole>}
@@ -117,7 +117,13 @@ class ReactionRoleManager extends EventEmitter {
         * Json storage path
         * @type {string?}
         */
-        this.storageJsonPath = path;
+        this.storageJsonPath = path || null;
+        /**
+         * Disable RR instead delete?
+         * @default true
+         * @type {boolean}
+         */
+        this.disabledProperty = typeof disabledProperty === 'boolean' ? disabledProperty : true;
 
         this.client.on('ready', () => this.__resfreshOnBoot());
         this.client.on('messageReactionAdd', (msgReaction, user) => this.__onReactionAdd(msgReaction, user));
@@ -230,6 +236,10 @@ class ReactionRoleManager extends EventEmitter {
                             type: Boolean,
                             default: false
                         },
+                    },
+                    disabled: {
+                        type: Boolean,
+                        default: false
                     }
                 }));
                 return resolve(true);
@@ -284,9 +294,9 @@ class ReactionRoleManager extends EventEmitter {
             if (!message.reactions.cache.has(reactionRole.emoji)) // Bot reaction is deleted, and not have any reaction with this reaction role emoji.
                 await message.react(reactionRole.emoji);
 
-            const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`);
-            
+            const reaction = message.reactions.cache.find(x => reactionRole.id == `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`);  
             await reaction.users.fetch(); //Need fetch the users to next for
+          
             for (const user of reaction.users.cache.values()) {
                 if (user.bot) // Ignore bots, please!
                     continue;
@@ -435,10 +445,16 @@ class ReactionRoleManager extends EventEmitter {
     async deleteReactionRole(role, deleted = false) {
         return new Promise(async (resolve, reject) => {
             if (role instanceof ReactionRole) {
-                this.reactionRoles.delete(role.id);
-                if (this.mongoose) {
-                    await this.mongoose.model('ReactionRoles').deleteOne({ id: role.id }).exec();
+                role.disabled = true;
+                if (this.disabledProperty) {
+                    await this.store(role);
                 }
+                else {
+                    if(this.mongoose)
+                        await this.mongoose.model('ReactionRoles').deleteOne({ id: role.id }).exec();
+                    this.reactionRoles.delete(role.id);
+                }
+
 
                 if (deleted)
                     this.__debug('ROLE', `Role '${role.role}' deleted, so it was removed from reactionRoleManager!`);
@@ -489,12 +505,13 @@ class ReactionRoleManager extends EventEmitter {
                 }
 
                 if (this.mongoose) {
-                    roles.push(...await this.mongoose.model('ReactionRoles').find({}));
+                    roles.push(...await this.mongoose.model('ReactionRoles').find({ disabled: false }));
                 }
 
                 for (const role of roles) {
-                    if (!role || !role.message) // TODO: Temporary, need find where have update/insert mongoose error.
+                    if (!role || !role.message || role.disabled) // TODO: Temporary, need find where have update/insert mongoose error.
                         continue;
+
                     this.reactionRoles.set(role.id, ReactionRole.fromJSON(role));
                 }
             }
@@ -523,6 +540,9 @@ class ReactionRoleManager extends EventEmitter {
 
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole))
+            return;
+
+        if (reactionRole.disabled)
             return;
 
         if (reactionRole.winners.length >= reactionRole.max) {
@@ -566,6 +586,9 @@ class ReactionRoleManager extends EventEmitter {
             let skippedRole = null;
             const toggledRoles = this.reactionRoles.filter(rr => rr.message == message.id && rr.toggle);
             for (const toggledRole of toggledRoles.values()) {
+                if (toggledRole.disabled)
+                    continue;
+
                 if (!skippedRole) { // TODO: remove this
                     skippedRole = toggledRole;
                     continue;
@@ -625,6 +648,9 @@ class ReactionRoleManager extends EventEmitter {
 
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole))
+            return;
+
+        if (reactionRole.disabled)
             return;
 
         const role = guild.roles.cache.get(reactionRole.role);
