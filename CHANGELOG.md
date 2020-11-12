@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.6.9
+
+• Reaction Role Manager: Fix roles to give/take verification on turn on bot.
+
+---
 # CHANGELOG - V1.6.8
 
 • Reaction Role Manager:
