@@ -1,4 +1,4 @@
-const { isArray } = require("util");
+const { isArray } = require('util');
 /**
  * Find recursively something inside a object
  * @param {options} options
@@ -10,26 +10,34 @@ const { isArray } = require("util");
  * @return {any[]} All results founded.
  */
 function findRecursively({
-  obj,
-  key,
-  value = null,
-  type = "array" | "value" | "object",
-  result = [],
+    obj,
+    key,
+    value = null,
+    // eslint-disable-next-line no-bitwise
+    type = 'array' | 'value' | 'object',
+    result = [],
 }) {
-  for (const k in obj) {
-    if (obj[k] instanceof Object) {
-      findRecursively({ obj: obj[k], key: key, type, result: result, value });
+    // eslint-disable-next-line no-restricted-syntax
+    for (const k in obj) {
+        if (obj[k] instanceof Object) {
+            findRecursively({
+                obj: obj[k],
+                key,
+                type,
+                result,
+                value,
+            });
+        }
     }
-  }
-  if (obj && obj[key]) {
-    if (type === "array" && isArray(obj[key])) result.push(...obj[key]);
-    else if (type == "object") {
-      if (!value || obj[key] == value) result.push(obj);
-    } else result.push(obj[key]);
-  }
-  return result;
+    if (obj && obj[key]) {
+        if (type === 'array' && isArray(obj[key])) result.push(...obj[key]);
+        else if (type === 'object') {
+            if (!value || obj[key] === value) result.push(obj);
+        } else result.push(obj[key]);
+    }
+    return result;
 }
 
 module.exports = {
-  findRecursively,
+    findRecursively,
 };

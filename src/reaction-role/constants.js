@@ -8,10 +8,10 @@
  * @readonly
  */
 const REACTIONROLE_EVENT = Object.freeze({
-  REACTION_ROLE_ADD: "reactionRoleAdd",
-  REACTION_ROLE_REMOVE: "reactionRoleRemove",
-  ALL_REACTIONS_REMOVE: "allReactionsRemove",
-  MISSING_REQUIREMENTS: "missingRequirements",
+    REACTION_ROLE_ADD: 'reactionRoleAdd',
+    REACTION_ROLE_REMOVE: 'reactionRoleRemove',
+    ALL_REACTIONS_REMOVE: 'allReactionsRemove',
+    MISSING_REQUIREMENTS: 'missingRequirements',
 });
 
 /**
@@ -22,11 +22,11 @@ const REACTIONROLE_EVENT = Object.freeze({
  * @readonly
  */
 const REQUIREMENT_TYPE = Object.freeze({
-  BOOST: "BOOST",
-  VERIFIED_DEVELOPER: "VERIFIED_DEVELOPER",
+    BOOST: 'BOOST',
+    VERIFIED_DEVELOPER: 'VERIFIED_DEVELOPER',
 });
 
 module.exports = {
-  REQUIREMENT_TYPE,
-  REACTIONROLE_EVENT,
+    REQUIREMENT_TYPE,
+    REACTIONROLE_EVENT,
 };

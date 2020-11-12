@@ -7,4 +7,4 @@ module.exports = {
     REACTIONROLE_EVENT: require('./reaction-role/constants.js').REACTIONROLE_EVENT,
     REQUIREMENT_TYPE: require('./reaction-role/constants.js').REQUIREMENT_TYPE,
     findRecursively: require('./util/find').findRecursively,
-}
+};

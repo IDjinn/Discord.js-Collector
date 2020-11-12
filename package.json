@@ -9,7 +9,7 @@
         "test": "npm run lint && npm run docs:test && npm run lint:typings",
         "test:typescript": "tsc",
         "docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose",
-        "prettier": "prettier --write src/**/*.js typings/**/*.ts",
+        "prettier": "prettier --config prettierrc.json --write src/**/*.js typings/**/*.ts",
         "lint": "eslint src",
         "lint:fix": "eslint src --fix",
         "lint:typings": "tslint typings/index.d.ts"
