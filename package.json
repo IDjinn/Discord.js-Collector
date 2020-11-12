@@ -8,11 +8,13 @@
   "scripts": {
     "test": "mocha test/**/*.test.js",
     "dev": "nodemon ./test/bot.js",
-    "generate-docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
+    "generate-docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose",
+    "prettier": "prettier --write src/**/*.js typings/**/*.ts"
   },
   "dependencies": {
     "discord.js": "^12.3.1",
-    "mongoose": "^5.10.7"
+    "mongoose": "^5.10.7",
+    "prettier": "^2.1.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",

@@ -187,7 +187,9 @@ declare module "discord.js-collector" {
 
   export class ReactionCollector {
     public static menu(options: IReactMenuOptions): Controller;
-    public static paginator(options: IPaginatorOptions): Discord.ReactionCollector;
+    public static paginator(
+      options: IPaginatorOptions
+    ): Discord.ReactionCollector;
     public static question(
       options: IReactQuestionOptions,
       ...args: any
