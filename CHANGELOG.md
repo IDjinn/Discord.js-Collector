@@ -1,5 +1,13 @@
 
 ---
+# CHANGELOG - V1.7.0
+
+• Reaction Role Manager: disable property instead delete reaction role\
+• Reaction Collector: now the collector will be passed with args
+
+See [Breaking Changes](./BREAKING_CHANGES.md)
+
+---
 # CHANGELOG - V1.6.9
 
 • Reaction Role Manager: Fix roles to give/take verification on turn on bot.
@@ -7,9 +15,9 @@
 ---
 # CHANGELOG - V1.6.8
 
-• Reaction Role Manager:
-    - Fix json storage
-    - Removed unecessary debug logs
+• Reaction Role Manager:\
+    - Fix json storage\
+    - Removed unecessary debug logs\
     - Conflict if not have rr, don't remove user reaction
 
 ---
@@ -20,7 +28,7 @@
 ---
 # CHANGELOG - V1.6.6
 
-• Fix Reaction Collector TypeError: Cannot read property 'map' of undefined
+• Fix Reaction Collector TypeError: Cannot read property 'map' of undefined\
 • Reaction Role Manager: wrong typo in createReactionRole()
 
 ---

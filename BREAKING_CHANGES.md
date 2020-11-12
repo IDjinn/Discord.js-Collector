@@ -4,10 +4,10 @@
 ---
 #  V1.6.9 ->  V1.7.0
 
-- Reaction Collector:
-    - On React triggers:
-        Now, first param given is `collector` (`controller` if you're using menu), then all other args
-            Example:
+- Reaction Collector:\
+    - On React triggers:\
+        Now, first param given is `collector` (`controller` if you're using menu), then all other args\
+            Example:\
 
             ```js 
             // Before
@@ -36,9 +36,9 @@
                 'you', 'args', 'here');
             ```
 
-- Reaction Role Manager:
-    Now all roles will not deleted by default. If you want delete reaction roles when message was deleted or something like that, you need enable Reaction Roles delete property.
-        Example:
+- Reaction Role Manager:\
+    - Now all roles will not deleted by default. If you want delete reaction roles when message was deleted or something like that, you need enable Reaction Roles delete property.\
+        Example:\
 
         ```js 
             const reactionRoleManager = new ReactionRoleManager(client, {
