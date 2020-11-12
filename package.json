@@ -9,7 +9,6 @@
         "test": "npm run lint && npm run docs:test && npm run lint:typings",
         "test:typescript": "tsc",
         "docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose",
-        "prettier": "prettier --config prettierrc.json --write src/**/*.js typings/**/*.ts",
         "lint": "eslint src",
         "lint:fix": "eslint src --fix",
         "lint:typings": "tslint typings/index.d.ts"
@@ -28,8 +27,7 @@
         "jsdoc-baseline": "^0.1.5",
         "minami": "^1.2.3",
         "mocha": "^8.2.0",
-        "nodemon": "^2.0.4",
-        "prettier": "^2.1.2"
+        "nodemon": "^2.0.4"
     },
     "homepage": "https://github.com/IDjinn/Discord.js-Collector",
     "repository": {
