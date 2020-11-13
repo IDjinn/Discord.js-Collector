@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.7.1
+
+• Reaction Role Manager: fix error on setup
+
+---
 # CHANGELOG - V1.7.0
 
 • Reaction Role Manager: disable property instead delete reaction role\

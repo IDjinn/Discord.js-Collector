@@ -328,7 +328,7 @@ class ReactionRoleManager extends EventEmitter {
             );
             await reaction.users.fetch(); // Need fetch the users to next for
 
-            const usersArray = await (reaction.users.fetch()).array();
+            const usersArray = await reaction.users.fetch().then(usersCollection => usersCollection.array());
             for (let j = 0; j < usersArray.length; j += 1) {
                 const user = usersArray[j];
 

@@ -19,6 +19,7 @@ Library to easily create message collector, reactions collector and reactions ro
 | [Reaction Menu](./examples/reaction-collector/menu.js)\
 ◘ Others\
 | [Changelog](CHANGELOG.md)
+| [Breaking Changes](./BREAKING_CHANGES.md)
 
 
 ## Documentation
