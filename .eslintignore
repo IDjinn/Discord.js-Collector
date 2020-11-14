@@ -27,3 +27,6 @@ yarn.lock
 # Ignore settings files
 **/*.env
 .npmrc
+
+
+**/constants.js

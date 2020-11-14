@@ -1,4 +1,3 @@
-/* eslint-disable */
 
 /**
  * Constants values
