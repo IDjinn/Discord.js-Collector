@@ -233,46 +233,42 @@ class ReactionCollector {
         );
         const controller = new Controller(botMessage, collector, pages);
         collector.on('collect', async (reaction) => {
-            try {
-                const emoji = reaction.emoji.id || reaction.emoji.name;
-                if (
-                    controller.currentPage
+            const emoji = reaction.emoji.id || reaction.emoji.name;
+            if (
+                controller.currentPage
                     && emoji === controller.currentPage.backEmoji
                     && controller.canBack
-                ) {
-                    controller.back();
-                    return;
-                }
+            ) {
+                controller.back();
+                return;
+            }
 
-                controller.currentPage = controller.currentPage && controller.currentPage.pages
-                    ? controller.currentPage.pages[emoji]
-                    : pages[emoji];
-                if (controller.currentPage) {
-                    if (typeof controller.currentPage.onReact === 'function') {
-                        await controller.currentPage.onReact(
-                            controller,
-                            reaction,
-                            ...args,
-                        );
-                    }
-                    if (controller.currentPage.clearReactions) {
-                        await botMessage.reactions.removeAll();
-                    } else if (controller.currentPage.reactions) {
-                        await botMessage.reactions.removeAll();
-                        await Promise.all(
-                            controller.currentPage.reactions.map((r) => botMessage.react(r)),
-                        );
-                    } else {
-                        await reaction.users.remove(user.id);
-                    }
+            controller.currentPage = controller.currentPage && controller.currentPage.pages
+                ? controller.currentPage.pages[emoji]
+                : pages[emoji];
+            if (controller.currentPage) {
+                if (typeof controller.currentPage.onReact === 'function') {
+                    await controller.currentPage.onReact(
+                        controller,
+                        reaction,
+                        ...args,
+                    );
+                }
+                if (controller.currentPage.clearReactions) {
+                    await botMessage.reactions.removeAll();
+                } else if (controller.currentPage.reactions) {
+                    await botMessage.reactions.removeAll();
+                    await Promise.all(
+                        controller.currentPage.reactions.map((r) => botMessage.react(r)),
+                    );
                 } else {
                     await reaction.users.remove(user.id);
                 }
-
-                await controller.update(true);
-            } catch (e) {
-                console.error(e);
+            } else {
+                await reaction.users.remove(user.id);
             }
+
+            await controller.update(true);
         });
         await Promise.all(Object.keys(pages).map((r) => botMessage.react(r)));
         collector.on('end', async () => botMessage.reactions.removeAll());
@@ -284,20 +280,15 @@ class ReactionCollector {
             );
             controller.messagesCollector = messagesCollector;
             messagesCollector.on('collect', async (message) => {
-                try {
-                    if (message.deletable) await message.delete();
-                    if (
-                        controller.currentPage
-                        && typeof controller.currentPage.onMessage === 'function'
-                    ) {
-                        await controller.currentPage.onMessage(
-                            controller,
-                            message,
-                            ...args,
-                        );
-                    }
-                } catch (e) {
-                    console.error(e);
+                if (message.deletable) await message.delete();
+                if (
+                    controller.currentPage && typeof controller.currentPage.onMessage === 'function'
+                ) {
+                    await controller.currentPage.onMessage(
+                        controller,
+                        message,
+                        ...args,
+                    );
                 }
             });
 
@@ -412,40 +403,36 @@ class ReactionCollector {
      * @returns {Discord.ReactionCollector}
      */
     static async __createReactionCollector(_options, ...args) {
-        try {
-            const {
-                botMessage,
-                reactionsMap,
-                user,
-                collectorOptions,
-                deleteReaction,
-                deleteAllOnEnd,
-            } = _options;
-            const reactions = Object.keys(reactionsMap) || reactionsMap;
-            await Promise.all(reactions.map((r) => botMessage.react(r)));
-            const filter = (r, u) => u.id === user.id
+        const {
+            botMessage,
+            reactionsMap,
+            user,
+            collectorOptions,
+            deleteReaction,
+            deleteAllOnEnd,
+        } = _options;
+        const reactions = Object.keys(reactionsMap) || reactionsMap;
+        await Promise.all(reactions.map((r) => botMessage.react(r)));
+        const filter = (r, u) => u.id === user.id
                 && (reactions.includes(r.emoji.id)
                     || reactions.includes(r.emoji.name))
                 && !user.bot;
-            const collector = botMessage.createReactionCollector(
-                filter,
-                collectorOptions,
+        const collector = botMessage.createReactionCollector(
+            filter,
+            collectorOptions,
+        );
+        collector.on('collect', async (reaction) => {
+            const emoji = reaction.emoji.id || reaction.emoji.name;
+            if (deleteReaction) await reaction.users.remove(user.id);
+            if (typeof reactionsMap[emoji] === 'function') reactionsMap[emoji](reaction, collector, ...args);
+        });
+        if (deleteAllOnEnd) {
+            collector.on(
+                'end',
+                async () => botMessage.reactions.removeAll(),
             );
-            collector.on('collect', async (reaction) => {
-                const emoji = reaction.emoji.id || reaction.emoji.name;
-                if (deleteReaction) await reaction.users.remove(user.id);
-                if (typeof reactionsMap[emoji] === 'function') reactionsMap[emoji](reaction, collector, ...args);
-            });
-            if (deleteAllOnEnd) {
-                collector.on(
-                    'end',
-                    async () => botMessage.reactions.removeAll(),
-                );
-            }
-            return collector;
-        } catch (e) {
-            console.error(e);
         }
+        return collector;
     }
 
     /**

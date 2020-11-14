@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const {
     Client,
     Role,
@@ -421,7 +422,6 @@ class ReactionRoleManager extends EventEmitter {
      */
     __debug(type, message, ...args) {
         if (this.debug) {
-            // eslint-disable-next-line no-console
             console.log(
                 `[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`,
             );
