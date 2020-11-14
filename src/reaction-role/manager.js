@@ -85,12 +85,12 @@ class ReactionRoleManager extends EventEmitter {
         {
             storage, mongoDbLink, path, debug, disabledProperty,
         } = {
-            storage: true,
-            mongoDbLink: null,
-            path: `${__dirname}/data/roles.json`,
-            debug: false,
-            disabledProperty: true,
-        },
+                storage: true,
+                mongoDbLink: null,
+                path: `${__dirname}/data/roles.json`,
+                debug: false,
+                disabledProperty: true,
+            },
     ) {
         super();
 
@@ -488,10 +488,10 @@ class ReactionRoleManager extends EventEmitter {
         {
             message, role, emoji, max, toggle, requirements,
         } = {
-            max: Number.MAX_SAFE_INTEGER,
-            toggle: false,
-            requirements: { boost: false, verifiedDeveloper: false },
-        },
+                max: Number.MAX_SAFE_INTEGER,
+                toggle: false,
+                requirements: { boost: false, verifiedDeveloper: false },
+            },
     ) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
@@ -695,21 +695,19 @@ class ReactionRoleManager extends EventEmitter {
             return msgReaction.remove();
         }
 
-        if (this.__checkRequirements(reactionRole, msgReaction, member)) {
+        if (!this.__checkRequirements(reactionRole, msgReaction, member)) return;
+        if (reactionRole.toggle) this.__timeoutToggledRoles(member, message, reactionRole);
+        else {
             if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
+            if (!member.roles.has(role.id)) await member.roles.add(role);
 
-            await member.roles.add(role);
             this.emit(REACTIONROLE_EVENT.REACTION_ROLE_ADD, member, role);
             this.__debug(
                 'ROLE',
                 `User '${member.displayName}' won the role '${role.name}'.`,
             );
 
-            if (reactionRole.toggle) {
-                this.__timeoutToggledRoles(member, message);
-            } else {
-                this.store(reactionRole);
-            }
+            this.store(reactionRole);
         }
     }
 
@@ -718,21 +716,19 @@ class ReactionRoleManager extends EventEmitter {
      * @private
      * @return {Promise<void>}
      */
-    __timeoutToggledRoles(member, message) {
+    __timeoutToggledRoles(member, message, skippedRole = null) {
         const timeout = this.timeouts.get(member.id);
         if (timeout) this.client.clearTimeout(timeout);
         this.timeouts.set(
             member.id,
             setTimeout(async () => {
-                let skippedRole = null;
                 const toggledRoles = this.reactionRoles.filter((rr) => rr.message === message.id && rr.toggle);
                 const toggledRolesArray = toggledRoles.array();
                 for (let i = 0; i < toggledRolesArray.length; i += 1) {
                     const toggledRole = toggledRolesArray[i];
-
                     if (toggledRole.disabled) continue;
 
-                    if (!skippedRole) {
+                    if (!skippedRole || skippedRole.id === toggledRole.id) {
                         skippedRole = toggledRole;
                         continue;
                     }

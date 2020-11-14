@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.7.2
+
+• Reaction Role Manager: fix toggled roles wasn't working
+
+---
 # CHANGELOG - V1.7.1
 
 • Reaction Role Manager: fix error on setup
