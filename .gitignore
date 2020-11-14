@@ -4,6 +4,7 @@ node_modules/*
 # Ignore output files
 build/*
 out/*
+docs/*
 
 # Ignore unsefull files
 yarn-error.log

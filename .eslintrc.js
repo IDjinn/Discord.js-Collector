@@ -23,5 +23,4 @@ module.exports = {
         'no-continue': 'off',
         'no-await-in-loop': 'off',
     },
-    eslintIgnore: ['test/*', 'node_modules/*', 'examples/*', 'docs/*', 'out/*', 'build/*'],
 };

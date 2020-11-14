@@ -85,12 +85,12 @@ class ReactionRoleManager extends EventEmitter {
         {
             storage, mongoDbLink, path, debug, disabledProperty,
         } = {
-                storage: true,
-                mongoDbLink: null,
-                path: `${__dirname}/data/roles.json`,
-                debug: false,
-                disabledProperty: true,
-            },
+            storage: true,
+            mongoDbLink: null,
+            path: `${__dirname}/data/roles.json`,
+            debug: false,
+            disabledProperty: true,
+        },
     ) {
         super();
 
@@ -328,7 +328,7 @@ class ReactionRoleManager extends EventEmitter {
             );
             await reaction.users.fetch(); // Need fetch the users to next for
 
-            const usersArray = await reaction.users.fetch().then(usersCollection => usersCollection.array());
+            const usersArray = await reaction.users.fetch().then((usersCollection) => usersCollection.array());
             for (let j = 0; j < usersArray.length; j += 1) {
                 const user = usersArray[j];
 
@@ -488,10 +488,10 @@ class ReactionRoleManager extends EventEmitter {
         {
             message, role, emoji, max, toggle, requirements,
         } = {
-                max: Number.MAX_SAFE_INTEGER,
-                toggle: false,
-                requirements: { boost: false, verifiedDeveloper: false },
-            },
+            max: Number.MAX_SAFE_INTEGER,
+            toggle: false,
+            requirements: { boost: false, verifiedDeveloper: false },
+        },
     ) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
@@ -729,6 +729,7 @@ class ReactionRoleManager extends EventEmitter {
                     if (toggledRole.disabled) continue;
 
                     if (!skippedRole || skippedRole.id === toggledRole.id) {
+                        // eslint-disable-next-line no-param-reassign
                         skippedRole = toggledRole;
                         continue;
                     }
