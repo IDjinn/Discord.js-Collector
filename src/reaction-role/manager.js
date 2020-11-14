@@ -699,7 +699,7 @@ class ReactionRoleManager extends EventEmitter {
         if (reactionRole.toggle) this.__timeoutToggledRoles(member, message, reactionRole);
         else {
             if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
-            if (!member.roles.has(role.id)) await member.roles.add(role);
+            if (!member.roles.cache.has(role.id)) await member.roles.add(role);
 
             this.emit(REACTIONROLE_EVENT.REACTION_ROLE_ADD, member, role);
             this.__debug(

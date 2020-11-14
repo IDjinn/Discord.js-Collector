@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.7.3
+
+• Reaction Role Manager: fix roles.has is not a funcion
+
+---
 # CHANGELOG - V1.7.2
 
 • Reaction Role Manager: fix toggled roles wasn't working
