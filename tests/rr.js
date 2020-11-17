@@ -1,7 +1,7 @@
 const { ReactionRoleManager } = require('../src')
 const { Client, Constants } = require("discord.js");
 const client = new Client();
-require('dotenv/config')();
+require('dotenv').config();
 const app = require('express')();
 const server = require('http').createServer(app);
 const axios = require('axios')
