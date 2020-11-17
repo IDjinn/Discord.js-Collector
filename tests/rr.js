@@ -104,6 +104,6 @@ client.login(process.env.TOKEN);
 
 app.get('/', (_, res) => res.sendStatus(204));
 client.setInterval(() =>{ 
-    axios.get(process.env.GET_URL);
+    axios.get(process.env.GET_URL + ':' + process.env.PORT || 3000);
 }, 5000);
-server.listen(80 || process.env.PORT);
+server.listen(process.env.PORT || 3000);
