@@ -21,6 +21,15 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  */
 class ReactionRoleManager extends EventEmitter {
     /**
+     * Triggered when reaction role manager is ready
+     * @event ReactionRoleManager#ready
+     * @example
+     * reactionRoleManager.on('ready', () => {
+     *   console.log('Reaction Role Manager is ready!');
+     * });
+     */
+
+    /**
      * Triggered when member won a reaction role.
      * @event ReactionRoleManager#reactionRoleAdd
      * @property {GuildMember} member - The guild member who won the role.
@@ -95,6 +104,17 @@ class ReactionRoleManager extends EventEmitter {
     ) {
         super();
 
+        /**
+         * Is Reaction role manager ready?
+         * @type {boolean}
+         * @readonly
+         */
+        this.isReady = false;
+        /**
+         * Reaction role manager ready date
+         * @type {Date?}
+         */
+        this.readyAt = null;
         /**
          * Discord client.
          * @type {Client}
@@ -174,12 +194,12 @@ class ReactionRoleManager extends EventEmitter {
             if (reactionRole) return this.__handleDeleted(reactionRole, message);
         };
 
-        this.client.on('messageDelete', messageDeleteHandler.bind(this));
+        this.client.on('messageDelete', (msg) => messageDeleteHandler(msg));
 
         this.client.on('messageDeleteBulk', (messages) => {
             const array = messages.array();
             for (let i = 0; i < array.length; i += 1) {
-                messageDeleteHandler(messages[i]).bind(this);
+                messageDeleteHandler(array[i]);
             }
         });
     }
@@ -312,104 +332,108 @@ class ReactionRoleManager extends EventEmitter {
                 continue;
             }
 
-            const message = await channel.messages.fetch(reactionRole.message);
-            if (!message) {
-                this.__debug(
-                    'BOOT',
-                    `Role '${reactionRole.id}' failed at start, message wasn't found.`,
+            try {
+                const message = await channel.messages.fetch(reactionRole.message).catch(() => null);
+                if (!message || !(message instanceof Message)) continue;
+                if (!message.reactions.cache.has(reactionRole.emoji)) await message.react(reactionRole.emoji);
+
+                const reaction = message.reactions.cache.find(
+                    (x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`,
                 );
-                this.__handleDeleted(reactionRole, guild);
-                continue;
-            }
+                await reaction.users.fetch(); // Need fetch the users to next for
 
-            if (!message.reactions.cache.has(reactionRole.emoji)) await message.react(reactionRole.emoji);
+                const usersArray = await reaction.users.fetch().then((usersCollection) => usersCollection.array());
+                for (let j = 0; j < usersArray.length; j += 1) {
+                    const user = usersArray[j];
 
-            const reaction = message.reactions.cache.find(
-                (x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`,
-            );
-            await reaction.users.fetch(); // Need fetch the users to next for
+                    if (user.bot) continue;// Ignore bots, please!
 
-            const usersArray = await reaction.users.fetch().then((usersCollection) => usersCollection.array());
-            for (let j = 0; j < usersArray.length; j += 1) {
-                const user = usersArray[j];
-
-                if (user.bot) continue;// Ignore bots, please!
-
-                const member = guild.members.cache.get(user.id);
-                if (!member) {
-                    await reaction.users.remove(user);
-                    this.__debug(
-                        'BOOT',
-                        `Member '${user.id}' wasn't found, reaction of his was removed from message.`,
-                    );
-                    continue;
-                }
-
-                if (this.__checkRequirements(reactionRole, reaction, member)) {
-                    if (reactionRole.toggle) {
+                    const member = guild.members.cache.get(user.id);
+                    if (!member) {
+                        await reaction.users.remove(user);
                         this.__debug(
                             'BOOT',
-                            `Skiping role '${reactionRole.role}' of give role assembly, need check if is it toggle role.`,
+                            `Member '${user.id}' wasn't found, reaction of his was removed from message.`,
                         );
-                    } else {
-                        if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
-                        if (!member.roles.cache.has(reactionRole.role)) {
+                        continue;
+                    }
+
+                    if (this.__checkRequirements(reactionRole, reaction, member)) {
+                        if (reactionRole.toggle) {
+                            this.__debug(
+                                'BOOT',
+                                `Skiping role '${reactionRole.role}' of give role assembly, need check if is it toggle role.`,
+                            );
+                        } else {
+                            if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
+                            if (!member.roles.cache.has(reactionRole.role)) {
+                                await member.roles.add(reactionRole.role);
+                                this.emit(
+                                    REACTIONROLE_EVENT.REACTION_ROLE_ADD,
+                                    member,
+                                    role,
+                                );
+                                this.__debug(
+                                    'BOOT',
+                                    `Role '${reactionRole.role}' was given to '${member.id}', it reacted when bot wasn't online.`,
+                                );
+                            } else {
+                                this.__debug(
+                                    'BOOT',
+                                    `Keeping role '${reactionRole.role}' from '${member.id}', it reacted and already have the role.`,
+                                );
+                            }
+                        }
+                        this.__timeoutToggledRoles(member, message);
+                    }
+                }
+
+                for (let j = 0; j < reactionRole.winners.length; j += 1) {
+                    const winnerId = reactionRole.winners[j];
+                    const member = guild.members.cache.get(winnerId);
+                    if (!member) {
+                        reactionRole.winners.splice(j, 1);
+                        this.__debug(
+                            'BOOT',
+                            `Member '${winnerId}' wasn't found, his was removed from winner list.`,
+                        );
+                        continue;
+                    }
+
+                    if (member.user.bot) continue;
+
+                    if (!reaction.users.cache.has(winnerId)) {
+                    // Delete role if user reacted off
+                        if (member.roles.cache.has(reactionRole.role)) {
+                            await member.roles.remove(reactionRole.role);
                             this.emit(
-                                REACTIONROLE_EVENT.REACTION_ROLE_ADD,
+                                REACTIONROLE_EVENT.REACTION_ROLE_REMOVE,
                                 member,
                                 role,
                             );
-                            await member.roles.add(reactionRole.role);
-                            this.__debug(
-                                'BOOT',
-                                `Role '${reactionRole.role}' was given to '${member.id}', it reacted when bot wasn't online.`,
-                            );
-                        } else {
-                            this.__debug(
-                                'BOOT',
-                                `Keeping role '${reactionRole.role}' from '${member.id}', it reacted and already have the role.`,
-                            );
                         }
-                    }
-                    this.__timeoutToggledRoles(member, message);
-                }
-            }
 
-            for (let j = 0; j < reactionRole.winners.length; j += 1) {
-                const winnerId = reactionRole.winners[j];
-                const member = guild.members.cache.get(winnerId);
-                if (!member) {
-                    reactionRole.winners.splice(j, 1);
-                    this.__debug(
-                        'BOOT',
-                        `Member '${winnerId}' wasn't found, his was removed from winner list.`,
-                    );
-                    continue;
-                }
-
-                if (member.user.bot) continue;
-
-                if (!reaction.users.cache.has(winnerId)) {
-                    // Delete role if user reacted off
-                    if (member.roles.cache.has(reactionRole.role)) {
-                        await member.roles.remove(reactionRole.role);
-                        this.emit(
-                            REACTIONROLE_EVENT.REACTION_ROLE_REMOVE,
-                            member,
-                            role,
+                        const index = reactionRole.winners.indexOf(winnerId);
+                        if (index >= 0) reactionRole.winners.splice(index, 1);
+                        this.__debug(
+                            'BOOT',
+                            `Role '${reactionRole.role}' removed from '${member.id}', it removed reaction when bot wasn't online.`,
                         );
                     }
-
-                    const index = reactionRole.winners.indexOf(winnerId);
-                    if (index >= 0) reactionRole.winners.splice(index, 1);
+                }
+            } catch (error) {
+                if (error && error.code === 10008) {
                     this.__debug(
                         'BOOT',
-                        `Role '${reactionRole.role}' removed from '${member.id}', it removed reaction when bot wasn't online.`,
+                        `Role '${reactionRole.id}' failed at start, message wasn't found.`,
                     );
+                    this.__handleDeleted(reactionRole, guild);
+                    continue;
                 }
+                throw error;
             }
+            this.__readyTimeout();
         }
-        this.__debug('READY', 'Reaction role manager is ready.');
     }
 
     /**
@@ -745,7 +769,7 @@ class ReactionRoleManager extends EventEmitter {
 
                     await reaction.users.remove(member.user);
                     this.__debug(
-                        'REACTION',
+                        'TOGGLE',
                         `Take off role '${toggledRole.role}' from user '${member.id}', it's a toggled role.`,
                     );
                 }
@@ -767,10 +791,18 @@ class ReactionRoleManager extends EventEmitter {
                                 member,
                                 role,
                             );
-                            this.__debug(
-                                'BOOT',
-                                `Role '${skippedRole.role}' was given to '${member.id}' after check toggle roles, it reacted when bot wasn't online.`,
-                            );
+                            if (this.isReady) {
+                                this.__debug(
+                                    'TOGGLE',
+                                    `Role '${skippedRole.role}' was given to '${member.id}' after check toggle roles.`,
+                                );
+                            } else {
+                                this.__debug(
+                                    'BOOT',
+                                    // eslint-disable-next-line max-len
+                                    `Role '${skippedRole.role}' was given to '${member.id}' after check toggle roles, it reacted when bot wasn't online.`,
+                                );
+                            }
                         } else {
                             this.__debug(
                                 'BOOT',
@@ -784,6 +816,19 @@ class ReactionRoleManager extends EventEmitter {
                 await this.store(...toggledRoles);
             }, Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES),
         );
+    }
+
+    __readyTimeout() {
+        const readyTimeout = this.timeouts.get('ready_timeout');
+        if (readyTimeout) this.client.clearTimeout(readyTimeout);
+        if (this.isReady) return;
+
+        this.timeouts.set('ready_timeout', () => {
+            this.isReady = true;
+            this.readyAt = new Date();
+            this.emit(REACTIONROLE_EVENT.READY);
+            this.__debug('READY', 'Reaction role manager is ready.');
+        }, 1000);
     }
 
     /**
