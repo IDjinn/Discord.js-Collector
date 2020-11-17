@@ -583,12 +583,12 @@ class ReactionRoleManager extends EventEmitter {
                 if (deleted) {
                     this.__debug(
                         'ROLE',
-                        `Role '${role.role}' deleted, so it was removed from reactionRoleManager!`,
+                        `Role '${role.id}' deleted, so it was removed from reactionRoleManager!`,
                     );
                 } else {
                     this.__debug(
                         'ROLE',
-                        `Role '${role.role}' removed from reactionRoleManager!`,
+                        `Role '${role.id}' removed from reactionRoleManager!`,
                     );
                 }
                 return resolve();
