@@ -103,7 +103,8 @@ client.on("message", async (message) => {
 client.login(process.env.TOKEN);
 
 app.get('/', (_, res) => res.sendStatus(204));
-client.setInterval(() =>{ 
-    axios.get(process.env.GET_URL + ':' + process.env.PORT || 3000);
+client.setInterval(() =>{ try{
+    axios.get(process.env.GET_URL);
+}catch{}
 }, 5000);
 server.listen(process.env.PORT || 3000);
