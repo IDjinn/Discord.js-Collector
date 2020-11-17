@@ -16,7 +16,8 @@ const clean = text => {
 const reactionRoleManager = new ReactionRoleManager(client, {
     storage: true, // Enable reaction role store in a Json file
     path: __dirname + '/roles.json', // Where will save the roles if store is enabled,
-    debug: true
+    debug: true,
+    disabledProperty: false,
 });
 
 client.on("ready", () => {
