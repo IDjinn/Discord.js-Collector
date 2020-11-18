@@ -24,7 +24,7 @@ Library to easily create message collector, reactions collector and reactions ro
 
 ## Documentation
 
-See all documentation [here](https://idjinn.github.io/)
+See all documentation of last version [here](https://idjinn.github.io/Discord.js-Collector/)
 
 ---
 
