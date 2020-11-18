@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>util/find.js - Documentation</title>
+    <title>reaction-role/reactionRole.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">util/find.js</h1>
+    <h1 class="page-title">reaction-role/reactionRole.js</h1>
     
 
     
@@ -39,48 +39,189 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const { isArray } = require('util');
+            <pre class="prettyprint source linenums"><code>const { GuildMember } = require('discord.js');
 /**
- * Find recursively something inside a object
- * @param {options} options
- * @param {object} options.obj - Object to search a item inside it.
- * @param {object} options.key - Item key name to find.
- * @param {string|number} [options.value=null] - Value item to find.
- * @param {string} [options.type='array'] - Type of value to find.
- * @param {any[]} [options.result=[]] - Array with all results founded.
- * @return {any[]} All results founded.
+ * Reaction role object structure.
  */
-function findRecursively({
-    obj,
-    key,
-    value = null,
-    // eslint-disable-next-line no-bitwise
-    type = 'array' | 'value' | 'object',
-    result = [],
-}) {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const k in obj) {
-        if (obj[k] instanceof Object) {
-            findRecursively({
-                obj: obj[k],
-                key,
-                type,
-                result,
-                value,
-            });
-        }
+class ReactionRole {
+    /**
+     * Reaction Role constructor.
+     * @param {Object} data
+     * @param {string} data.message - Message ID of reaction role.
+     * @param {string} data.channel - Channel ID of message.
+     * @param {string} data.guild - Guild ID of channel.
+     * @param {string} data.emoji - Emoji ID of reaction role.
+     * @param {string[]} [data.winners=[]] - List with role winners ID;
+     * @param {number} [data.max=Number.MAX_SAFE_INTEGER] - Max roles available to give.
+     * @param {boolean} [data.toggle=false] - User will have only one of these message roles.
+     * @param {object} [data.requirements={}] - Requirements to win this role.
+     * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
+     * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
+     * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
+     *
+     * @return {ReactionRole}
+     */
+    constructor({
+        message,
+        channel,
+        guild,
+        role,
+        emoji,
+        winners,
+        max,
+        toggle,
+        requirements,
+        disabled,
+    }) {
+        /**
+         * Guild ID of message
+         * @type {string}
+         * @readonly
+         */
+        this.guild = message.guild ? message.guild.id : guild;
+        /**
+         * Channel ID of message
+         * @type {string}
+         * @readonly
+         */
+        this.channel = message.channel ? message.channel.id : channel;
+        /**
+         * Message ID of reaction role
+         * @type {string}
+         * @readonly
+         */
+        this.message = message.id ? message.id : message;
+        /**
+         * Role ID
+         * @type {string}
+         * @readonly
+         */
+        this.role = role.id ? role.id : role;
+        /**
+         * Emoji identifier
+         * @type {string}
+         * @readonly
+         */
+        this.emoji = emoji.id || emoji.name ? emoji.id : emoji.name || emoji;
+        /**
+         * List of who won this role
+         * @type {string[]}
+         * @readonly
+         */
+        this.winners = winners || [];
+        /**
+         * Max roles available to give
+         * @type {number}
+         */
+        // eslint-disable-next-line no-restricted-globals
+        this.max = isNaN(max) ? Number.MAX_SAFE_INTEGER : Number(max);
+        /**
+         * Is it toggled role?
+         * @type {number}
+         */
+        this.toggle = Boolean(toggle);
+        /**
+         * Requirement to win this role.
+         * @property {boolean} [boost=false] - Need be a booster to win this role.
+         * @property {boolean} [verifiedDeveloper=false] - Need be a verified bot developer to win this role.
+         */
+        this.requirements = {
+            boost: Boolean(requirements ? requirements.boost : null),
+            verifiedDeveloper: Boolean(
+                requirements ? requirements.verifiedDeveloper : null,
+            ),
+        };
+        /**
+         * Is this reaction role disabled?
+         * @type {boolean}
+         */
+        this.disabled = Boolean(disabled);
     }
-    if (obj &amp;&amp; obj[key]) {
-        if (type === 'array' &amp;&amp; isArray(obj[key])) result.push(...obj[key]);
-        else if (type === 'object') {
-            if (!value || obj[key] === value) result.push(obj);
-        } else result.push(obj[key]);
+
+    /**
+     * Reaction Role ID (messageId-emojiId)
+     * @type {string}
+     * @readonly
+     */
+    get id() {
+        return `${this.message}-${this.emoji}`;
     }
-    return result;
+
+    /**
+     * Convert Reaction Role object to JSON.
+     * @return {JSON} - Parsed json object.
+     */
+    toJSON() {
+        return {
+            id: this.id,
+            message: this.message,
+            channel: this.channel,
+            guild: this.guild,
+            role: this.role,
+            emoji: this.emoji,
+            winners: this.winners,
+            max:
+                this.max > Number.MAX_SAFE_INTEGER
+                    ? Number.MAX_SAFE_INTEGER
+                    : this.max,
+            toggle: this.toggle,
+            requirements: {
+                boost: this.requirements.boost,
+                verifiedDeveloper: this.requirements.verifiedDeveloper,
+            },
+            disabled: this.disabled,
+        };
+    }
+
+    /**
+     * Check if member have developer requirement to win this role.
+     * @param {GuildMember} member - The member to check.
+     * @return {Promise&lt;boolean>}
+     */
+    async checkDeveloperRequirement(member) {
+        return new Promise(async (resolve) => {
+            const flags = await member.user.fetchFlags();
+            const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
+            if (this.requirements.verifiedDeveloper) return resolve(isVerifiedDeveloper);
+            return resolve(true);
+        });
+    }
+
+    /**
+     * Check if member have boost requirement to win this role.
+     * @param {GuildMember} member - The member to check.
+     * @return {boolean}
+     */
+    checkBoostRequirement(member) {
+        const isBoost = member.premiumSinceTimestamp != null &amp;&amp; member.premiumSince != null;
+        if (this.requirements.boost) return isBoost;
+        return true;
+    }
+
+    /**
+     * Transform json to Reaction Role object.
+     * @param {object} json - Reaction role data.
+     * @static
+     * @return {ReactionRole}
+     */
+    static fromJSON(json) {
+        return new ReactionRole({
+            message: json.message,
+            channel: json.channel,
+            guild: json.guild,
+            role: json.role,
+            emoji: json.emoji,
+            winners: json.winners,
+            max: json.max,
+            toggle: json.toggle,
+            requirements: json.requirements,
+            disabled: json.disabled,
+        });
+    }
 }
 
 module.exports = {
-    findRecursively,
+    ReactionRole,
 };
 </code></pre>
         </article>
@@ -94,7 +235,7 @@ module.exports = {
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Wed Nov 18 2020 13:41:19 GMT-0200 (GMT-02:00) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Wed Nov 18 2020 13:42:13 GMT-0200 (GMT-02:00) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

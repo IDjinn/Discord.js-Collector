@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>util/find.js - Documentation</title>
+    <title>Home - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,62 +29,132 @@
 
 <div id="main">
     
-    <h1 class="page-title">util/find.js</h1>
-    
 
     
 
 
 
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>const { isArray } = require('util');
-/**
- * Find recursively something inside a object
- * @param {options} options
- * @param {object} options.obj - Object to search a item inside it.
- * @param {object} options.key - Item key name to find.
- * @param {string|number} [options.value=null] - Value item to find.
- * @param {string} [options.type='array'] - Type of value to find.
- * @param {any[]} [options.result=[]] - Array with all results founded.
- * @return {any[]} All results founded.
- */
-function findRecursively({
-    obj,
-    key,
-    value = null,
-    // eslint-disable-next-line no-bitwise
-    type = 'array' | 'value' | 'object',
-    result = [],
-}) {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const k in obj) {
-        if (obj[k] instanceof Object) {
-            findRecursively({
-                obj: obj[k],
-                key,
-                type,
-                result,
-                value,
-            });
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>Discord.js-collector</h1>
+<p>Library to easily create message collector, reactions collector and reactions role on discord.js v12, with customization ways.</p>
+<hr>
+<h2>Sumary</h2>
+<p>◘ Reactions Collectors:<br>
+| <a href="#reaction-role">Reaction Role</a><br>
+| <a href="#reaction-menu">Menu</a><br>
+| <a href="#simple-reaction-collector">Question</a><br>
+| <a href="#simple-boolean-reaction-collector">Yes/No Question</a><br>
+| <a href="#embeds-pagination">Embeds Paginator</a><br>
+◘ Messages Collectors:<br>
+| <a href="#simple-messages-collector">Question</a><br>
+| <a href="#async-message-collector">Async Question</a><br>
+◘ Examples<br>
+| <a href="./examples/reaction-role-manager/basic.js">Reaction Role Manager</a><br>
+| <a href="./examples/reaction-collector/menu.js">Reaction Menu</a><br>
+◘ Others<br>
+| <a href="CHANGELOG.md">Changelog</a>
+| <a href="./BREAKING_CHANGES.md">Breaking Changes</a></p>
+<h2>Documentation</h2>
+<p>See all documentation <a href="https://idjinn.github.io/">here</a></p>
+<hr>
+<h2>Reaction role</h2>
+<p>You can create reactions roles, with amazing functions:<br>
+| • If you bot turns off, when it turns on all users reacted in messages will win the role.<br>
+| • If you bot turns off, if any user remove reaction, when the bot turns on will remove the role from him.<br>
+| • You can store the roles in a JSON file and migrate the reaction role data.<br>
+| • You can limit max roles given by bot, like 10 roles.<br>
+| • Toggled roles: Limit one of these roles to use (Util for colors reaction roles, only get one of roles)<br>
+| • Requirements: Limit roles to only boosters or discord developers win roles!</p>
+<p><img src="./assets/reactionRoles.gif" alt="Reaction Role Gif"></p>
+<p>You can find this code example <a href="./examples/reaction-role-manager/basic.js">here</a></p>
+<hr>
+<h2>Reaction menu</h2>
+<p>To create a reaction menu with multiple pages.</p>
+<p><img src="./assets/reactMenu.gif" alt="Menu Gif"></p>
+<pre class="prettyprint source lang-js"><code>const botMessage = await message.reply('Testing reaction menu...')
+ReactionCollector.menu({
+  botMessage,
+  user: message,
+  pages: {
+    '✅': {
+      content: 'Hello world!',
+      reactions: ['?'], // Reactions to acess next sub-page
+      embed: {
+        description: 'First page content, you can edit and put your custom embed.'
+      },
+      pages:{ // Exemple sub-pages
+        '❓': {
+          content: '?',
+          embed: {
+            description: 'You\'ve found the secret page.'
+          }
         }
+      }
+    },
+    '❌': {
+      content: 'What\'s happened?',
+      embed: {
+        description: 'You\'ve clicked in ❌ emoji.'
+      }
     }
-    if (obj &amp;&amp; obj[key]) {
-        if (type === 'array' &amp;&amp; isArray(obj[key])) result.push(...obj[key]);
-        else if (type === 'object') {
-            if (!value || obj[key] === value) result.push(obj);
-        } else result.push(obj[key]);
-    }
-    return result;
-}
-
-module.exports = {
-    findRecursively,
-};
+  }
+});
 </code></pre>
-        </article>
+<h2>Simple reaction collector</h2>
+<p>To use in multiple actions, react and then trigger one function to do things.</p>
+<p><img src="./assets/reactQuestion.gif" alt="Question Gif"></p>
+<h2>Simple boolean reaction collector</h2>
+<p>To use in <code>if</code> statements, the asynchronous reaction collector returning Promise <boolean> is more practical</p>
+<p><img src="./assets/reactYesNoQuestion.gif" alt="Question Gif"></p>
+<h2>Embeds pagination</h2>
+<p>Example <a href="./examples/reaction-collector/paginator.js">here</a></p>
+<p>Easier paginator embeds, with back/skip reaction to change current page.</p>
+<p><img src="./assets/reactPaginator.gif" alt="Question Gif"></p>
+<pre class="prettyprint source lang-js"><code>const { ReactionCollector } = require(&quot;discord.js-collector&quot;);
+
+const botMessage = await message.channel.send(&quot;Simple paginator...&quot;);
+ReactionCollector.paginator({
+  botMessage,
+  user: message,
+  pages: [
+    new MessageEmbed({ description: &quot;First page content...&quot; }),
+    new MessageEmbed({ description: &quot;Second page content...&quot; }),
+  ],
+});
+</code></pre>
+<h2>Simple messages collector</h2>
+<p>Await for messages from user, and when it's send will fire a trigger to do things. See exemple <a href="https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/message-collector/question.js">here</a></p>
+<p><img src="./assets/messageQuestion.gif" alt="Question Gif"></p>
+<h2>Async message collector</h2>
+<p>Await for message from user, and when user send, will return user message as Promise<Message>.</p>
+<p><img src="./assets/messageAsyncQuestion.gif" alt="Question Gif"></p>
+<pre class="prettyprint source lang-js"><code>const { MessageCollector } = require(&quot;discord.js-collector&quot;);
+
+const botMessage = await message.channel.send(&quot;Awaiting a message&quot;);
+const userMessage = await MessageCollector.asyncQuestion({
+  botMessage,
+  user: message.author.id,
+});
+if (userMessage.content === &quot;ping&quot;) {
+  await message.channel.send(&quot;pong!&quot;);
+}
+</code></pre></article>
     </section>
+
+
 
 
 
@@ -94,7 +164,7 @@ module.exports = {
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Wed Nov 18 2020 13:41:19 GMT-0200 (GMT-02:00) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Wed Nov 18 2020 13:42:13 GMT-0200 (GMT-02:00) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

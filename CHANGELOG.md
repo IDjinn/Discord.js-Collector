@@ -1,5 +1,13 @@
 
 ---
+# CHANGELOG - V1.7.4
+
+• Reaction Role Manager: 
+    - Fix reaction roles toggle
+    - Added ready event and property
+    - Fix roles setup
+
+---
 # CHANGELOG - V1.7.3
 
 • Reaction Role Manager: fix roles.has is not a funcion
