@@ -1,6 +1,6 @@
 
 ---
-# CHANGELOG - V1.7.4
+# CHANGELOG - V1.7.5
 
 • Reaction Role Manager: 
     - Fix reaction roles toggle
