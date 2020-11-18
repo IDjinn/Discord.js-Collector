@@ -13,6 +13,7 @@ const REACTIONROLE_EVENT = Object.freeze({
     REACTION_ROLE_REMOVE: 'reactionRoleRemove',
     ALL_REACTIONS_REMOVE: 'allReactionsRemove',
     MISSING_REQUIREMENTS: 'missingRequirements',
+    MISSING_PERMISSIONS: 'missingPermissions',
     READY: 'ready'
 });
 

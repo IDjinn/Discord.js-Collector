@@ -12,6 +12,7 @@ const fs = require('fs');
 const Constants = require('../util/constants');
 const { ReactionRole } = require('./reactionRole');
 const { REACTIONROLE_EVENT, REQUIREMENT_TYPE } = require('./constants');
+const { resolve } = require('path');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -95,12 +96,12 @@ class ReactionRoleManager extends EventEmitter {
         {
             storage, mongoDbLink, path, debug, disabledProperty,
         } = {
-            storage: true,
-            mongoDbLink: null,
-            path: `${__dirname}/data/roles.json`,
-            debug: false,
-            disabledProperty: true,
-        },
+                storage: true,
+                mongoDbLink: null,
+                path: `${__dirname}/data/roles.json`,
+                debug: false,
+                disabledProperty: true,
+            },
     ) {
         super();
 
@@ -358,34 +359,41 @@ class ReactionRoleManager extends EventEmitter {
                         continue;
                     }
 
-                    if (this.__checkRequirements(reactionRole, reaction, member)) {
+                    if (!this.__checkBotRolePermissions(role)) {
+                        this.emit(REACTIONROLE_EVENT.MISSING_PERMISSIONS, reactionRole, role, member);
+                        this.__debug(
+                            'ROLE',
+                            `User '${member.displayName}' will not win the role '${role.name}' cause the bot hasn't permissions to manage that role.`,
+                        );
+                    }
+                    else if (!this.__checkRequirements(reactionRole, reaction, member)) {
                         if (reactionRole.toggle) {
                             this.__debug(
                                 'BOOT',
                                 `Skiping role '${reactionRole.role}' of give role assembly, need check if is it toggle role.`,
                             );
-                        } else {
-                            if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
-                            if (!member.roles.cache.has(reactionRole.role)) {
-                                await member.roles.add(reactionRole.role);
-                                this.emit(
-                                    REACTIONROLE_EVENT.REACTION_ROLE_ADD,
-                                    member,
-                                    role,
-                                );
-                                this.__debug(
-                                    'BOOT',
-                                    `Role '${reactionRole.role}' was given to '${member.id}', it reacted when bot wasn't online.`,
-                                );
-                            } else {
-                                this.__debug(
-                                    'BOOT',
-                                    `Keeping role '${reactionRole.role}' from '${member.id}', it reacted and already have the role.`,
-                                );
-                            }
                         }
-                        this.__timeoutToggledRoles(member, message);
+                    } else {
+                        if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
+                        if (!member.roles.cache.has(reactionRole.role)) {
+                            await member.roles.add(reactionRole.role);
+                            this.emit(
+                                REACTIONROLE_EVENT.REACTION_ROLE_ADD,
+                                member,
+                                role,
+                            );
+                            this.__debug(
+                                'BOOT',
+                                `Role '${reactionRole.role}' was given to '${member.id}', it reacted when bot wasn't online.`,
+                            );
+                        } else {
+                            this.__debug(
+                                'BOOT',
+                                `Keeping role '${reactionRole.role}' from '${member.id}', it reacted and already have the role.`,
+                            );
+                        }
                     }
+                    this.__timeoutToggledRoles(member, message);
                 }
 
                 for (let j = 0; j < reactionRole.winners.length; j += 1) {
@@ -403,7 +411,7 @@ class ReactionRoleManager extends EventEmitter {
                     if (member.user.bot) continue;
 
                     if (!reaction.users.cache.has(winnerId)) {
-                    // Delete role if user reacted off
+                        // Delete role if user reacted off
                         if (member.roles.cache.has(reactionRole.role)) {
                             await member.roles.remove(reactionRole.role);
                             this.emit(
@@ -453,6 +461,15 @@ class ReactionRoleManager extends EventEmitter {
     }
 
     /**
+     * Check if the bot have all permissions
+     * @private
+     * @param {Role} role 
+     */
+    async __checkBotRolePermissions(role) {
+        return role ? role.editable : false;
+    }
+
+    /**
      * Check if members have all requirements and handle if it doesn't have it.
      * @private
      * @param {ReactionRole} reactionRole - Reaction role to check requirements.
@@ -475,9 +492,7 @@ class ReactionRoleManager extends EventEmitter {
                     `Member '${member.id}' not have boost requirement, will not win this role.`,
                 );
                 return resolve(false);
-            } if (
-                !(await reactionRole.checkDeveloperRequirement(member))
-            ) {
+            } if (!(await reactionRole.checkDeveloperRequirement(member))) {
                 this.emit(
                     REACTIONROLE_EVENT.MISSING_REQUIREMENTS,
                     REQUIREMENT_TYPE.VERIFIED_DEVELOPER,
@@ -512,10 +527,10 @@ class ReactionRoleManager extends EventEmitter {
         {
             message, role, emoji, max, toggle, requirements,
         } = {
-            max: Number.MAX_SAFE_INTEGER,
-            toggle: false,
-            requirements: { boost: false, verifiedDeveloper: false },
-        },
+                max: Number.MAX_SAFE_INTEGER,
+                toggle: false,
+                requirements: { boost: false, verifiedDeveloper: false },
+            },
     ) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
@@ -719,7 +734,15 @@ class ReactionRoleManager extends EventEmitter {
             return msgReaction.remove();
         }
 
-        if (!this.__checkRequirements(reactionRole, msgReaction, member)) return;
+        if (!this.__checkBotRolePermissions(role)) {
+            this.emit(REACTIONROLE_EVENT.MISSING_PERMISSIONS, reactionRole, role, member);
+            this.__debug(
+                'ROLE',
+                `User '${member.displayName}' will not win the role '${role.name}' cause the bot hasn't permissions to manage that role.`,
+            );
+        }
+        else if (!this.__checkRequirements(reactionRole, msgReaction, member)) return;
+
         if (reactionRole.toggle) this.__timeoutToggledRoles(member, message, reactionRole);
         else {
             if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
@@ -758,6 +781,15 @@ class ReactionRoleManager extends EventEmitter {
                         continue;
                     }
 
+                    if (!this.__checkBotRolePermissions(role)) {
+                        this.emit(REACTIONROLE_EVENT.MISSING_PERMISSIONS, reactionRole, role, member);
+                        this.__debug(
+                            'ROLE',
+                            `User '${member.displayName}' will not lose the role '${role.name}' cause the bot hasn't permissions to manage that role.`,
+                        );
+                        continue;
+                    }
+
                     const index = toggledRole.winners.indexOf(member.id);
                     if (index >= 0) toggledRole.winners.splice(index, 1);
 
@@ -779,7 +811,14 @@ class ReactionRoleManager extends EventEmitter {
                         (r) => this.__resolveReactionEmoji(r.emoji) === skippedRole.emoji,
                     );
 
-                    if (this.__checkRequirements(skippedRole, reaction, member)) {
+                    if (!this.__checkBotRolePermissions(role)) {
+                        this.emit(REACTIONROLE_EVENT.MISSING_PERMISSIONS, reactionRole, role, member);
+                        this.__debug(
+                            'ROLE',
+                            `User '${member.displayName}' will not win the role '${role.name}' cause the bot hasn't permissions to manage that role.`,
+                        );
+                    }
+                    else if (this.__checkRequirements(skippedRole, reaction, member)) {
                         if (skippedRole.winners.indexOf(member.id) <= -1) skippedRole.winners.push(member.id);
 
                         if (!member.roles.cache.has(skippedRole.role)) {
@@ -861,19 +900,28 @@ class ReactionRoleManager extends EventEmitter {
             return msgReaction.remove();
         }
 
-        if (member.roles.cache.has(role.id)) {
-            await member.roles.remove(role);
-            this.emit(REACTIONROLE_EVENT.REACTION_ROLE_REMOVE, member, role);
+        if (!this.__checkBotRolePermissions(role)) {
+            this.emit(REACTIONROLE_EVENT.MISSING_PERMISSIONS, reactionRole, role, member);
             this.__debug(
                 'ROLE',
-                `User '${member.displayName}' lost the role '${role.name}'.`,
+                `User '${member.displayName}' will not lose the role '${role.name}' cause the bot hasn't permissions to manage that role.`,
             );
         }
+        else {
+            if (member.roles.cache.has(role.id)) {
+                await member.roles.remove(role);
+                this.emit(REACTIONROLE_EVENT.REACTION_ROLE_REMOVE, member, role);
+                this.__debug(
+                    'ROLE',
+                    `User '${member.displayName}' lost the role '${role.name}'.`,
+                );
+            }
 
-        const index = reactionRole.winners.indexOf(member.id);
-        if (index >= 0) {
-            reactionRole.winners.splice(index, 1);
-            this.store(reactionRole);
+            const index = reactionRole.winners.indexOf(member.id);
+            if (index >= 0) {
+                reactionRole.winners.splice(index, 1);
+                this.store(reactionRole);
+            }
         }
     }
 
@@ -893,9 +941,16 @@ class ReactionRoleManager extends EventEmitter {
                 const member = message.guild.members.cache.get(winnerId);
                 if (!member) continue;
 
-                await member.roles.remove(reactionRole.role);
-                if (!membersAffected.includes(member)) membersAffected.push(member);
+                if (!this.__checkBotRolePermissions(role)) {
+                    this.emit(REACTIONROLE_EVENT.MISSING_PERMISSIONS, reactionRole, role, member);
+                    this.__debug(
+                        'ROLE',
+                        `User '${member.displayName}' will not lose the role '${role.name}' cause the bot hasn't permissions to manage that role.`,
+                    );
+                }
+                else await member.roles.remove(reactionRole.role);
 
+                if (!membersAffected.includes(member)) membersAffected.push(member);
                 reactionsTaken += 1;
             }
             await this.deleteReactionRole(reactionRole, true);
