@@ -44,6 +44,10 @@ reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
     console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requirement ${type}`);
 });
 
+reactionRoleManager.on('missingPermissions', (reactionRole, role, member) => {
+    console.log(`Member '${member.id}' will not win role '${role}', because i don't have all permissions to give/take that role.`);
+});
+
 client.on("message", async (message) => {
     const client = message.client;
     const args = message.content.split(' ').slice(1);
