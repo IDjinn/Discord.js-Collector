@@ -362,7 +362,7 @@ class ReactionRoleManager extends EventEmitter {
                         if (reactionRole.toggle) {
                             this.__debug(
                                 'BOOT',
-                                `Skiping role '${reactionRole.role}' of give role assembly, need check if is it toggle role.`,
+                                `Skiping role '${reactionRole.role}' of give role queue, need check if is it toggle role.`,
                             );
                         } else {
                             if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
@@ -833,12 +833,12 @@ class ReactionRoleManager extends EventEmitter {
         if (readyTimeout) this.client.clearTimeout(readyTimeout);
         if (this.isReady) return;
 
-        this.timeouts.set('ready_timeout', () => {
-            this.isReady = true;
-            this.readyAt = new Date();
-            this.emit(REACTIONROLE_EVENT.READY);
-            this.__debug('READY', 'Reaction role manager is ready.');
-        }, 1000);
+        this.timeouts.set('ready_timeout', setTimeout(() => {
+                this.isReady = true;
+                this.readyAt = new Date();
+                this.emit(REACTIONROLE_EVENT.READY);
+                this.__debug('READY', 'Reaction role manager is ready.');
+        }, 5000));
     }
 
     /**
