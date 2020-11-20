@@ -1,10 +1,11 @@
 const { ReactionRoleManager } = require('../src')
 const { Client, Constants } = require("discord.js");
 const client = new Client();
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/process.env' });
 const app = require('express')();
 const server = require('http').createServer(app);
-const axios = require('axios')
+const axios = require('axios');
+const { Console } = require('console');
 
 const clean = text => {
     if (typeof (text) === "string")
@@ -22,6 +23,10 @@ const reactionRoleManager = new ReactionRoleManager(client, {
 
 client.on("ready", () => {
     console.log("ready")
+});
+
+reactionRoleManager.on("ready", () => {
+    console.log("reactionRoleManager ready")
 });
 
 // When user react and win role, will trigger this event
@@ -44,9 +49,14 @@ reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
     console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requirement ${type}`);
 });
 
-reactionRoleManager.on('missingPermissions', (reactionRole, role, member) => {
-    console.log(`Member '${member.id}' will not win role '${role}', because i don't have all permissions to give/take that role.`);
+reactionRoleManager.on('missingPermissions', (role, member) => {
+    console.log(`Member '${member.id}' will not win role '${role.name}', because i don't have all permissions to give/take that role.`);
 });
+
+client.on('error', err => console.error(err))
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  });
 
 client.on("message", async (message) => {
     const client = message.client;
@@ -56,15 +66,15 @@ client.on("message", async (message) => {
     if (message.content.startsWith('>createReactionRole')) {
         const role = message.mentions.roles.first();
         if (!role)
-            return message.reply('You need mention a role').then(m => m.delete({ timeout: 1_000 }));
+            return message.reply('You need mention a role').then(m => m.delete({ timeout: 1000 }));
 
         const emoji = args[1];
         if (!emoji)
-            return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1_000 }));
+            return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1000 }));
 
         const msg = await message.channel.messages.fetch(args[2] || message.id);
         if (!role)
-            return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1_000 }));
+            return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1000 }));
 
         reactionRoleManager.createReactionRole({
             message: msg,
@@ -105,10 +115,12 @@ client.on("message", async (message) => {
 });
 
 client.login(process.env.TOKEN);
-
-app.get('/', (_, res) => res.sendStatus(204));
-client.setInterval(() =>{ try{
-    axios.get(process.env.GET_URL);
-}catch{}
-}, 5000);
-server.listen(process.env.PORT || 3000);
+if (process.env.GET_URL) {
+    app.get('/', (_, res) => res.sendStatus(204));
+    client.setInterval(() => {
+        try {
+            axios.get(process.env.GET_URL);
+        } catch { }
+    }, 5000);
+    server.listen(process.env.PORT || 3000);
+}
