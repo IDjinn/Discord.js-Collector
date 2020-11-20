@@ -45,15 +45,15 @@ client.on("message", async (message) => {
     if (message.content.startsWith('>createReactionRole')) {
         const role = message.mentions.roles.first();
         if (!role)
-            return message.reply('You need mention a role').then(m => m.delete({ timeout: 1_000 }));
+            return message.reply('You need mention a role').then(m => m.delete({ timeout: 1000 }));
 
         const emoji = args[1];
         if (!emoji)
-            return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1_000 }));
+            return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1000 }));
 
         const msg = await message.channel.messages.fetch(args[2] || message.id);
         if (!role)
-            return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1_000 }));
+            return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1000 }));
 
         reactionRoleManager.createReactionRole({
             message: msg,
@@ -61,6 +61,17 @@ client.on("message", async (message) => {
             emoji
         });
         message.reply('Done').then(m => m.delete({ timeout: 500 }));
+    }
+    else if (message.content.startsWith('>deleteReactionRole')){
+        const emoji = args[0];
+        if (!emoji)
+            return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1000 }));
+
+        const msg = await message.channel.messages.fetch(args[1]);
+        if (!msg)
+            return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1000 }));
+
+        await reactionRoleManager.deleteReactionRole({message: msg, emoji});
     }
 });
 

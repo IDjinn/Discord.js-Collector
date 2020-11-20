@@ -47,3 +47,20 @@
                 disableProperty: false // Now, all roles will not just 'disabled', it will be deleted.
             });
         ```
+
+
+# V1.7.0 -> V1.8.0
+
+- Reaction Role Manager:\
+    - Now `deleteReactionRole(reactionRole, [deleted])` method will use object in first param to delete with only message and emoji of this reaction role.\
+        E.g:\
+        
+        ```js
+            // Before
+            await rrManager.deleteReactionRole(reactionRole);
+
+            // Now
+            await rrManager.deleteReactionRole({reactionRole});
+            // Or just delete if you have message and emoji
+            await rrManager.deleteReactionRole({rrMessage, emoji});
+        ```
