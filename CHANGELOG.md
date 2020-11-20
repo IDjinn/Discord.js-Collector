@@ -1,69 +1,85 @@
 
 ---
-# CHANGELOG - V1.4.4
+# CHANGELOG - V1.7.6
 
-• Fix max counter in reaction role manager, before this version this number was inc and dec, when reaction add/remove.
-• Fix bots can win roles while reaction role manager boot
-• Improve debug logs in reaction role manager
-• Added support to mongodb (lib mongoose) in reaction role manager
+• Reaction Role Manager: delete reaction roles by message and emoji
 
 ---
-# CHANGELOG - V1.4.3
+# CHANGELOG - V1.7.5
 
-• Fix unexpected token in Constants.js
-
----
-# CHANGELOG - V1.4.2
-
-• Fix typings
+• Reaction Role Manager: 
+    - Fix reaction roles toggle
+    - Added ready event and property
+    - Fix roles setup
 
 ---
-# CHANGELOG - V1.4.1
+# CHANGELOG - V1.7.3
 
-• Reactions arrays now is object, key value with key is Emoji and value is function when user react.
-• Now you can give more params to react functions, all ...args given in question(options, ...args) for e.g.g will be available in reactions functions after default params.
-• Improve examples in docs, improve [README.md](./README.md)
-• Fix typings
-• Reactions roles will emit events when user win/lose role or all reactions was removed from message.
+• Reaction Role Manager: fix roles.has is not a funcion
 
 ---
-# CHANGELOG - V1.4.0
+# CHANGELOG - V1.7.2
 
-• Refractor reaction menu, more options and new menu Controller, to stop, reset timer, back and go to pages.
-
----
-# CHANGELOG - V1.3.7
-
-• Fix format in README.md
+• Reaction Role Manager: fix toggled roles wasn't working
 
 ---
-# CHANGELOG - V1.3.6
+# CHANGELOG - V1.7.1
 
-• Fix invalid main file.
-
----
-# CHANGELOG - V1.3.5
-
-• Added onMessage and onReact in menu pages.
+• Reaction Role Manager: fix error on setup
 
 ---
-# CHANGELOG - V1.3.4
+# CHANGELOG - V1.7.0
 
-• Fixed types, changed how react menu works, now suport for multiple pages and subpages.
-• Improve README with links and Sumary.
+• Reaction Role Manager: disable property instead delete reaction role\
+• Reaction Collector: now the collector will be passed with args
 
----
-# CHANGELOG - V1.3.0
-
-• Added Reaction Role system, now you can create easy reaction roles with a internal storage, if your bot shutdown, all users will won the roles when it's up!
+See [Breaking Changes](./BREAKING_CHANGES.md)
 
 ---
-# CHANGELOG - V1.2.0
+# CHANGELOG - V1.6.9
 
-• New functions to create reactions menu, you can use with `ReactionCollector.menu(options)`
+• Reaction Role Manager: Fix roles to give/take verification on turn on bot.
 
 ---
-# CHANGELOG - V1.1.0
+# CHANGELOG - V1.6.8
 
-• Now collectors work in DM Channels, but cannot delete user reaction/message
-• [BETA] Added ReactionRoleManager, easy mode to create reactions roles with storage system, when finish i will share examples and gifs explaining how this work.
+• Reaction Role Manager:\
+    - Fix json storage\
+    - Removed unecessary debug logs\
+    - Conflict if not have rr, don't remove user reaction
+
+---
+# CHANGELOG - V1.6.7
+
+• Fix Reaction Role Manager: Bad input: I canno't find emoji {identifier}
+
+---
+# CHANGELOG - V1.6.6
+
+• Fix Reaction Collector TypeError: Cannot read property 'map' of undefined\
+• Reaction Role Manager: wrong typo in createReactionRole()
+
+---
+# CHANGELOG - V1.6.5
+
+• Fix Reaction Role Manager: Problems with animated emojis and auto deleting rr
+
+---
+# CHANGELOG - V1.6.3-4
+
+• Types: fix types imported (MessageCollector and ReactionCollector, CollectorOptions) from Discord.js
+
+---
+# CHANGELOG - V1.6.2
+
+• Reaction Role Manager: Fix TypeError: messageReactionsRoles.map is not a function
+
+---
+# CHANGELOG - V1.6.1
+
+• Reaction Role Manager: Fix error if client param is class extends client
+
+---
+# CHANGELOG - V1.6.0
+
+• Reaction Paginator is working now, with more emojis (Soon it will be possible use custom emojis!)

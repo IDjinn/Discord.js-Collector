@@ -1,7 +1,5 @@
-import {
+import Discord, {
     CollectorOptions,
-    MessageCollector as DjsMessageCollector,
-    ReactionCollector as DjsReactionCollector,
     EmojiIdentifierResolvable,
     Message,
     MessageEmbed,
@@ -16,14 +14,15 @@ import {
     Guild,
     GuildEmoji,
     EmojiResolvable,
-    GuildMember
-} from "discord.js";
+    GuildMember,
+    GuildManager,
+    GuildResolvable,
+} from 'discord.js';
 
 import { EventEmitter } from 'events';
 
 declare module 'discord.js-collector' {
-
-    class ReactionRole {
+    export class ReactionRole {
         constructor(options: IReactionRoleOptions);
         get id(): string;
         public toJSON(): object;
@@ -34,10 +33,19 @@ declare module 'discord.js-collector' {
         get emoji(): string;
         get winners(): string[];
         get max(): number;
+        get toggle(): boolean;
+        get requirements(): IRequirements;
         static fromJSON(json: JSON): ReactionRole;
+        public checkDeveloperRequirement(member: GuildMember): Promise<boolean>;
+        public checkBoostRequirement(member: GuildMember): boolean;
     }
 
-    interface IReactionRoleOptions {
+    export interface IRequirements {
+        boost: boolean;
+        verifiedDeveloper: boolean;
+    }
+
+    export interface IReactionRoleOptions {
         message: Message | Snowflake;
         channel: TextChannel | Snowflake;
         guild: Guild | Snowflake;
@@ -45,55 +53,101 @@ declare module 'discord.js-collector' {
         emoji: GuildEmoji | EmojiResolvable;
         winners: string[];
         max: number;
+        toggle: boolean;
     }
 
     export class ReactionRoleManager extends EventEmitter {
         constructor(client: Client, options?: IReactionRoleManagerOptions);
-        public roles: Collection<string, ReactionRole>;
-        private __resfreshOnBoot(): Promise<void>;
-        private __debug(type: string, message: string, ...args: any);
+        public reactionRoles: Collection<string, ReactionRole>;
+        public timeouts: Collection<string, Function>;
         public createReactionRole(options: IAddRoleOptions): Promise<void>;
-        public deleteReactionRole(role: ReactionRole): void;
-        /**
-    * @deprecated since 1.4.4, use createReactionRole instead.
-    */
-        public addRole(options: IAddRoleOptions): Promise<void>;
-        /**
-    * @deprecated since 1.4.4, use deleteReactionRole instead.
-    */
-        public removeRole(role: ReactionRole): void;
-        private __store(): void;
+        public deleteReactionRole(role: ReactionRole): Promise<void>;
+        public store(...roles: ReactionRole): Promise<void>;
         private __parseStorage(): Collection<string, any>;
-        private __onReactionAdd(msgReaction: MessageReaction, user: User): Promise<void>;
-        private __onReactionRemove(msgReaction: MessageReaction, user: User): Promise<void>;
+        private __onReactionAdd(
+            msgReaction: MessageReaction,
+            user: User
+        ): Promise<void>;
+        private __onReactionRemove(
+            msgReaction: MessageReaction,
+            user: User
+        ): Promise<void>;
         private __onRemoveAllReaction(message: Message): Promise<void>;
+        private __resfreshOnBoot(): Promise<void>;
+        private __debug(type: string, message: string, ...args: any): void;
+        private __timeoutToggledRoles(
+            member: GuildMember,
+            message: Message
+        ): void;
+        private __handleDeleted(
+            reactionRole: ReactionRole,
+            guildResolvable: GuildResolvable
+        );
+        private __checkRequirements(
+            reactionRole: ReactionRole,
+            reaction: MessageReaction,
+            member: GuildMember
+        );
 
         public on(event: string, listener: (...args: any[]) => void): this;
-        public on(event: 'reactionRoleAdd', listener: (member: GuildMember, role: Role) => void): this;
-        public on(event: 'reactionRoleRemove', listener: (member: GuildMember, role: Role) => void): this;
-        public on(event: 'allReactionsRemove', listener: (message: Message, rolesAffected: Role[], membersAffected: GuildMember[], reactionsTaken: number) => void): this;
+        public on(
+            event: 'reactionRoleAdd',
+            listener: (member: GuildMember, role: Role) => void
+        ): this;
+        public on(
+            event: 'reactionRoleRemove',
+            listener: (member: GuildMember, role: Role) => void
+        ): this;
+        public on(
+            event: 'allReactionsRemove',
+            listener: (
+                message: Message,
+                rolesAffected: Role[],
+                membersAffected: GuildMember[],
+                reactionsTaken: number
+            ) => void
+        ): this;
+        public on(
+            event: 'missingRequirements',
+            listener: (
+                type: IRequirementType,
+                member: GuildMember,
+                reactionRole: ReactionRole
+            ) => void
+        ): this;
+    }
 
+    export enum IRequirementType {
+        BOOST = 'BOOST',
+        VERIFIED_DEVELOPER = 'VERIFIED_DEVELOPER',
     }
 
     export interface IAddRoleOptions {
         message: Message;
         role: Role;
         emoji: EmojiIdentifierResolvable;
-        max: number;
+        max?: number;
+        toggle?: boolean;
+        requirements?: IRequirements;
     }
 
     export interface IReactionRoleManagerOptions {
-        store: true;
-        storage: true;
-        debug: false;
+        storage: boolean | true;
+        debug: boolean | false;
         path: string;
-        mongoDbLink: '';
+        mongoDbLink?: string;
+        storageJsonPath?: string;
+        disabledProperty: boolean | true;
     }
 
     export class MessageCollector {
-        public static question(options: IMessageQuestionOptions): DjsMessageCollector;
-        public static asyncQuestion(options: IMessageQuestionOptions): Promise<Message>;
-        private __createMessageCollector(_options): DjsMessageCollector;
+        public static question(
+            options: IMessageQuestionOptions
+        ): Discord.MessageCollector;
+        public static asyncQuestion(
+            options: IMessageQuestionOptions
+        ): Promise<Message>;
+        private __createMessageCollector(_options): Discord.MessageCollector;
         private __createAsyncMessageCollector(_options): Promise<Message>;
     }
 
@@ -112,18 +166,22 @@ declare module 'discord.js-collector' {
     }
 
     export class Controller {
-        constructor(botMessage: Message, collector: DjsReactionCollector, pages: IMenuPage);
+        constructor(
+            botMessage: Message,
+            collector: Discord.ReactionCollector,
+            pages: IMenuPage
+        );
         public stop(): void;
-        public back(): void;
         public restTimer(options?: ITimerOptions): void;
-        public goTo(pageId: string | number): void;
+        public async back(): Promise<void>;
+        public async goTo(pageId: string | number): Promise<void>;
+        public async update(bool: boolean): Promise<void>;
         public get canBack(): boolean;
-        public update(bool: boolean): Promise<void>;
         get botMessage(): Message;
         get lastPage(): IMenuPage;
         set messagesCollector(value);
-        get messagesCollector(): DjsMessageCollector;
-        get collector(): DjsReactionCollector;
+        get messagesCollector(): Discord.MessageCollector;
+        get collector(): Discord.ReactionCollector;
         get currentPage(): IMenuPage;
         set currentPage(value);
         set lastPage(value);
@@ -132,11 +190,23 @@ declare module 'discord.js-collector' {
 
     export class ReactionCollector {
         public static menu(options: IReactMenuOptions): Controller;
-        public static paginator(options: IPaginatorOptions): DjsReactionCollector;
-        public static question(options: IReactQuestionOptions, ...args: any): DjsReactionCollector;
-        public static yesNoQuestion(options: IReactQuestionOptions): Promise<boolean>;
-        private static __createReactionCollector(_options, ...args: any): DjsReactionCollector;
-        private static __createYesNoReactionCollector(_options): Promise<boolean>;
+        public static paginator(
+            options: IPaginatorOptions
+        ): Discord.ReactionCollector;
+        public static question(
+            options: IReactQuestionOptions,
+            ...args: any
+        ): Discord.ReactionCollector;
+        public static yesNoQuestion(
+            options: IReactQuestionOptions
+        ): Promise<boolean>;
+        private static __createReactionCollector(
+            _options,
+            ...args: any
+        ): Discord.ReactionCollector;
+        private static __createYesNoReactionCollector(
+            _options
+        ): Promise<boolean>;
     }
 
     export interface IReactQuestionOptions {

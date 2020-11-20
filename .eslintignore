@@ -1,0 +1,32 @@
+# Ignore assets
+examples/*
+assets/*
+
+# Ignore built-in files
+node_modules/*
+.github/*
+tests/*
+test/*
+examples/*
+assets/*
+.jsdoc.json
+tsconfig.json
+.eslint.json
+
+# Ignore output files
+build/*
+out/*
+docs/*
+
+# Ignore unsefull files
+yarn-error.log
+package-lock.json
+yarn.lock
+.vscode/*
+
+# Ignore settings files
+**/*.env
+.npmrc
+
+
+**/constants.js

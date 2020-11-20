@@ -1,4 +1,4 @@
-const { ReactionCollector } = require('discord.js-collector')
+const { ReactionCollector } = require('discord.js-collector');
 const { Client } = require("discord.js");
 const client = new Client();
 client.on("ready", () => {
@@ -9,11 +9,12 @@ client.on("ready", () => {
 client.on("message", async (message) => {
     if (message.content.startsWith('>delete-channel')) {
         const botMessage = await message.reply('Are you sure? This action canno\'t be undo!');
-        if(await ReactionCollector.yesNoQuestion({botMessage, user: message.author })){
-           message.channel.delete();
+        if (await ReactionCollector.yesNoQuestion({ botMessage, user: message.author })) {
+            await message.channel.delete();
+            await message.reply('Done!');
         }
-        else{
-            message.reply('Ok, operation cancelled!');
+        else {
+            await message.reply('Ok, operation cancelled!');
         }
     }
 });
