@@ -213,18 +213,18 @@ class ReactionRoleManager extends EventEmitter {
      */
     async __handleDeleted(reactionRole, guildResolvable) {
         const guild = this.client.guilds.resolve(guildResolvable);
-        if (!guild) return this.deleteReactionRole({reactionRole}, true);
+        if (!guild) return this.deleteReactionRole({ reactionRole }, true);
 
         const channel = guild.channels.cache.get(reactionRole.channel);
-        if (!channel) return this.deleteReactionRole({reactionRole}, true);
+        if (!channel) return this.deleteReactionRole({ reactionRole }, true);
 
         const message = await channel.messages.fetch(reactionRole.message);
-        if (!message) return this.deleteReactionRole({reactionRole}, true);
+        if (!message) return this.deleteReactionRole({ reactionRole }, true);
 
         const reaction = message.reactions.cache.find(
             (x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x)}`,
         );
-        if (!reaction) return this.deleteReactionRole({reactionRole}, true);
+        if (!reaction) return this.deleteReactionRole({ reactionRole }, true);
 
         await reaction.remove();
     }
@@ -563,19 +563,20 @@ class ReactionRoleManager extends EventEmitter {
 
     /**
      * This funcion will delete the reaction role from storage.
-     * @param {object} options - 
+     * @param {object} options -
      * @param {object} [options.reactionRole] - Reaction Role to delete
      * @param {object} [options.message] - Message of Reaction Role. If you want delete it and not have the reaction role object
      * @param {object} [options.emoji] - Emoji of Reaction Role. If you want delete it and not have the reaction role object
      * @param {boolean} [deleted=false] - Is role deleted from guild?
      * @return {Promise<void>}
      */
-    async deleteReactionRole({reactionRole, message, emoji}, deleted = false) {
+    async deleteReactionRole({ reactionRole, message, emoji }, deleted = false) {
         return new Promise(async (resolve, reject) => {
-            if(message && emoji){
+            if (message && emoji) {
                 const resolvedEmojiID = this.__resolveReactionEmoji(Util.parseEmoji(emoji));
                 const messageID = message && message.id ? message.id : message;
-                reactionRole = this.reactionRoles.find(rr => rr.message == messageID && rr.emoji == resolvedEmojiID);
+                // eslint-disable-next-line no-param-reassign
+                reactionRole = this.reactionRoles.find((rr) => rr.message === messageID && rr.emoji === resolvedEmojiID);
             }
 
             if (reactionRole instanceof ReactionRole) {
@@ -907,7 +908,7 @@ class ReactionRoleManager extends EventEmitter {
 
                 reactionsTaken += 1;
             }
-            await this.deleteReactionRole({reactionRole}, true);
+            await this.deleteReactionRole({ reactionRole }, true);
             this.__debug(
                 'ROLE',
                 `Reaction role '${reactionRole.id}' was deleted, by someone take off all reactions from message.`,
