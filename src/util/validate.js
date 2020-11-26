@@ -109,50 +109,55 @@ module.exports.validateOptions = (options, type) => {
                     .permissionsIn(options.botMessage.channel)
                     .has('MANAGE_MESSAGES')
             ) return Promise.reject(new Error('Missing permissions: I not have permissions to Manage Messages in this channel to delete messages.'));
-            
+
             validOptions.onMessage = options.onMessage;
             break;
 
         default: return Promise.reject(new Error(`Invalid type: '${type}' is not a valid type.`));
     }
 
-    if (type === 'reactMenu') {
-        if (!options.pages) return Promise.reject(new Error('Invalid input: You need add pages to create a react menu.'));
+    if (type === 'reactMenu' || type === 'reactPaginator') {
+        if (!options.pages) return Promise.reject(new Error('Invalid input: You need add pages to create a react menu/paginator.'));
 
-        const reactions = findRecursively({
-            obj: options.pages,
-            key: 'reactions',
-            result: Object.keys(options.pages),
-            type: 'array',
-        });
-        const notEmojis = reactions.filter(
-            (emoji) => !client.emojis.resolveIdentifier(emoji),
-        );
-        if (notEmojis.length > 0) {
-            return Promise.reject(new Error((
-                `Invalid input: These values is'nt a valid emoji: ${notEmojis.join(', ')}`
-            )));
+        if (type === 'reactMenu') {
+            const reactions = findRecursively({
+                obj: options.pages,
+                key: 'reactions',
+                result: Object.keys(options.pages),
+                type: 'array',
+            });
+            const notEmojis = reactions.filter(
+                (emoji) => !client.emojis.resolveIdentifier(emoji),
+            );
+            if (notEmojis.length > 0) {
+                return Promise.reject(new Error((
+                    `Invalid input: These values is'nt a valid emoji: ${notEmojis.join(', ')}`
+                )));
+            }
+
+            const onReacts = findRecursively({
+                obj: options.pages,
+                key: 'onReact',
+                type: 'array',
+            });
+
+            if (onReacts.length > 0
+                && onReacts.filter((fx) => typeof fx !== 'function').length > 0
+            ) return Promise.reject(new Error('Invalid input: Some onReact is not a function type.'));
+
+            const onMessages = findRecursively({
+                obj: options.pages,
+                key: 'onMessage',
+                type: 'array',
+            });
+            if (
+                onMessages.length > 0
+                && onMessages.filter((fx) => typeof fx !== 'function').length > 0
+            ) return Promise.reject(new Error('Invalid input: Some onMessage is not a function type.'));
         }
+        else if (!isArray(options.pages)) return Promise.reject(new Error('Invalid input: Pages of react paginator must be array of MessageEmbed'));
 
-        const onReacts = findRecursively({
-            obj: options.pages,
-            key: 'onReact',
-            type: 'array',
-        });
-        if (
-            onReacts.length > 0
-            && onReacts.filter((fx) => typeof fx !== 'function').length > 0
-        ) return Promise.reject(new Error('Invalid input: Some onReact is not a function type.'));
-
-        const onMessages = findRecursively({
-            obj: options.pages,
-            key: 'onMessage',
-            type: 'array',
-        });
-        if (
-            onMessages.length > 0
-            && onMessages.filter((fx) => typeof fx !== 'function').length > 0
-        ) return Promise.reject(new Error('Invalid input: Some onMessage is not a function type.'));
+        validOptions.pages = options.pages;
     }
 
     validOptions.collectorOptions = {};
