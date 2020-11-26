@@ -78,6 +78,7 @@ module.exports.validateOptions = (options, type) => {
         case 'reactQuestion':
         case 'yesNoQuestion':
         case 'reactPaginator':
+        case 'reactMenu':
             validOptions.reactionsMap = options.reactions;
             if (options.reactionsMap
                 && Object.keys(options.reactionsMap).filter(
