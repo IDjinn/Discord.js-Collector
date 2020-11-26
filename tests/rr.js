@@ -1,7 +1,7 @@
 const { ReactionRoleManager } = require('../src')
-const { Client, Constants } = require("discord.js");
+const { Client, Constants, WebhookClient, MessageEmbed } = require("discord.js");
 const client = new Client();
-require('dotenv').config({path: __dirname + '/process.env'});
+require('dotenv').config({ path: __dirname + '/process.env' });
 const app = require('express')();
 const server = require('http').createServer(app);
 const axios = require('axios')
@@ -22,6 +22,10 @@ const reactionRoleManager = new ReactionRoleManager(client, {
 
 client.on("ready", () => {
     console.log("ready")
+});
+
+reactionRoleManager.on('ready', () => {
+    console.log('Reaction Role Manager ready')
 });
 
 // When user react and win role, will trigger this event
@@ -86,7 +90,7 @@ client.on("message", async (message) => {
     else if (message.content.startsWith('>clear')) {
         const amount = parseInt(args[0]);
         const msg = message;
-        console.clear()
+        console.clear();
         if (!amount) return msg.reply('You haven\'t given an amount of messages which should be deleted!'); // Checks if the `amount` parameter is given
         if (isNaN(amount)) return msg.reply('The amount parameter isn`t a number!'); // Checks if the `amount` parameter is a number. If not, the command throws an error
 
@@ -101,10 +105,13 @@ client.on("message", async (message) => {
 });
 
 client.login(process.env.TOKEN);
+
 if (process.env.GET_URL) {
     app.get('/', (_, res) => res.sendStatus(204));
     client.setInterval(() => {
-        axios.get(process.env.GET_URL);
+        try {
+            axios.get(process.env.GET_URL);
+        } catch { }
     }, 5000);
     server.listen(process.env.PORT || 3000);
 }

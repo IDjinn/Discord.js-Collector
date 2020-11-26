@@ -16,9 +16,10 @@ const { findRecursively } = require('./find');
 module.exports.validateOptions = (options, type) => {
     if (!options) return Promise.reject(new Error('Missing arguments: options is undefined.'));
     if (!options.botMessage || !options.botMessage.client) return Promise.reject(new Error('Invalid input: botMessage is undefined or invalid.'));
+    if (!options.collectorOptions) options.collectorOptions = {};
 
     const { client } = options.botMessage;
-    const validOptions = {};
+    const validOptions = { botMessage: options.botMessage };
     if (typeof client.users.resolve === 'function') validOptions.user = client.users.resolve(options.user);
     else validOptions.user = client.resolver.resolveUser(options.user);
     if (!options.user) return Promise.reject(new Error('Invalid input: user is undefined or invalid.'));
@@ -74,97 +75,99 @@ module.exports.validateOptions = (options, type) => {
     }
 
     switch (type) {
-    case 'reactQuestion':
-    case 'yesNoQuestion':
-    case 'reactPaginator':
-        validOptions.reactionsMap = options.reactions;
-        if (
-            options.reactionsMap
+        case 'reactQuestion':
+        case 'yesNoQuestion':
+        case 'reactPaginator':
+        case 'reactMenu':
+            validOptions.reactionsMap = options.reactions;
+            if (options.reactionsMap
                 && Object.keys(options.reactionsMap).filter(
                     (emoji) => !client.emojis.resolveIdentifier(emoji),
                 ).length > 0
-        ) return Promise.reject(new Error('Invalid input: reactions is invalid type.'));
+            ) return Promise.reject(new Error('Invalid input: reactions is invalid type.'));
 
-        if (!options.reactionsMap) {
-            validOptions.reactionsMap = type !== 'reactPaginator'
-                ? Constants.DEFAULT_YES_NO_MAP
-                : Constants.DEFAULT_PAGINATOR_REACTIONS_MAP;
-        }
-        break;
+            if (!options.reactionsMap) {
+                validOptions.reactionsMap = type !== 'reactPaginator'
+                    ? Constants.DEFAULT_YES_NO_MAP
+                    : Constants.DEFAULT_PAGINATOR_REACTIONS_MAP;
+            }
+            break;
 
-    case 'messageQuestion':
-    case 'messageAsyncQuestion':
-        // eslint-disable-next-line curly
-        // eslint-disable-next-line max-len
-        if (options.onMessage && typeof options.onMessage !== 'function') return Promise.reject(new Error('Invalid input: onMessage is invalid type.'));
+        case 'messageQuestion':
+        case 'messageAsyncQuestion':
+            // eslint-disable-next-line curly
+            // eslint-disable-next-line max-len
+            if (options.onMessage && typeof options.onMessage !== 'function') return Promise.reject(new Error('Invalid input: onMessage is invalid type.'));
 
-        if (!options.onMessage) validOptions.onMessage = Constants.DEFAULT_RETURN_FUNCTION;
+            if (!options.onMessage) validOptions.onMessage = Constants.DEFAULT_RETURN_FUNCTION;
 
-        if (options.botMessage.channel.type === 'dm') validOptions.deleteMessage = false;
-        else if (!isBoolean(options.deleteMessage)) validOptions.deleteMessage = Boolean(options.deleteMessage);
+            if (options.botMessage.channel.type === 'dm') validOptions.deleteMessage = false;
+            else if (!isBoolean(options.deleteMessage)) validOptions.deleteMessage = Boolean(options.deleteMessage);
 
-        if (options.botMessage.channel.type === 'text'
+            if (options.botMessage.channel.type === 'text'
                 && options.deleteMessage
                 && !options.botMessage.guild.me
                     .permissionsIn(options.botMessage.channel)
                     .has('MANAGE_MESSAGES')
-        ) return Promise.reject(new Error('Missing permissions: I not have permissions to Manage Messages in this channel to delete messages.'));
-        break;
+            ) return Promise.reject(new Error('Missing permissions: I not have permissions to Manage Messages in this channel to delete messages.'));
 
-    default: return Promise.reject(new Error(`Invalid type: '${type}' is not a valid type.`));
+            validOptions.onMessage = options.onMessage;
+            break;
+
+        default: return Promise.reject(new Error(`Invalid type: '${type}' is not a valid type.`));
     }
 
-    if (type === 'reactMenu') {
-        if (!options.pages) return Promise.reject(new Error('Invalid input: You need add pages to create a react menu.'));
+    if (type === 'reactMenu' || type === 'reactPaginator') {
+        if (!options.pages) return Promise.reject(new Error('Invalid input: You need add pages to create a react menu/paginator.'));
 
-        const reactions = findRecursively({
-            obj: options.pages,
-            key: 'reactions',
-            result: Object.keys(options.pages),
-            type: 'array',
-        });
-        const notEmojis = reactions.filter(
-            (emoji) => !client.emojis.resolveIdentifier(emoji),
-        );
-        if (notEmojis.length > 0) {
-            return Promise.reject(new Error((
-                `Invalid input: These values is'nt a valid emoji: ${
-                    notEmojis.join(', ')}`
-            )));
+        if (type === 'reactMenu') {
+            const reactions = findRecursively({
+                obj: options.pages,
+                key: 'reactions',
+                result: Object.keys(options.pages),
+                type: 'array',
+            });
+            const notEmojis = reactions.filter(
+                (emoji) => !client.emojis.resolveIdentifier(emoji),
+            );
+            if (notEmojis.length > 0) {
+                return Promise.reject(new Error((
+                    `Invalid input: These values is'nt a valid emoji: ${notEmojis.join(', ')}`
+                )));
+            }
+
+            const onReacts = findRecursively({
+                obj: options.pages,
+                key: 'onReact',
+                type: 'array',
+            });
+
+            if (onReacts.length > 0
+                && onReacts.filter((fx) => typeof fx !== 'function').length > 0
+            ) return Promise.reject(new Error('Invalid input: Some onReact is not a function type.'));
+
+            const onMessages = findRecursively({
+                obj: options.pages,
+                key: 'onMessage',
+                type: 'array',
+            });
+            if (
+                onMessages.length > 0
+                && onMessages.filter((fx) => typeof fx !== 'function').length > 0
+            ) return Promise.reject(new Error('Invalid input: Some onMessage is not a function type.'));
         }
+        else if (!isArray(options.pages)) return Promise.reject(new Error('Invalid input: Pages of react paginator must be array of MessageEmbed'));
 
-        const onReacts = findRecursively({
-            obj: options.pages,
-            key: 'onReact',
-            type: 'array',
-        });
-        if (
-            onReacts.length > 0
-            && onReacts.filter((fx) => typeof fx !== 'function').length > 0
-        ) return Promise.reject(new Error('Invalid input: Some onReact is not a function type.'));
-
-        const onMessages = findRecursively({
-            obj: options.pages,
-            key: 'onMessage',
-            type: 'array',
-        });
-        if (
-            onMessages.length > 0
-            && onMessages.filter((fx) => typeof fx !== 'function').length > 0
-        ) return Promise.reject(new Error('Invalid input: Some onMessage is not a function type.'));
+        validOptions.pages = options.pages;
     }
 
-    if (!options.collectorOptions || !isObject(options.collectorOptions)) {
-        validOptions.collectorOptions = {
-            time: Constants.DEFAULT_COLLECTOR_TIME,
-            max:
-                type === 'reactPaginator'
-                || type === 'reactMenu'
-                || type === 'messageQuestion'
-                    ? Constants.DEFAULT_PAGINATOR_MAX_REACT
-                    : Constants.DEFAULT_COLLECTOR_MAX_REACT,
-        };
-    }
+    validOptions.collectorOptions = {};
+    Object.assign(validOptions.collectorOptions, {
+        time: Constants.DEFAULT_COLLECTOR_TIME,
+        max: type === 'reactPaginator'
+            || type === 'reactMenu'
+            || type === 'messageQuestion' ? Constants.DEFAULT_PAGINATOR_MAX_REACT : Constants.DEFAULT_COLLECTOR_MAX_REACT,
+    }, options.collectorOptions);
 
     if (isNaN(options.collectorOptions.time)) {
         validOptions.collectorOptions.time = parseInt(options.collectorOptions.time);
@@ -176,11 +179,9 @@ module.exports.validateOptions = (options, type) => {
     if (isNaN(options.collectorOptions.max)) {
         validOptions.collectorOptions.max = parseInt(options.collectorOptions.max);
         if (isNaN(options.collectorOptions.max)) {
-            if (
-                type === 'reactPaginator'
+            if (type === 'reactPaginator'
                 || type === 'reactMenu'
-                || type === 'messageQuestion'
-            ) {
+                || type === 'messageQuestion') {
                 validOptions.collectorOptions.max = Constants.DEFAULT_PAGINATOR_MAX_REACT;
             } else {
                 validOptions.collectorOptions.max = Constants.DEFAULT_COLLECTOR_MAX_REACT;

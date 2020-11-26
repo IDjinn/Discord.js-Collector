@@ -22,6 +22,9 @@ Library to easily create message collector, reactions collector and reactions ro
 | [Breaking Changes](./BREAKING_CHANGES.md)
 
 
+## Warning
+Please update your version to latest version: 1.7.7, multiple bugfixs and vulnerabilities.
+
 ## Documentation
 
 See all documentation of last version [here](https://idjinn.github.io/Discord.js-Collector/)
