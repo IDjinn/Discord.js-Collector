@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.7.8
+
+Reaction Role Manager: partial support and fixed toggled roles take off non first reaction.
+
+---
 # CHANGELOG - V1.7.7
 
 Reaction Role Manager:\

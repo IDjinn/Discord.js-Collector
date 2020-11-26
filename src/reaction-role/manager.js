@@ -772,7 +772,15 @@ class ReactionRoleManager extends EventEmitter {
                     const toggledRole = toggledRolesArray[i];
                     if (toggledRole.disabled) continue;
 
-                    if (!skippedRole || skippedRole.id === toggledRole.id) {
+                    const reaction = message.reactions.cache.find(
+                        (r) => this.__resolveReactionEmoji(r.emoji) === toggledRole.emoji,
+                    );
+
+                    if (member.partial) await member.fetch();
+                    if (reaction.partial) await reaction.fetch();
+
+                    const users = await reaction.users.fetch();
+                    if (users.has(member.id) && (!skippedRole || skippedRole.id === toggledRole.id)) {
                         skippedRole = toggledRole;
                         continue;
                     }
@@ -782,11 +790,7 @@ class ReactionRoleManager extends EventEmitter {
 
                     if (member.roles.cache.has(toggledRole.id)) await member.roles.remove(toggledRole.role);
 
-                    const reaction = message.reactions.cache.find(
-                        (r) => this.__resolveReactionEmoji(r.emoji) === toggledRole.emoji,
-                    );
-
-                    await reaction.users.remove(member.user);
+                    if (users.has(member.id)) { await reaction.users.remove(member.user); }
                     this.__debug(
                         'TOGGLE',
                         `Take off role '${toggledRole.role}' from user '${member.id}', it's a toggled role.`,
