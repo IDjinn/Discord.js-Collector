@@ -34,7 +34,7 @@ client.on("message", async (message) => {
                     .addField('Prefix', 'Change bot prefix')
             ],
             collectorOptions: {
-                time: 60_000
+                time: 60000
             }
         });
     }
