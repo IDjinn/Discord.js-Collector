@@ -86,7 +86,7 @@ client.on("message", async (message) => {
     else if (message.content.startsWith('>clear')) {
         const amount = parseInt(args[0]);
         const msg = message;
-        console.clear()
+        console.clear();
         if (!amount) return msg.reply('You haven\'t given an amount of messages which should be deleted!'); // Checks if the `amount` parameter is given
         if (isNaN(amount)) return msg.reply('The amount parameter isn`t a number!'); // Checks if the `amount` parameter is a number. If not, the command throws an error
 
