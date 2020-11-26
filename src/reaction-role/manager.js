@@ -12,8 +12,10 @@ const fs = require('fs');
 const Constants = require('../util/constants');
 const { ReactionRole } = require('./reactionRole');
 const { REACTIONROLE_EVENT, REQUIREMENT_TYPE } = require('./constants');
+const AsyncLock = require('async-lock');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const locker = new AsyncLock();
 
 /**
  * Example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-role-manager/basic.js}
@@ -95,12 +97,12 @@ class ReactionRoleManager extends EventEmitter {
         {
             storage, mongoDbLink, path, debug, disabledProperty,
         } = {
-            storage: true,
-            mongoDbLink: null,
-            path: `${__dirname}/data/roles.json`,
-            debug: false,
-            disabledProperty: true,
-        },
+                storage: true,
+                mongoDbLink: null,
+                path: `${__dirname}/data/roles.json`,
+                debug: false,
+                disabledProperty: true,
+            },
     ) {
         super();
 
@@ -340,12 +342,11 @@ class ReactionRoleManager extends EventEmitter {
                 const reaction = message.reactions.cache.find(
                     (x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`,
                 );
-                await reaction.users.fetch(); // Need fetch the users to next for
 
-                const usersArray = await reaction.users.fetch().then((usersCollection) => usersCollection.array());
+                const users = await reaction.users.fetch();
+                const usersArray = users.array();
                 for (let j = 0; j < usersArray.length; j += 1) {
                     const user = usersArray[j];
-
                     if (user.bot) continue;// Ignore bots, please!
 
                     const member = guild.members.cache.get(user.id);
@@ -358,7 +359,7 @@ class ReactionRoleManager extends EventEmitter {
                         continue;
                     }
 
-                    if (this.__checkRequirements(reactionRole, reaction, member)) {
+                    if (await this.__checkRequirements(reactionRole, reaction, member)) {
                         if (reactionRole.toggle) {
                             this.__debug(
                                 'BOOT',
@@ -402,8 +403,11 @@ class ReactionRoleManager extends EventEmitter {
 
                     if (member.user.bot) continue;
 
-                    if (!reaction.users.cache.has(winnerId)) {
-                    // Delete role if user reacted off
+                    if (!users.has(winnerId)) {
+                        // Delete role if user reacted off
+                        const index = reactionRole.winners.indexOf(winnerId);
+                        if (index >= 0) reactionRole.winners.splice(index, 1);
+
                         if (member.roles.cache.has(reactionRole.role)) {
                             await member.roles.remove(reactionRole.role);
                             this.emit(
@@ -411,14 +415,11 @@ class ReactionRoleManager extends EventEmitter {
                                 member,
                                 role,
                             );
+                            this.__debug(
+                                'BOOT',
+                                `Role '${reactionRole.role}' removed from '${member.id}', it removed reaction when bot wasn't online.`,
+                            );
                         }
-
-                        const index = reactionRole.winners.indexOf(winnerId);
-                        if (index >= 0) reactionRole.winners.splice(index, 1);
-                        this.__debug(
-                            'BOOT',
-                            `Role '${reactionRole.role}' removed from '${member.id}', it removed reaction when bot wasn't online.`,
-                        );
                     }
                 }
             } catch (error) {
@@ -512,10 +513,10 @@ class ReactionRoleManager extends EventEmitter {
         {
             message, role, emoji, max, toggle, requirements,
         } = {
-            max: Number.MAX_SAFE_INTEGER,
-            toggle: false,
-            requirements: { boost: false, verifiedDeveloper: false },
-        },
+                max: Number.MAX_SAFE_INTEGER,
+                toggle: false,
+                requirements: { boost: false, verifiedDeveloper: false },
+            },
     ) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
@@ -729,7 +730,7 @@ class ReactionRoleManager extends EventEmitter {
             return msgReaction.remove();
         }
 
-        if (!this.__checkRequirements(reactionRole, msgReaction, member)) return;
+        if (!await this.__checkRequirements(reactionRole, msgReaction, member)) return;
         if (reactionRole.toggle) this.__timeoutToggledRoles(member, message, reactionRole);
         else {
             if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
@@ -747,15 +748,26 @@ class ReactionRoleManager extends EventEmitter {
 
     /**
      * Timeout handler to check toggled roles.
+     * @param {GuildMember} member 
+     * @param {Message} message 
+     * @param {ReactionRole} [skippedRole=null] 
+     * @param {number} [tries=0]
      * @private
      * @return {Promise<void>}
      */
-    __timeoutToggledRoles(member, message, skippedRole = null) {
+    async __timeoutToggledRoles(member, message, skippedRole = null, tries = 0) {
+        if (++tries > 3) return;
+        if (locker.isBusy(member.id)) {
+            await sleep(Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES);
+            return this.__timeoutToggledRoles(member, message, skippedRole, tries);
+        }
+
         const timeout = this.timeouts.get(member.id);
         if (timeout) this.client.clearTimeout(timeout);
+
         this.timeouts.set(
             member.id,
-            setTimeout(async () => {
+            setTimeout(async () => locker.acquire(member.id, async () => {
                 const toggledRoles = this.reactionRoles.filter((rr) => rr.message === message.id && rr.toggle);
                 const toggledRolesArray = toggledRoles.array();
                 for (let i = 0; i < toggledRolesArray.length; i += 1) {
@@ -824,7 +836,7 @@ class ReactionRoleManager extends EventEmitter {
                 }
 
                 await this.store(...toggledRoles);
-            }, Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES),
+            }), Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES),
         );
     }
 
@@ -834,10 +846,10 @@ class ReactionRoleManager extends EventEmitter {
         if (this.isReady) return;
 
         this.timeouts.set('ready_timeout', setTimeout(() => {
-                this.isReady = true;
-                this.readyAt = new Date();
-                this.emit(REACTIONROLE_EVENT.READY);
-                this.__debug('READY', 'Reaction role manager is ready.');
+            this.isReady = true;
+            this.readyAt = new Date();
+            this.emit(REACTIONROLE_EVENT.READY);
+            this.__debug('READY', 'Reaction role manager is ready.');
         }, 5000));
     }
 
