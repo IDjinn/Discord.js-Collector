@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+/* eslint-disable no-plusplus */
+/* eslint-disable no-param-reassign */
 const {
     Client,
     Role,
@@ -9,10 +11,10 @@ const {
 } = require('discord.js');
 const { EventEmitter } = require('events');
 const fs = require('fs');
+const AsyncLock = require('async-lock');
 const Constants = require('../util/constants');
 const { ReactionRole } = require('./reactionRole');
 const { REACTIONROLE_EVENT, REQUIREMENT_TYPE } = require('./constants');
-const AsyncLock = require('async-lock');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const locker = new AsyncLock();
@@ -97,12 +99,12 @@ class ReactionRoleManager extends EventEmitter {
         {
             storage, mongoDbLink, path, debug, disabledProperty,
         } = {
-                storage: true,
-                mongoDbLink: null,
-                path: `${__dirname}/data/roles.json`,
-                debug: false,
-                disabledProperty: true,
-            },
+            storage: true,
+            mongoDbLink: null,
+            path: `${__dirname}/data/roles.json`,
+            debug: false,
+            disabledProperty: true,
+        },
     ) {
         super();
 
@@ -513,10 +515,10 @@ class ReactionRoleManager extends EventEmitter {
         {
             message, role, emoji, max, toggle, requirements,
         } = {
-                max: Number.MAX_SAFE_INTEGER,
-                toggle: false,
-                requirements: { boost: false, verifiedDeveloper: false },
-            },
+            max: Number.MAX_SAFE_INTEGER,
+            toggle: false,
+            requirements: { boost: false, verifiedDeveloper: false },
+        },
     ) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
@@ -526,12 +528,10 @@ class ReactionRoleManager extends EventEmitter {
                     );
                 }
 
-                // eslint-disable-next-line no-param-reassign
                 role = message.guild.roles.resolveID(role);
                 if (!role) return reject(new Error(`Bad input: I canno't resolve role ${role}`));
 
                 const emojiParsed = Util.parseEmoji(emoji);
-                // eslint-disable-next-line no-param-reassign
                 emoji = this.__resolveReactionEmoji(emojiParsed);
                 if (!emoji) return reject(new Error(`Bad input: I canno't resolve emoji ${emoji}`));
 
@@ -576,12 +576,10 @@ class ReactionRoleManager extends EventEmitter {
             if (message && emoji) {
                 const resolvedEmojiID = this.__resolveReactionEmoji(Util.parseEmoji(emoji));
                 const messageID = message && message.id ? message.id : message;
-                // eslint-disable-next-line no-param-reassign
                 reactionRole = this.reactionRoles.find((rr) => rr.message === messageID && rr.emoji === resolvedEmojiID);
             }
 
             if (reactionRole instanceof ReactionRole) {
-                // eslint-disable-next-line no-param-reassign
                 reactionRole.disabled = true;
                 if (this.disabledProperty) await this.store(reactionRole);
                 // eslint-disable-next-line curly
@@ -748,9 +746,9 @@ class ReactionRoleManager extends EventEmitter {
 
     /**
      * Timeout handler to check toggled roles.
-     * @param {GuildMember} member 
-     * @param {Message} message 
-     * @param {ReactionRole} [skippedRole=null] 
+     * @param {GuildMember} member
+     * @param {Message} message
+     * @param {ReactionRole} [skippedRole=null]
      * @param {number} [tries=0]
      * @private
      * @return {Promise<void>}
@@ -775,7 +773,6 @@ class ReactionRoleManager extends EventEmitter {
                     if (toggledRole.disabled) continue;
 
                     if (!skippedRole || skippedRole.id === toggledRole.id) {
-                        // eslint-disable-next-line no-param-reassign
                         skippedRole = toggledRole;
                         continue;
                     }

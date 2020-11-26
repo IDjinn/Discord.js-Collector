@@ -1,5 +1,6 @@
 /* eslint-disable radix */
 /* eslint-disable no-restricted-globals */
+/* eslint-disable no-param-reassign */
 const {
     isArray, isBoolean, isNumber, isObject,
 } = require('util');
@@ -75,46 +76,46 @@ module.exports.validateOptions = (options, type) => {
     }
 
     switch (type) {
-        case 'reactQuestion':
-        case 'yesNoQuestion':
-        case 'reactPaginator':
-        case 'reactMenu':
-            validOptions.reactionsMap = options.reactions;
-            if (options.reactionsMap
+    case 'reactQuestion':
+    case 'yesNoQuestion':
+    case 'reactPaginator':
+    case 'reactMenu':
+        validOptions.reactionsMap = options.reactions;
+        if (options.reactionsMap
                 && Object.keys(options.reactionsMap).filter(
                     (emoji) => !client.emojis.resolveIdentifier(emoji),
                 ).length > 0
-            ) return Promise.reject(new Error('Invalid input: reactions is invalid type.'));
+        ) return Promise.reject(new Error('Invalid input: reactions is invalid type.'));
 
-            if (!options.reactionsMap) {
-                validOptions.reactionsMap = type !== 'reactPaginator'
-                    ? Constants.DEFAULT_YES_NO_MAP
-                    : Constants.DEFAULT_PAGINATOR_REACTIONS_MAP;
-            }
-            break;
+        if (!options.reactionsMap) {
+            validOptions.reactionsMap = type !== 'reactPaginator'
+                ? Constants.DEFAULT_YES_NO_MAP
+                : Constants.DEFAULT_PAGINATOR_REACTIONS_MAP;
+        }
+        break;
 
-        case 'messageQuestion':
-        case 'messageAsyncQuestion':
-            // eslint-disable-next-line curly
-            // eslint-disable-next-line max-len
-            if (options.onMessage && typeof options.onMessage !== 'function') return Promise.reject(new Error('Invalid input: onMessage is invalid type.'));
+    case 'messageQuestion':
+    case 'messageAsyncQuestion':
+        // eslint-disable-next-line curly
+        // eslint-disable-next-line max-len
+        if (options.onMessage && typeof options.onMessage !== 'function') return Promise.reject(new Error('Invalid input: onMessage is invalid type.'));
 
-            if (!options.onMessage) validOptions.onMessage = Constants.DEFAULT_RETURN_FUNCTION;
+        if (!options.onMessage) validOptions.onMessage = Constants.DEFAULT_RETURN_FUNCTION;
 
-            if (options.botMessage.channel.type === 'dm') validOptions.deleteMessage = false;
-            else if (!isBoolean(options.deleteMessage)) validOptions.deleteMessage = Boolean(options.deleteMessage);
+        if (options.botMessage.channel.type === 'dm') validOptions.deleteMessage = false;
+        else if (!isBoolean(options.deleteMessage)) validOptions.deleteMessage = Boolean(options.deleteMessage);
 
-            if (options.botMessage.channel.type === 'text'
+        if (options.botMessage.channel.type === 'text'
                 && options.deleteMessage
                 && !options.botMessage.guild.me
                     .permissionsIn(options.botMessage.channel)
                     .has('MANAGE_MESSAGES')
-            ) return Promise.reject(new Error('Missing permissions: I not have permissions to Manage Messages in this channel to delete messages.'));
+        ) return Promise.reject(new Error('Missing permissions: I not have permissions to Manage Messages in this channel to delete messages.'));
 
-            validOptions.onMessage = options.onMessage;
-            break;
+        validOptions.onMessage = options.onMessage;
+        break;
 
-        default: return Promise.reject(new Error(`Invalid type: '${type}' is not a valid type.`));
+    default: return Promise.reject(new Error(`Invalid type: '${type}' is not a valid type.`));
     }
 
     if (type === 'reactMenu' || type === 'reactPaginator') {
@@ -155,8 +156,7 @@ module.exports.validateOptions = (options, type) => {
                 onMessages.length > 0
                 && onMessages.filter((fx) => typeof fx !== 'function').length > 0
             ) return Promise.reject(new Error('Invalid input: Some onMessage is not a function type.'));
-        }
-        else if (!isArray(options.pages)) return Promise.reject(new Error('Invalid input: Pages of react paginator must be array of MessageEmbed'));
+        } else if (!isArray(options.pages)) return Promise.reject(new Error('Invalid input: Pages of react paginator must be array of MessageEmbed'));
 
         validOptions.pages = options.pages;
     }
