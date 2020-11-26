@@ -348,6 +348,8 @@ class ReactionRoleManager extends EventEmitter {
                     (x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`,
                 );
 
+                if (reaction.partial) await reaction.fetch();
+
                 const users = await reaction.users.fetch();
                 const usersArray = users.array();
                 for (let j = 0; j < usersArray.length; j += 1) {
