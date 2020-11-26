@@ -24,6 +24,10 @@ client.on("ready", () => {
     console.log("ready")
 });
 
+reactionRoleManager.on('ready', () => {
+    console.log('Reaction Role Manager ready')
+});
+
 // When user react and win role, will trigger this event
 reactionRoleManager.on('reactionRoleAdd', (member, role) => {
     console.log(member.displayName + ' won the role' + role.name)

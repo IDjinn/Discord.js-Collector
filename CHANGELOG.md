@@ -1,5 +1,14 @@
 
 ---
+# CHANGELOG - V1.7.7
+
+Reaction Role Manager:\
+    - fix override timeout in toggled roles\
+    - fix check requirements
+
+Collectors: multiple configuration fixes
+
+---
 # CHANGELOG - V1.7.6
 
 • Reaction Role Manager: delete reaction roles by message and emoji
