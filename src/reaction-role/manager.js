@@ -8,6 +8,8 @@ const {
     Collection,
     GuildMember,
     Util,
+    MessageReaction,
+    User,
 } = require('discord.js');
 const { EventEmitter } = require('events');
 const fs = require('fs');
@@ -339,16 +341,20 @@ class ReactionRoleManager extends EventEmitter {
             try {
                 const message = await channel.messages.fetch(reactionRole.message).catch(() => null);
                 if (!message || !(message instanceof Message)) continue;
+                if (message.partial) await message.fetch();
                 if (!message.reactions.cache.has(reactionRole.emoji)) await message.react(reactionRole.emoji);
 
                 const reaction = message.reactions.cache.find(
                     (x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`,
                 );
 
+                if (reaction.partial) await reaction.fetch();
+
                 const users = await reaction.users.fetch();
                 const usersArray = users.array();
                 for (let j = 0; j < usersArray.length; j += 1) {
                     const user = usersArray[j];
+                    if (user.partial) await user.fetch();
                     if (user.bot) continue;// Ignore bots, please!
 
                     const member = guild.members.cache.get(user.id);
@@ -361,6 +367,7 @@ class ReactionRoleManager extends EventEmitter {
                         continue;
                     }
 
+                    if (member.partial) await member.fetch();
                     if (await this.__checkRequirements(reactionRole, reaction, member)) {
                         if (reactionRole.toggle) {
                             this.__debug(
@@ -403,6 +410,8 @@ class ReactionRoleManager extends EventEmitter {
                         continue;
                     }
 
+                    if (member.partial) await member.fetch();
+                    if (member.user.partial) await member.fetch();
                     if (member.user.bot) continue;
 
                     if (!users.has(winnerId)) {
@@ -693,18 +702,27 @@ class ReactionRoleManager extends EventEmitter {
     /**
      * Reaction Role add reaction hanlder
      * @private
+     * @param {MessageReaction} msgReaction
+     * @param {User} user
      * @return {Promise<void>}
      */
     async __onReactionAdd(msgReaction, user) {
         if (user.bot) return;
 
+        if (msgReaction.partial) await msgReaction.fetch();
+        if (user.partial) await user.fetch();
+
         const emoji = this.__resolveReactionEmoji(msgReaction.emoji);
         const { message } = msgReaction;
+        if (message.partial) await message.fetch();
+
         const { guild } = message;
         const id = `${message.id}-${emoji}`;
 
         const member = guild.members.cache.get(user.id);
         if (!member) return;
+
+        if (member.partial) await member.fetch();
 
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole)) return;
@@ -857,18 +875,27 @@ class ReactionRoleManager extends EventEmitter {
     /**
      * Reaction Role remove reaction hanlder
      * @private
+     * @param {MessageReaction} msgReaction
+     * @param {User} user
      * @return {Promise<void>}
      */
     async __onReactionRemove(msgReaction, user) {
         if (user.bot) return;
 
+        if (msgReaction.partial) await msgReaction.fetch();
+        if (user.partial) await user.fetch();
+
         const emoji = this.__resolveReactionEmoji(msgReaction.emoji);
         const { message } = msgReaction;
+        if (message.partial) await message.fetch();
+
         const { guild } = message;
         const id = `${message.id}-${emoji}`;
 
-        const member = await guild.members.cache.get(user.id);
+        const member = guild.members.cache.get(user.id);
         if (!member) return;
+
+        if (member.partial) await member.fetch();
 
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole)) return;
@@ -913,9 +940,13 @@ class ReactionRoleManager extends EventEmitter {
             const reactionRole = messageReactionsRoles[i];
             for (let j = 0; j < reactionRole.winners.length; j += 1) {
                 const winnerId = reactionRole.winners[j];
+                /**
+                 * @type {GuildMember}
+                 */
                 const member = message.guild.members.cache.get(winnerId);
                 if (!member) continue;
 
+                if (member.partial) await member.fetch();
                 await member.roles.remove(reactionRole.role);
                 if (!membersAffected.includes(member)) membersAffected.push(member);
 

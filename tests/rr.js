@@ -1,6 +1,6 @@
 const { ReactionRoleManager } = require('../src')
 const { Client, Constants, WebhookClient, MessageEmbed } = require("discord.js");
-const client = new Client();
+const client = new Client({partials: ['REACTION', 'MESSAGE', 'GUILD_MEMBER']});
 require('dotenv').config({ path: __dirname + '/process.env' });
 const app = require('express')();
 const server = require('http').createServer(app);
