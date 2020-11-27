@@ -85,11 +85,13 @@ class ReactionRoleManager extends EventEmitter {
      * });
      */
 
-        /**
-         * @typedef {Object} IHooks
-         * @property {Promise<boolean>} preRoleAddHook - Function executed before add a role to some member. If return value is false, this action will be bypassed.
-         * @property {Promise<boolean>} preRoleRemoveHook - Function executed before remove a role from some member.  If return value is false, this action will be bypassed.
-         */
+    /**
+    * @typedef {Object} IHooks
+    * @property {Promise<boolean>} preRoleAddHook - Function executed before add a role to some member.
+    * If return value is false, this action will be bypassed.
+    * @property {Promise<boolean>} preRoleRemoveHook - Function executed before remove a role from some member.
+    * If return value is false, this action will be bypassed.
+    */
 
     /**
      * Reaction Role Manager constructor
@@ -106,7 +108,7 @@ class ReactionRoleManager extends EventEmitter {
     constructor(
         client,
         {
-            storage, mongoDbLink, path, debug, disabledProperty, hooks
+            storage, mongoDbLink, path, debug, disabledProperty, hooks,
         },
     ) {
         super();
@@ -174,10 +176,10 @@ class ReactionRoleManager extends EventEmitter {
          * @type {IHooks}
          */
         this.hooks = typeof hooks === 'object' ? hooks : {};
-        if (this.hooks.preRoleAddHook && typeof this.hooks.preRoleAddHook !== 'function')
-            throw new Error('Hook \'preRoleAdd\' must be a function.');
-        else if (this.hooks.preRoleRemoveHook && typeof this.hooks.preRoleRemoveHook !== 'function')
+        if (this.hooks.preRoleAddHook && typeof this.hooks.preRoleAddHook !== 'function') throw new Error('Hook \'preRoleAdd\' must be a function.');
+        else if (this.hooks.preRoleRemoveHook && typeof this.hooks.preRoleRemoveHook !== 'function') {
             throw new Error('Hook \'preRoleRemoveHook\' must be a function.');
+        }
 
         this.client.on('ready', () => this.__resfreshOnBoot());
         this.client.on('messageReactionAdd', (msgReaction, user) => this.__onReactionAdd(msgReaction, user));
@@ -534,10 +536,10 @@ class ReactionRoleManager extends EventEmitter {
         {
             message, role, emoji, max, toggle, requirements,
         } = {
-                max: Number.MAX_SAFE_INTEGER,
-                toggle: false,
-                requirements: { boost: false, verifiedDeveloper: false },
-            },
+            max: Number.MAX_SAFE_INTEGER,
+            toggle: false,
+            requirements: { boost: false, verifiedDeveloper: false },
+        },
     ) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
@@ -833,8 +835,8 @@ class ReactionRoleManager extends EventEmitter {
                         (r) => this.__resolveReactionEmoji(r.emoji) === skippedRole.emoji,
                     );
 
-                            const role = message.guild.roles.cache.get(skippedRole.role);
-                    if (await this.__checkRequirements(skippedRole, reaction, member) 
+                    const role = message.guild.roles.cache.get(skippedRole.role);
+                    if (await this.__checkRequirements(skippedRole, reaction, member)
                         && await this.hooks.preRoleAddHook(member, role, skippedRole)) {
                         if (skippedRole.winners.indexOf(member.id) <= -1) skippedRole.winners.push(member.id);
 
@@ -963,7 +965,7 @@ class ReactionRoleManager extends EventEmitter {
                 if (member.partial) await member.fetch();
 
                 const role = member.guild.roles.cache.get(reactionRole.role);
-                if (await this.hooks.preRoleRemoveHook(member,role, reactionRole)) {
+                if (await this.hooks.preRoleRemoveHook(member, role, reactionRole)) {
                     await member.roles.remove(role.id);
                     if (!membersAffected.includes(member)) membersAffected.push(member);
                 }
