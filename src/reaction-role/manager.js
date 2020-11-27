@@ -86,26 +86,31 @@ class ReactionRoleManager extends EventEmitter {
      */
 
     /**
+    * Create your custom hooks to execute before/after Reaction Role Manager do things.
+    * @summary Pay attention: return value must be boolean! If is not, will not work like you wish.
+    * @typedef {Object} IHooks
+    * @property {Promise<boolean>} preRoleAddHook - Function executed before add a role to some member.
+    * If return value is false, this action will be bypassed.
+    * @property {Promise<boolean>} preRoleRemoveHook - Function executed before remove a role from some member.
+    * If return value is false, this action will be bypassed.
+    */
+
+    /**
      * Reaction Role Manager constructor
      * @param {Client} client - Discord js client Object.
      * @param {Object} [options] -
-     * @param {Object} [options.storage=true] - Enable/disable storage of reaction role.
-     * @param {Object} [options.mongoDbLink=null] - Link to connect with mongodb.
-     * @param {Object} [options.path=null] - Path to save json data of reactions roles.
-     * @param {Object} [options.debug=false] - Enable/Disable debug of reaction role manager.
+     * @param {boolean} [options.storage=true] - Enable/disable storage of reaction role.
+     * @param {string} [options.mongoDbLink=null] - Link to connect with mongodb.
+     * @param {string} [options.path=null] - Path to save json data of reactions roles.
+     * @param {boolean} [options.debug=false] - Enable/Disable debug of reaction role manager.
+     * @param {IHooks} [options.hooks] - Custom hooks to execute before do things.
      * @extends EventEmitter
      * @return {ReactionRoleManager}
      */
     constructor(
         client,
         {
-            storage, mongoDbLink, path, debug, disabledProperty,
-        } = {
-            storage: true,
-            mongoDbLink: null,
-            path: `${__dirname}/data/roles.json`,
-            debug: false,
-            disabledProperty: true,
+            storage, mongoDbLink, path, debug, disabledProperty, hooks,
         },
     ) {
         super();
@@ -168,6 +173,20 @@ class ReactionRoleManager extends EventEmitter {
          * @type {boolean}
          */
         this.disabledProperty = typeof disabledProperty === 'boolean' ? disabledProperty : true;
+        /**
+         * Define hooks for executed while Reaction Role Manager is running.
+         * @type {IHooks}
+         */
+        this.hooks = {
+            preRoleAddHook: (...args) => true,
+            preRoleRemoveHook: (...args) => true,
+            ...hooks,
+        };
+
+        if (this.hooks.preRoleAddHook && typeof this.hooks.preRoleAddHook !== 'function') throw new Error('Hook \'preRoleAdd\' must be a function.');
+        else if (this.hooks.preRoleRemoveHook && typeof this.hooks.preRoleRemoveHook !== 'function') {
+            throw new Error('Hook \'preRoleRemoveHook\' must be a function.');
+        }
 
         this.client.on('ready', () => this.__resfreshOnBoot());
         this.client.on('messageReactionAdd', (msgReaction, user) => this.__onReactionAdd(msgReaction, user));
@@ -374,7 +393,7 @@ class ReactionRoleManager extends EventEmitter {
                                 'BOOT',
                                 `Skiping role '${reactionRole.role}' of give role queue, need check if is it toggle role.`,
                             );
-                        } else {
+                        } else if (await this.hooks.preRoleAddHook(member, role, reactionRole)) {
                             if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
                             if (!member.roles.cache.has(reactionRole.role)) {
                                 await member.roles.add(reactionRole.role);
@@ -414,7 +433,7 @@ class ReactionRoleManager extends EventEmitter {
                     if (member.user.partial) await member.fetch();
                     if (member.user.bot) continue;
 
-                    if (!users.has(winnerId)) {
+                    if (!users.has(winnerId) && await this.hooks.preRoleRemoveHook(member, role, reactionRole)) {
                         // Delete role if user reacted off
                         const index = reactionRole.winners.indexOf(winnerId);
                         if (index >= 0) reactionRole.winners.splice(index, 1);
@@ -748,7 +767,7 @@ class ReactionRoleManager extends EventEmitter {
 
         if (!await this.__checkRequirements(reactionRole, msgReaction, member)) return;
         if (reactionRole.toggle) this.__timeoutToggledRoles(member, message, reactionRole);
-        else {
+        else if (await this.hooks.preRoleAddHook(member, role, reactionRole)) {
             if (reactionRole.winners.indexOf(member.id) <= -1) reactionRole.winners.push(member.id);
             if (!member.roles.cache.has(role.id)) await member.roles.add(role);
 
@@ -803,16 +822,19 @@ class ReactionRoleManager extends EventEmitter {
                         continue;
                     }
 
-                    const index = toggledRole.winners.indexOf(member.id);
-                    if (index >= 0) toggledRole.winners.splice(index, 1);
+                    const role = member.guild.roles.cache.get(toggledRole.role);
+                    if (await this.hooks.preRoleRemoveHook(member, role, toggledRole)) {
+                        const index = toggledRole.winners.indexOf(member.id);
+                        if (index >= 0) toggledRole.winners.splice(index, 1);
 
-                    if (member.roles.cache.has(toggledRole.id)) await member.roles.remove(toggledRole.role);
+                        if (member.roles.cache.has(toggledRole.id)) await member.roles.remove(toggledRole.role);
 
-                    if (users.has(member.id)) { await reaction.users.remove(member.user); }
-                    this.__debug(
-                        'TOGGLE',
-                        `Take off role '${toggledRole.role}' from user '${member.id}', it's a toggled role.`,
-                    );
+                        if (users.has(member.id)) { await reaction.users.remove(member.user); }
+                        this.__debug(
+                            'TOGGLE',
+                            `Take off role '${toggledRole.role}' from user '${member.id}', it's a toggled role.`,
+                        );
+                    }
                 }
 
                 if (skippedRole instanceof ReactionRole) {
@@ -820,12 +842,13 @@ class ReactionRoleManager extends EventEmitter {
                         (r) => this.__resolveReactionEmoji(r.emoji) === skippedRole.emoji,
                     );
 
-                    if (this.__checkRequirements(skippedRole, reaction, member)) {
+                    const role = message.guild.roles.cache.get(skippedRole.role);
+                    if (await this.__checkRequirements(skippedRole, reaction, member)
+                        && await this.hooks.preRoleAddHook(member, role, skippedRole)) {
                         if (skippedRole.winners.indexOf(member.id) <= -1) skippedRole.winners.push(member.id);
 
                         if (!member.roles.cache.has(skippedRole.role)) {
                             await member.roles.add(skippedRole.role);
-                            const role = message.guild.roles.cache.get(skippedRole.role);
 
                             this.emit(
                                 REACTIONROLE_EVENT.REACTION_ROLE_ADD,
@@ -911,7 +934,7 @@ class ReactionRoleManager extends EventEmitter {
             return msgReaction.remove();
         }
 
-        if (member.roles.cache.has(role.id)) {
+        if (await this.hooks.preRoleRemoveHook(member, role, reactionRole) && member.roles.cache.has(role.id)) {
             await member.roles.remove(role);
             this.emit(REACTIONROLE_EVENT.REACTION_ROLE_REMOVE, member, role);
             this.__debug(
@@ -947,8 +970,12 @@ class ReactionRoleManager extends EventEmitter {
                 if (!member) continue;
 
                 if (member.partial) await member.fetch();
-                await member.roles.remove(reactionRole.role);
-                if (!membersAffected.includes(member)) membersAffected.push(member);
+
+                const role = member.guild.roles.cache.get(reactionRole.role);
+                if (await this.hooks.preRoleRemoveHook(member, role, reactionRole)) {
+                    await member.roles.remove(role.id);
+                    if (!membersAffected.includes(member)) membersAffected.push(member);
+                }
 
                 reactionsTaken += 1;
             }

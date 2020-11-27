@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>reaction-role/reactionRole.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Constants.html">Constants</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Controller.html">Controller</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#back">back</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#goTo">goTo</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#resetTimer">resetTimer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#stop">stop</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#update">update</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="MessageCollector.html">MessageCollector</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageCollector.html#.asyncQuestion">asyncQuestion</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageCollector.html#.question">question</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ReactionCollector.html">ReactionCollector</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionCollector.html#.menu">menu</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionCollector.html#.paginator">paginator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionCollector.html#.question">question</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionCollector.html#.yesNoQuestion">yesNoQuestion</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ReactionRole.html">ReactionRole</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRole.html#.fromJSON">fromJSON</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRole.html#checkBoostRequirement">checkBoostRequirement</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRole.html#checkDeveloperRequirement">checkDeveloperRequirement</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRole.html#toJSON">toJSON</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ReactionRoleManager.html">ReactionRoleManager</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRoleManager.html#createReactionRole">createReactionRole</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRoleManager.html#deleteReactionRole">deleteReactionRole</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRoleManager.html#store">store</a></span></li><li class="nav-heading">Events</li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:allReactionsRemove">allReactionsRemove</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:missingRequirements">missingRequirements</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:reactionRoleAdd">reactionRoleAdd</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:reactionRoleRemove">reactionRoleRemove</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:ready">ready</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#findRecursively">findRecursively</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">reaction-role/reactionRole.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { GuildMember } = require('discord.js');
+/**
+ * Reaction role object structure.
+ */
+class ReactionRole {
+    /**
+     * Reaction Role constructor.
+     * @param {Object} data
+     * @param {string} data.message - Message ID of reaction role.
+     * @param {string} data.channel - Channel ID of message.
+     * @param {string} data.guild - Guild ID of channel.
+     * @param {string} data.emoji - Emoji ID of reaction role.
+     * @param {string[]} [data.winners=[]] - List with role winners ID;
+     * @param {number} [data.max=Number.MAX_SAFE_INTEGER] - Max roles available to give.
+     * @param {boolean} [data.toggle=false] - User will have only one of these message roles.
+     * @param {object} [data.requirements={}] - Requirements to win this role.
+     * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
+     * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
+     * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
+     *
+     * @return {ReactionRole}
+     */
+    constructor({
+        message,
+        channel,
+        guild,
+        role,
+        emoji,
+        winners,
+        max,
+        toggle,
+        requirements,
+        disabled,
+    }) {
+        /**
+         * Guild ID of message
+         * @type {string}
+         * @readonly
+         */
+        this.guild = message.guild ? message.guild.id : guild;
+        /**
+         * Channel ID of message
+         * @type {string}
+         * @readonly
+         */
+        this.channel = message.channel ? message.channel.id : channel;
+        /**
+         * Message ID of reaction role
+         * @type {string}
+         * @readonly
+         */
+        this.message = message.id ? message.id : message;
+        /**
+         * Role ID
+         * @type {string}
+         * @readonly
+         */
+        this.role = role.id ? role.id : role;
+        /**
+         * Emoji identifier
+         * @type {string}
+         * @readonly
+         */
+        this.emoji = emoji.id || emoji.name ? emoji.id : emoji.name || emoji;
+        /**
+         * List of who won this role
+         * @type {string[]}
+         * @readonly
+         */
+        this.winners = winners || [];
+        /**
+         * Max roles available to give
+         * @type {number}
+         */
+        // eslint-disable-next-line no-restricted-globals
+        this.max = isNaN(max) ? Number.MAX_SAFE_INTEGER : Number(max);
+        /**
+         * Is it toggled role?
+         * @type {number}
+         */
+        this.toggle = Boolean(toggle);
+        /**
+         * Requirement to win this role.
+         * @property {boolean} [boost=false] - Need be a booster to win this role.
+         * @property {boolean} [verifiedDeveloper=false] - Need be a verified bot developer to win this role.
+         */
+        this.requirements = {
+            boost: Boolean(requirements ? requirements.boost : null),
+            verifiedDeveloper: Boolean(
+                requirements ? requirements.verifiedDeveloper : null,
+            ),
+        };
+        /**
+         * Is this reaction role disabled?
+         * @type {boolean}
+         */
+        this.disabled = Boolean(disabled);
+    }
+
+    /**
+     * Reaction Role ID (messageId-emojiId)
+     * @type {string}
+     * @readonly
+     */
+    get id() {
+        return `${this.message}-${this.emoji}`;
+    }
+
+    /**
+     * Convert Reaction Role object to JSON.
+     * @return {JSON} - Parsed json object.
+     */
+    toJSON() {
+        return {
+            id: this.id,
+            message: this.message,
+            channel: this.channel,
+            guild: this.guild,
+            role: this.role,
+            emoji: this.emoji,
+            winners: this.winners,
+            max:
+                this.max > Number.MAX_SAFE_INTEGER
+                    ? Number.MAX_SAFE_INTEGER
+                    : this.max,
+            toggle: this.toggle,
+            requirements: {
+                boost: this.requirements.boost,
+                verifiedDeveloper: this.requirements.verifiedDeveloper,
+            },
+            disabled: this.disabled,
+        };
+    }
+
+    /**
+     * Check if member have developer requirement to win this role.
+     * @param {GuildMember} member - The member to check.
+     * @return {Promise&lt;boolean>}
+     */
+    async checkDeveloperRequirement(member) {
+        return new Promise(async (resolve) => {
+            const flags = await member.user.fetchFlags();
+            const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
+            if (this.requirements.verifiedDeveloper) return resolve(isVerifiedDeveloper);
+            return resolve(true);
+        });
+    }
+
+    /**
+     * Check if member have boost requirement to win this role.
+     * @param {GuildMember} member - The member to check.
+     * @return {boolean}
+     */
+    checkBoostRequirement(member) {
+        const isBoost = member.premiumSinceTimestamp != null &amp;&amp; member.premiumSince != null;
+        if (this.requirements.boost) return isBoost;
+        return true;
+    }
+
+    /**
+     * Transform json to Reaction Role object.
+     * @param {object} json - Reaction role data.
+     * @static
+     * @return {ReactionRole}
+     */
+    static fromJSON(json) {
+        return new ReactionRole({
+            message: json.message,
+            channel: json.channel,
+            guild: json.guild,
+            role: json.role,
+            emoji: json.emoji,
+            winners: json.winners,
+            max: json.max,
+            toggle: json.toggle,
+            requirements: json.requirements,
+            disabled: json.disabled,
+        });
+    }
+}
+
+module.exports = {
+    ReactionRole,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Nov 26 2020 22:27:08 GMT-0200 (GMT-02:00) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
