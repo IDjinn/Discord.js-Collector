@@ -177,11 +177,12 @@ class ReactionRoleManager extends EventEmitter {
          * Define hooks for executed while Reaction Role Manager is running.
          * @type {IHooks}
          */
-        this.hooks = Object.assign({
+        this.hooks = {
             preRoleAddHook: (...args) => true,
             preRoleRemoveHook: (...args) => true,
-        }, hooks);
-        
+            ...hooks,
+        };
+
         if (this.hooks.preRoleAddHook && typeof this.hooks.preRoleAddHook !== 'function') throw new Error('Hook \'preRoleAdd\' must be a function.');
         else if (this.hooks.preRoleRemoveHook && typeof this.hooks.preRoleRemoveHook !== 'function') {
             throw new Error('Hook \'preRoleRemoveHook\' must be a function.');
