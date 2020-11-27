@@ -137,7 +137,13 @@ declare module 'discord.js-collector' {
         path: string;
         mongoDbLink?: string;
         storageJsonPath?: string;
-        disabledProperty: boolean | true;
+        disabledProperty?: boolean | true;
+        hooks?: IHooks | null;
+    }
+
+    export interface IHooks{
+        preRoleAddHook: (member: GuildMember, role?: Role, reactionRole: ReactionRole) => Promise<Boolean>;
+        preRoleRemoveHook: (member: GuildMember, role?: Role, reactionRole: ReactionRole) => Promise<Boolean>;
     }
 
     export class MessageCollector {

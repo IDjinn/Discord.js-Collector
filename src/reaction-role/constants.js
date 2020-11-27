@@ -28,6 +28,7 @@ const REQUIREMENT_TYPE = Object.freeze({
     VERIFIED_DEVELOPER: 'VERIFIED_DEVELOPER',
 });
 
+
 module.exports = {
     REQUIREMENT_TYPE,
     REACTIONROLE_EVENT,
