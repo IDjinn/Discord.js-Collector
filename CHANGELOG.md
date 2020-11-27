@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.7.9
+
+Reaction Role Manager: new feature: hooks!
+
+---
 # CHANGELOG - V1.7.8
 
 Reaction Role Manager: partial support and fixed toggled roles take off non first reaction.

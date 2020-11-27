@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>reaction-role/reactionRole.js - Documentation</title>
+    <title>Home - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,203 +29,134 @@
 
 <div id="main">
     
-    <h1 class="page-title">reaction-role/reactionRole.js</h1>
-    
 
     
 
 
 
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>const { GuildMember } = require('discord.js');
-/**
- * Reaction role object structure.
- */
-class ReactionRole {
-    /**
-     * Reaction Role constructor.
-     * @param {Object} data
-     * @param {string} data.message - Message ID of reaction role.
-     * @param {string} data.channel - Channel ID of message.
-     * @param {string} data.guild - Guild ID of channel.
-     * @param {string} data.emoji - Emoji ID of reaction role.
-     * @param {string[]} [data.winners=[]] - List with role winners ID;
-     * @param {number} [data.max=Number.MAX_SAFE_INTEGER] - Max roles available to give.
-     * @param {boolean} [data.toggle=false] - User will have only one of these message roles.
-     * @param {object} [data.requirements={}] - Requirements to win this role.
-     * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
-     * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
-     * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
-     *
-     * @return {ReactionRole}
-     */
-    constructor({
-        message,
-        channel,
-        guild,
-        role,
-        emoji,
-        winners,
-        max,
-        toggle,
-        requirements,
-        disabled,
-    }) {
-        /**
-         * Guild ID of message
-         * @type {string}
-         * @readonly
-         */
-        this.guild = message.guild ? message.guild.id : guild;
-        /**
-         * Channel ID of message
-         * @type {string}
-         * @readonly
-         */
-        this.channel = message.channel ? message.channel.id : channel;
-        /**
-         * Message ID of reaction role
-         * @type {string}
-         * @readonly
-         */
-        this.message = message.id ? message.id : message;
-        /**
-         * Role ID
-         * @type {string}
-         * @readonly
-         */
-        this.role = role.id ? role.id : role;
-        /**
-         * Emoji identifier
-         * @type {string}
-         * @readonly
-         */
-        this.emoji = emoji.id || emoji.name ? emoji.id : emoji.name || emoji;
-        /**
-         * List of who won this role
-         * @type {string[]}
-         * @readonly
-         */
-        this.winners = winners || [];
-        /**
-         * Max roles available to give
-         * @type {number}
-         */
-        // eslint-disable-next-line no-restricted-globals
-        this.max = isNaN(max) ? Number.MAX_SAFE_INTEGER : Number(max);
-        /**
-         * Is it toggled role?
-         * @type {number}
-         */
-        this.toggle = Boolean(toggle);
-        /**
-         * Requirement to win this role.
-         * @property {boolean} [boost=false] - Need be a booster to win this role.
-         * @property {boolean} [verifiedDeveloper=false] - Need be a verified bot developer to win this role.
-         */
-        this.requirements = {
-            boost: Boolean(requirements ? requirements.boost : null),
-            verifiedDeveloper: Boolean(
-                requirements ? requirements.verifiedDeveloper : null,
-            ),
-        };
-        /**
-         * Is this reaction role disabled?
-         * @type {boolean}
-         */
-        this.disabled = Boolean(disabled);
-    }
 
-    /**
-     * Reaction Role ID (messageId-emojiId)
-     * @type {string}
-     * @readonly
-     */
-    get id() {
-        return `${this.message}-${this.emoji}`;
-    }
 
-    /**
-     * Convert Reaction Role object to JSON.
-     * @return {JSON} - Parsed json object.
-     */
-    toJSON() {
-        return {
-            id: this.id,
-            message: this.message,
-            channel: this.channel,
-            guild: this.guild,
-            role: this.role,
-            emoji: this.emoji,
-            winners: this.winners,
-            max:
-                this.max > Number.MAX_SAFE_INTEGER
-                    ? Number.MAX_SAFE_INTEGER
-                    : this.max,
-            toggle: this.toggle,
-            requirements: {
-                boost: this.requirements.boost,
-                verifiedDeveloper: this.requirements.verifiedDeveloper,
-            },
-            disabled: this.disabled,
-        };
-    }
 
-    /**
-     * Check if member have developer requirement to win this role.
-     * @param {GuildMember} member - The member to check.
-     * @return {Promise&lt;boolean>}
-     */
-    async checkDeveloperRequirement(member) {
-        return new Promise(async (resolve) => {
-            const flags = await member.user.fetchFlags();
-            const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
-            if (this.requirements.verifiedDeveloper) return resolve(isVerifiedDeveloper);
-            return resolve(true);
-        });
-    }
 
-    /**
-     * Check if member have boost requirement to win this role.
-     * @param {GuildMember} member - The member to check.
-     * @return {boolean}
-     */
-    checkBoostRequirement(member) {
-        const isBoost = member.premiumSinceTimestamp != null &amp;&amp; member.premiumSince != null;
-        if (this.requirements.boost) return isBoost;
-        return true;
-    }
 
-    /**
-     * Transform json to Reaction Role object.
-     * @param {object} json - Reaction role data.
-     * @static
-     * @return {ReactionRole}
-     */
-    static fromJSON(json) {
-        return new ReactionRole({
-            message: json.message,
-            channel: json.channel,
-            guild: json.guild,
-            role: json.role,
-            emoji: json.emoji,
-            winners: json.winners,
-            max: json.max,
-            toggle: json.toggle,
-            requirements: json.requirements,
-            disabled: json.disabled,
-        });
-    }
-}
 
-module.exports = {
-    ReactionRole,
-};
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>Discord.js-collector</h1>
+<p>Library to easily create message collector, reactions collector and reactions role on discord.js v12, with customization ways.</p>
+<hr>
+<h2>Sumary</h2>
+<p>◘ Reactions Collectors:<br>
+| <a href="#reaction-role">Reaction Role</a><br>
+| <a href="#reaction-menu">Menu</a><br>
+| <a href="#simple-reaction-collector">Question</a><br>
+| <a href="#simple-boolean-reaction-collector">Yes/No Question</a><br>
+| <a href="#embeds-pagination">Embeds Paginator</a><br>
+◘ Messages Collectors:<br>
+| <a href="#simple-messages-collector">Question</a><br>
+| <a href="#async-message-collector">Async Question</a><br>
+◘ Examples<br>
+| <a href="./examples/reaction-role-manager/basic.js">Reaction Role Manager</a><br>
+| <a href="./examples/reaction-collector/menu.js">Reaction Menu</a><br>
+◘ Others<br>
+| <a href="CHANGELOG.md">Changelog</a>
+| <a href="./BREAKING_CHANGES.md">Breaking Changes</a></p>
+<h2>Warning</h2>
+<p>Please update your version to latest version: 1.7.8, multiple bugfixs and vulnerabilities.</p>
+<h2>Documentation</h2>
+<p>See all documentation of last version <a href="https://idjinn.github.io/Discord.js-Collector/">here</a></p>
+<hr>
+<h2>Reaction role</h2>
+<p>You can create reactions roles, with amazing functions:<br>
+| • If you bot turns off, when it turns on all users reacted in messages will win the role.<br>
+| • If you bot turns off, if any user remove reaction, when the bot turns on will remove the role from him.<br>
+| • You can store the roles in a JSON file and migrate the reaction role data.<br>
+| • You can limit max roles given by bot, like 10 roles.<br>
+| • Toggled roles: Limit one of these roles to use (Util for colors reaction roles, only get one of roles)<br>
+| • Requirements: Limit roles to only boosters or discord developers win roles!</p>
+<p><img src="./assets/reactionRoles.gif" alt="Reaction Role Gif"></p>
+<p>You can find this code example <a href="./examples/reaction-role-manager/basic.js">here</a></p>
+<hr>
+<h2>Reaction menu</h2>
+<p>To create a reaction menu with multiple pages.</p>
+<p><img src="./assets/reactMenu.gif" alt="Menu Gif"></p>
+<pre class="prettyprint source lang-js"><code>const botMessage = await message.reply('Testing reaction menu...')
+ReactionCollector.menu({
+  botMessage,
+  user: message,
+  pages: {
+    '✅': {
+      content: 'Hello world!',
+      reactions: ['?'], // Reactions to acess next sub-page
+      embed: {
+        description: 'First page content, you can edit and put your custom embed.'
+      },
+      pages:{ // Exemple sub-pages
+        '❓': {
+          content: '?',
+          embed: {
+            description: 'You\'ve found the secret page.'
+          }
+        }
+      }
+    },
+    '❌': {
+      content: 'What\'s happened?',
+      embed: {
+        description: 'You\'ve clicked in ❌ emoji.'
+      }
+    }
+  }
+});
 </code></pre>
-        </article>
+<h2>Simple reaction collector</h2>
+<p>To use in multiple actions, react and then trigger one function to do things.</p>
+<p><img src="./assets/reactQuestion.gif" alt="Question Gif"></p>
+<h2>Simple boolean reaction collector</h2>
+<p>To use in <code>if</code> statements, the asynchronous reaction collector returning Promise <boolean> is more practical</p>
+<p><img src="./assets/reactYesNoQuestion.gif" alt="Question Gif"></p>
+<h2>Embeds pagination</h2>
+<p>Example <a href="./examples/reaction-collector/paginator.js">here</a></p>
+<p>Easier paginator embeds, with back/skip reaction to change current page.</p>
+<p><img src="./assets/reactPaginator.gif" alt="Question Gif"></p>
+<pre class="prettyprint source lang-js"><code>const { ReactionCollector } = require(&quot;discord.js-collector&quot;);
+
+const botMessage = await message.channel.send(&quot;Simple paginator...&quot;);
+ReactionCollector.paginator({
+  botMessage,
+  user: message,
+  pages: [
+    new MessageEmbed({ description: &quot;First page content...&quot; }),
+    new MessageEmbed({ description: &quot;Second page content...&quot; }),
+  ],
+});
+</code></pre>
+<h2>Simple messages collector</h2>
+<p>Await for messages from user, and when it's send will fire a trigger to do things. See exemple <a href="https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/message-collector/question.js">here</a></p>
+<p><img src="./assets/messageQuestion.gif" alt="Question Gif"></p>
+<h2>Async message collector</h2>
+<p>Await for message from user, and when user send, will return user message as Promise<Message>.</p>
+<p><img src="./assets/messageAsyncQuestion.gif" alt="Question Gif"></p>
+<pre class="prettyprint source lang-js"><code>const { MessageCollector } = require(&quot;discord.js-collector&quot;);
+
+const botMessage = await message.channel.send(&quot;Awaiting a message&quot;);
+const userMessage = await MessageCollector.asyncQuestion({
+  botMessage,
+  user: message.author.id,
+});
+if (userMessage.content === &quot;ping&quot;) {
+  await message.channel.send(&quot;pong!&quot;);
+}
+</code></pre></article>
     </section>
+
+
 
 
 
@@ -235,7 +166,7 @@ module.exports = {
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Nov 26 2020 22:26:39 GMT-0200 (GMT-02:00) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Nov 26 2020 22:27:08 GMT-0200 (GMT-02:00) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
