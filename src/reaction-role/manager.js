@@ -86,6 +86,8 @@ class ReactionRoleManager extends EventEmitter {
      */
 
     /**
+    * Create your custom hooks to execute before/after Reaction Role Manager do things.
+    * @summary Pay attention: return value must be boolean! If is not, will not work like you wish.
     * @typedef {Object} IHooks
     * @property {Promise<boolean>} preRoleAddHook - Function executed before add a role to some member.
     * If return value is false, this action will be bypassed.
@@ -175,7 +177,11 @@ class ReactionRoleManager extends EventEmitter {
          * Define hooks for executed while Reaction Role Manager is running.
          * @type {IHooks}
          */
-        this.hooks = typeof hooks === 'object' ? hooks : {};
+        this.hooks = Object.assign({
+            preRoleAddHook: (...args) => true,
+            preRoleRemoveHook: (...args) => true,
+        }, hooks);
+        
         if (this.hooks.preRoleAddHook && typeof this.hooks.preRoleAddHook !== 'function') throw new Error('Hook \'preRoleAdd\' must be a function.');
         else if (this.hooks.preRoleRemoveHook && typeof this.hooks.preRoleRemoveHook !== 'function') {
             throw new Error('Hook \'preRoleRemoveHook\' must be a function.');

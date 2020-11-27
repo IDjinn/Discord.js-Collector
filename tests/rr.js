@@ -18,11 +18,7 @@ const reactionRoleManager = new ReactionRoleManager(client, {
     storage: true, // Enable reaction role store in a Json file
     path: __dirname + '/roles.json', // Where will save the roles if store is enabled,
     debug: true,
-    disabledProperty: false,
-    hooks: {
-        preRoleAddHook: (member, role, reactionRole) => false,
-        preRoleRemoveHook: (member, role, reactionRole) => true
-    }
+    disabledProperty: false
 });
 
 client.on("ready", () => {
