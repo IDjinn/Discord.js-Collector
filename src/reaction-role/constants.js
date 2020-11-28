@@ -28,8 +28,37 @@ const REQUIREMENT_TYPE = Object.freeze({
     VERIFIED_DEVELOPER: 'VERIFIED_DEVELOPER',
 });
 
+/**
+ * Reaction Role Type
+ * @typedef {Object} REQUIREMENT_TYPE
+ * @property {number} NORMAL - This role works like basic reaction role.
+ * @property {number} TOGGLE - You can win only one role of all toggle roles in this message (like colors system)
+ * @property {number} JUST_WIN - This role you'll only win, not lose.
+ * @property {number} JUST_LOSE - This role you'll only lose, not win.
+ * @property {number} REVERSED - This is reversed role. When react, you'll lose it, when you take off reaction you'll win it.
+ * @readonly
+ */
+const REACTION_ROLE_TYPE = Object.freeze({
+    UNKNOWN: -1,
+    NORMAL: 0,
+    TOGGLE: 1,
+    JUST_WIN: 2,
+    JUST_LOSE: 3,
+    REVERSED: 4
+});
+
+const ACTION_TYPE = Object.freeze({
+    UNKNOWN: 0,
+    GIVE: 1,
+    TAKE: 2
+});
+
+const isValidReactionRoleType = (number) => !isNaN(number) && (number >= REACTION_ROLE_TYPE.NORMAL || number <= REACTION_ROLE_TYPE.REVERSED);
 
 module.exports = {
     REQUIREMENT_TYPE,
     REACTIONROLE_EVENT,
+    REACTION_ROLE_TYPE,
+    ACTION_TYPE,
+    isValidReactionRoleType,
 };

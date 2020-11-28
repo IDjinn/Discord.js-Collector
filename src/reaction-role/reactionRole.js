@@ -1,4 +1,5 @@
 const { GuildMember } = require('discord.js');
+const { REACTION_ROLE_TYPE, isValidReactionRoleType } = require('./constants');
 /**
  * Reaction role object structure.
  */
@@ -17,6 +18,7 @@ class ReactionRole {
      * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
      * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
      * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
+     * @param {REACTION_ROLE_TYPE} [data.type=0] - Reaction role type
      *
      * @return {ReactionRole}
      */
@@ -31,6 +33,7 @@ class ReactionRole {
         toggle,
         requirements,
         disabled,
+        type
     }) {
         /**
          * Guild ID of message
@@ -95,6 +98,14 @@ class ReactionRole {
          * @type {boolean}
          */
         this.disabled = Boolean(disabled);
+        /**
+         * This reaction role type.
+         * @type {REACTION_ROLE_TYPE}
+         */
+        this.type = Number(type) || REACTION_ROLE_TYPE.UNKNOWN;
+
+        this.__handleDeprecation();
+        if(!isValidReactionRoleType(this.type)) throw new Error(`Unexpected Reaction Role Type: '${this.type}' is not a valid type.`);
     }
 
     /**
@@ -104,6 +115,51 @@ class ReactionRole {
      */
     get id() {
         return `${this.message}-${this.emoji}`;
+    }
+
+    /**
+     * Is this Reaction Toggle Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isToggle(){
+        return this.type === REACTION_ROLE_TYPE.TOGGLE;
+    }
+
+    /**
+     * Is this Normal Reaction Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isNormal(){
+        return this.type === REACTION_ROLE_TYPE.NORMAL;
+    }
+
+    /**
+     * Is this Just Win Reaction Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isJustWin(){
+        return this.type === REACTION_ROLE_TYPE.JUST_WIN;
+    }
+
+    /**
+     * Is this Just Lose Reaction Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isJustLose(){
+        return this.type === REACTION_ROLE_TYPE.JUST_LOSE;
+    }
+
+    /**
+     * Is this Reversed Reaction Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isReversed(){
+        return this.type === REACTION_ROLE_TYPE.REVERSED;
     }
 
     /**
@@ -129,6 +185,7 @@ class ReactionRole {
                 verifiedDeveloper: this.requirements.verifiedDeveloper,
             },
             disabled: this.disabled,
+            type: this.type
         };
     }
 
@@ -175,7 +232,19 @@ class ReactionRole {
             toggle: json.toggle,
             requirements: json.requirements,
             disabled: json.disabled,
+            type: json.type
         });
+    }
+
+    /**
+     * @private
+     */
+    __handleDeprecation(){
+        /**
+         * @since 1.7.9
+         */
+        if(this.toggle && this.type !== REACTION_ROLE_TYPE.TOGGLE) this.type = REACTION_ROLE_TYPE.TOGGLE;
+        else if(this.type === REACTION_ROLE_TYPE.UNKNOWN) this.type = REACTION_ROLE_TYPE.NORMAL;
     }
 }
 
