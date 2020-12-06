@@ -33,7 +33,7 @@ class ReactionRole {
         toggle,
         requirements,
         disabled,
-        type
+        type,
     }) {
         /**
          * Guild ID of message
@@ -105,9 +105,9 @@ class ReactionRole {
          */
         this.type = Number(type);
 
-        if(this.max > 10E9) this.max = 0; // 1B
+        if (this.max > 10E9) this.max = 0; // 1B
         this.__handleDeprecation();
-        if(!isValidReactionRoleType(this.type)) throw new Error(`Unexpected Reaction Role Type: '${this.type}' is not a valid type.`);
+        if (!isValidReactionRoleType(this.type)) throw new Error(`Unexpected Reaction Role Type: '${this.type}' is not a valid type.`);
     }
 
     /**
@@ -124,7 +124,7 @@ class ReactionRole {
      * @type {boolean}
      * @readonly
      */
-    get isToggle(){
+    get isToggle() {
         return this.type === ReactionRoleType.TOGGLE;
     }
 
@@ -133,7 +133,7 @@ class ReactionRole {
      * @type {boolean}
      * @readonly
      */
-    get isNormal(){
+    get isNormal() {
         return this.type === ReactionRoleType.NORMAL;
     }
 
@@ -142,7 +142,7 @@ class ReactionRole {
      * @type {boolean}
      * @readonly
      */
-    get isJustWin(){
+    get isJustWin() {
         return this.type === ReactionRoleType.JUST_WIN;
     }
 
@@ -151,7 +151,7 @@ class ReactionRole {
      * @type {boolean}
      * @readonly
      */
-    get isJustLose(){
+    get isJustLose() {
         return this.type === ReactionRoleType.JUST_LOSE;
     }
 
@@ -160,7 +160,7 @@ class ReactionRole {
      * @type {boolean}
      * @readonly
      */
-    get isReversed(){
+    get isReversed() {
         return this.type === ReactionRoleType.REVERSED;
     }
 
@@ -183,7 +183,7 @@ class ReactionRole {
                 verifiedDeveloper: this.requirements.verifiedDeveloper,
             },
             disabled: this.disabled,
-            type: this.type
+            type: this.type,
         };
     }
 
@@ -230,19 +230,19 @@ class ReactionRole {
             toggle: json.toggle,
             requirements: json.requirements,
             disabled: json.disabled,
-            type: json.type
+            type: json.type,
         });
     }
 
     /**
      * @private
      */
-    __handleDeprecation(){
+    __handleDeprecation() {
         /**
          * @since 1.7.9
          */
-        if(this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
-        else if(this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
+        if (this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
+        else if (this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
     }
 }
 
