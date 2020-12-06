@@ -16,7 +16,7 @@ const fs = require('fs');
 const AsyncLock = require('async-lock');
 const Constants = require('../util/constants');
 const { ReactionRole } = require('./reactionRole');
-const { REACTIONROLE_EVENT, REQUIREMENT_TYPE, ACTION_TYPE } = require('./constants');
+const { ReactionRoleEvent,ReactionRoleType, RequirementType, ActionType, isValidReactionRoleType } = require('./constants');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const locker = new AsyncLock();
@@ -283,11 +283,10 @@ class ReactionRoleManager extends EventEmitter {
                         winners: Array,
                         max: {
                             type: Number,
-                            default: Number.MAX_SAFE_INTEGER,
+                            default: 10E9,
                         },
                         toggle: {
                             type: Boolean,
-                            default: false,
                         },
                         requirements: {
                             boost: {
@@ -303,6 +302,10 @@ class ReactionRoleManager extends EventEmitter {
                             type: Boolean,
                             default: false,
                         },
+                        type: {
+                            type: Number,
+                            default: 0
+                        }
                     }),
                 );
                 return resolve(true);
@@ -386,7 +389,7 @@ class ReactionRoleManager extends EventEmitter {
                         continue;
                     }
 
-                    await this.__handleReactionRoleAction(ACTION_TYPE.GIVE, member, reactionRole, reaction);
+                    await this.__handleReactionRoleAction(ActionType.GIVE, member, reactionRole, reaction);
                 }
 
                 for (let j = 0; j < reactionRole.winners.length; j += 1) {
@@ -405,7 +408,7 @@ class ReactionRoleManager extends EventEmitter {
                     if (member.user.partial) await member.fetch();
                     if (member.user.bot) continue;
 
-                    if (!users.has(winnerId)) await this.__handleReactionRoleAction(ACTION_TYPE.TAKE, member, reactionRole, reaction);
+                    if (!users.has(winnerId)) await this.__handleReactionRoleAction(ActionType.TAKE, member, reactionRole, reaction);
                 }
             } catch (error) {
                 if (error && error.code === 10008) {
@@ -450,8 +453,8 @@ class ReactionRoleManager extends EventEmitter {
         return new Promise(async (resolve) => {
             if (!reactionRole.checkBoostRequirement(member)) {
                 this.emit(
-                    REACTIONROLE_EVENT.MISSING_REQUIREMENTS,
-                    REQUIREMENT_TYPE.BOOST,
+                    ReactionRoleEvent.MISSING_REQUIREMENTS,
+                    RequirementType.BOOST,
                     member,
                     reactionRole,
                 );
@@ -465,8 +468,8 @@ class ReactionRoleManager extends EventEmitter {
                 !(await reactionRole.checkDeveloperRequirement(member))
             ) {
                 this.emit(
-                    REACTIONROLE_EVENT.MISSING_REQUIREMENTS,
-                    REQUIREMENT_TYPE.VERIFIED_DEVELOPER,
+                    ReactionRoleEvent.MISSING_REQUIREMENTS,
+                    RequirementType.VERIFIED_DEVELOPER,
                     member,
                     reactionRole,
                 );
@@ -487,19 +490,17 @@ class ReactionRoleManager extends EventEmitter {
      * @param {Message} options.message - Message what will have the reactions.
      * @param {Role} options.role - Role what the bot will give/take from members when they react.
      * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
+     * @param {ReactionRoleType} [options.type=1] - Type of reaction role.
      * @param {Number} [options.max=Infinity] - Max roles to give.
-     * @param {Boolean} [options.toggle=false] - User will have only one of these message roles.
      * @param {Object} [options.requirements={}] - Requirements to win this role.
      * @param {boolean} [options.requirements.boost=false] - Need be a booster to win this role?
      * @param {boolean} [options.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
-     * @return {Promise<void>}
+     * @return {Promise<ReactionRole>}
      */
     createReactionRole(
         {
-            message, role, emoji, max, toggle, requirements,
+            message, role, emoji, type, max, requirements,
         } = {
-                max: Number.MAX_SAFE_INTEGER,
-                toggle: false,
                 requirements: { boost: false, verifiedDeveloper: false },
             },
     ) {
@@ -511,6 +512,11 @@ class ReactionRoleManager extends EventEmitter {
                     );
                 }
 
+                if(type && !isValidReactionRoleType(type)) return reject(new Error(`Bad input: Invalid reaction role type: '${type}'.`));
+                if(!type) type = ReactionRoleType.NORMAL;
+                if(!max || max > Number.MAX_SAFE_INTEGER || max < 0) max = Number.MAX_SAFE_INTEGER;
+                requirements = { boost: false, verifiedDeveloper: false, ...requirements };
+                console.log(requirements)
                 role = message.guild.roles.resolveID(role);
                 if (!role) return reject(new Error(`Bad input: I canno't resolve role ${role}`));
 
@@ -518,8 +524,7 @@ class ReactionRoleManager extends EventEmitter {
                 emoji = this.__resolveReactionEmoji(emojiParsed);
                 if (!emoji) return reject(new Error(`Bad input: I canno't resolve emoji ${emoji}`));
 
-                if (
-                    emojiParsed
+                if (emojiParsed
                     && emojiParsed.id
                     && !this.client.emojis.resolve(emojiParsed.id)
                 ) return reject(new Error(`Bad input: I canno't find emoji ${emoji}`));
@@ -529,8 +534,8 @@ class ReactionRoleManager extends EventEmitter {
                     message,
                     role,
                     emoji,
+                    type,
                     max,
-                    toggle,
                     requirements,
                 });
                 this.reactionRoles.set(reactionRole.id, reactionRole);
@@ -539,7 +544,7 @@ class ReactionRoleManager extends EventEmitter {
                     'ROLE',
                     `Role '${role}' added in reactionRoleManager!`,
                 );
-                return resolve();
+                return resolve(reactionRole);
             }
             return reject(new Error('Bad input: addRole({...}) message must be a Message Object.'));
         });
@@ -552,14 +557,16 @@ class ReactionRoleManager extends EventEmitter {
      * @param {object} [options.message] - Message of Reaction Role. If you want delete it and not have the reaction role object
      * @param {object} [options.emoji] - Emoji of Reaction Role. If you want delete it and not have the reaction role object
      * @param {boolean} [deleted=false] - Is role deleted from guild?
-     * @return {Promise<void>}
+     * @return {Promise<ReactionRole | void>}
      */
     async deleteReactionRole({ reactionRole, message, emoji }, deleted = false) {
         return new Promise(async (resolve, reject) => {
             if (message && emoji) {
                 const resolvedEmojiID = this.__resolveReactionEmoji(Util.parseEmoji(emoji));
                 const messageID = message && message.id ? message.id : message;
+                if(!messageID) return reject(new Error('Bad input: invalid message param type, must be instance of Message.'));
                 reactionRole = this.reactionRoles.find((rr) => rr.message === messageID && rr.emoji === resolvedEmojiID);
+                if(!(reactionRole instanceof ReactionRole)) return reject(new Error(`Bad input: I cannot find any reaction role with message ID '${messageID}' and emoji '${emoji}'`))
             }
 
             if (reactionRole instanceof ReactionRole) {
@@ -583,7 +590,7 @@ class ReactionRoleManager extends EventEmitter {
                         `Role '${reactionRole.id}' removed from reactionRoleManager!`,
                     );
                 }
-                return resolve();
+                return resolve(reactionRole && reactionRole.disabled ? reactionRole: null);
             }
             return reject(new Error('Bad input: deleteReactionRole(role) must be a ReactionRole Object.'));
         });
@@ -701,7 +708,7 @@ class ReactionRoleManager extends EventEmitter {
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole)) return;
 
-        this.__handleReactionRoleAction(ACTION_TYPE.GIVE, member, reactionRole, msgReaction);
+        this.__handleReactionRoleAction(ActionType.GIVE, member, reactionRole, msgReaction);
     }
 
     /**
@@ -774,7 +781,7 @@ class ReactionRoleManager extends EventEmitter {
                             await member.roles.add(skippedRole.role);
 
                             this.emit(
-                                REACTIONROLE_EVENT.REACTION_ROLE_ADD,
+                                ReactionRoleEvent.REACTION_ROLE_ADD,
                                 member,
                                 role,
                             );
@@ -813,7 +820,7 @@ class ReactionRoleManager extends EventEmitter {
         this.timeouts.set('ready_timeout', setTimeout(() => {
             this.isReady = true;
             this.readyAt = new Date();
-            this.emit(REACTIONROLE_EVENT.READY);
+            this.emit(ReactionRoleEvent.READY);
             this.__debug('READY', 'Reaction role manager is ready.');
         }, 5000));
     }
@@ -846,7 +853,7 @@ class ReactionRoleManager extends EventEmitter {
         const reactionRole = this.reactionRoles.get(id);
         if (!(reactionRole instanceof ReactionRole)) return;
 
-        this.__handleReactionRoleAction(ACTION_TYPE.TAKE, member, reactionRole, msgReaction);
+        this.__handleReactionRoleAction(ActionType.TAKE, member, reactionRole, msgReaction);
     }
 
     /**
@@ -887,7 +894,7 @@ class ReactionRoleManager extends EventEmitter {
 
         const rolesAffected = messageReactionsRoles.map((rr) => message.guild.roles.cache.get(rr.role));
         this.emit(
-            REACTIONROLE_EVENT.ALL_REACTIONS_REMOVE,
+            ReactionRoleEvent.ALL_REACTIONS_REMOVE,
             message,
             rolesAffected,
             membersAffected,
@@ -904,13 +911,13 @@ class ReactionRoleManager extends EventEmitter {
      */
     async __handleReactionRoleAction(action, member, reactionRole, msgReaction) {
         if (reactionRole.disabled) return;
-        if (reactionRole.isReversed) action = action === ACTION_TYPE.GIVE ? ACTION_TYPE.TAKE : ACTION_TYPE.GIVE;
+        if (reactionRole.isReversed) action = action === ActionType.GIVE ? ActionType.TAKE : ActionType.GIVE;
         if (member.partial) await member.fetch();
         if (msgReaction.partial) await msgReaction.fetch();
 
         const { guild } = member;
         const role = guild.roles.cache.get(reactionRole.role);
-        const reactionUsers = await msgReaction.users.fetch();
+        await msgReaction.users.fetch();
         if (!(role instanceof Role)) {
             this.__debug(
                 'ROLE',
@@ -919,17 +926,17 @@ class ReactionRoleManager extends EventEmitter {
             return msgReaction.remove();
         }
 
-        if (reactionRole.isJustLose && action == ACTION_TYPE.GIVE) {
-            await reactionUsers.remove(member.id);
+        if (reactionRole.isJustLose && action == ActionType.GIVE) {
+            await msgReaction.users.remove(member.id);
             return this.__debug('ACTION', `Member '${member.id}' will not win the role '${role.id}' because this reaction role is just for lose, not for win.`);
         }
 
-        if (reactionRole.isJustWin && action == ACTION_TYPE.TAKE) return this.__debug('ACTION', `Member '${member.id}' will not lose the role '${role.id}' because this reaction role is just for win, not for lose.`);
+        if (reactionRole.isJustWin && action == ActionType.TAKE) return this.__debug('ACTION', `Member '${member.id}' will not lose the role '${role.id}' because this reaction role is just for win, not for lose.`);
 
         switch (action) {
-            case ACTION_TYPE.GIVE:
+            case ActionType.GIVE:
                 if (reactionRole.winners.length >= reactionRole.max) {
-                    await reactionUsers.remove(member.id);
+                    await msgReaction.users.remove(member.id);
                     this.__debug(
                         'ROLE',
                         `Member will not win the reaction role '${reactionRole.role}' because the maximum number of roles to give has been reached`,
@@ -949,7 +956,7 @@ class ReactionRoleManager extends EventEmitter {
                     }
                     if (!member.roles.cache.has(role.id)) await member.roles.add(role);
 
-                    this.emit(REACTIONROLE_EVENT.REACTION_ROLE_ADD, member, role);
+                    this.emit(ReactionRoleEvent.REACTION_ROLE_ADD, member, role);
                     this.__debug(
                         'ROLE',
                         `User '${member.displayName}' won the role '${role.name}'.`,
@@ -958,10 +965,10 @@ class ReactionRoleManager extends EventEmitter {
                 }
                 break;
 
-            case ACTION_TYPE.TAKE:
+            case ActionType.TAKE:
                 if (await this.hooks.preRoleRemoveHook(member, role, reactionRole) && member.roles.cache.has(role.id)) {
                     await member.roles.remove(role);
-                    this.emit(REACTIONROLE_EVENT.REACTION_ROLE_REMOVE, member, role);
+                    this.emit(ReactionRoleEvent.REACTION_ROLE_REMOVE, member, role);
                     this.__debug(
                         'ROLE',
                         `User '${member.displayName}' lost the role '${role.name}'.`,
@@ -988,6 +995,6 @@ class ReactionRoleManager extends EventEmitter {
 module.exports = {
     ReactionRoleManager,
     ReactionRole,
-    REQUIREMENT_TYPE,
-    REACTIONROLE_EVENT,
+    REQUIREMENT_TYPE: RequirementType,
+    REACTIONROLE_EVENT: ReactionRoleEvent,
 };
