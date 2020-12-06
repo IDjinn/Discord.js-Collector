@@ -1,5 +1,5 @@
 const { GuildMember } = require('discord.js');
-const { REACTION_ROLE_TYPE, isValidReactionRoleType } = require('./constants');
+const { ReactionRoleType, isValidReactionRoleType } = require('./constants');
 /**
  * Reaction role object structure.
  */
@@ -76,10 +76,11 @@ class ReactionRole {
          * @type {number}
          */
         // eslint-disable-next-line no-restricted-globals
-        this.max = isNaN(max) ? Number.MAX_SAFE_INTEGER : Number(max);
+        this.max = isNaN(max) || max < 0 ? 0 : Number(max);
         /**
          * Is it toggled role?
          * @type {number}
+         * @deprecated since 1.7.9
          */
         this.toggle = Boolean(toggle);
         /**
@@ -102,8 +103,9 @@ class ReactionRole {
          * This reaction role type.
          * @type {REACTION_ROLE_TYPE}
          */
-        this.type = Number(type) || REACTION_ROLE_TYPE.UNKNOWN;
+        this.type = Number(type);
 
+        if(this.max > 10E9) this.max = 0; // 1B
         this.__handleDeprecation();
         if(!isValidReactionRoleType(this.type)) throw new Error(`Unexpected Reaction Role Type: '${this.type}' is not a valid type.`);
     }
@@ -123,7 +125,7 @@ class ReactionRole {
      * @readonly
      */
     get isToggle(){
-        return this.type === REACTION_ROLE_TYPE.TOGGLE;
+        return this.type === ReactionRoleType.TOGGLE;
     }
 
     /**
@@ -132,7 +134,7 @@ class ReactionRole {
      * @readonly
      */
     get isNormal(){
-        return this.type === REACTION_ROLE_TYPE.NORMAL;
+        return this.type === ReactionRoleType.NORMAL;
     }
 
     /**
@@ -141,7 +143,7 @@ class ReactionRole {
      * @readonly
      */
     get isJustWin(){
-        return this.type === REACTION_ROLE_TYPE.JUST_WIN;
+        return this.type === ReactionRoleType.JUST_WIN;
     }
 
     /**
@@ -150,7 +152,7 @@ class ReactionRole {
      * @readonly
      */
     get isJustLose(){
-        return this.type === REACTION_ROLE_TYPE.JUST_LOSE;
+        return this.type === ReactionRoleType.JUST_LOSE;
     }
 
     /**
@@ -159,7 +161,7 @@ class ReactionRole {
      * @readonly
      */
     get isReversed(){
-        return this.type === REACTION_ROLE_TYPE.REVERSED;
+        return this.type === ReactionRoleType.REVERSED;
     }
 
     /**
@@ -175,11 +177,7 @@ class ReactionRole {
             role: this.role,
             emoji: this.emoji,
             winners: this.winners,
-            max:
-                this.max > Number.MAX_SAFE_INTEGER
-                    ? Number.MAX_SAFE_INTEGER
-                    : this.max,
-            toggle: this.toggle,
+            max: this.max,
             requirements: {
                 boost: this.requirements.boost,
                 verifiedDeveloper: this.requirements.verifiedDeveloper,
@@ -243,8 +241,8 @@ class ReactionRole {
         /**
          * @since 1.7.9
          */
-        if(this.toggle && this.type !== REACTION_ROLE_TYPE.TOGGLE) this.type = REACTION_ROLE_TYPE.TOGGLE;
-        else if(this.type === REACTION_ROLE_TYPE.UNKNOWN) this.type = REACTION_ROLE_TYPE.NORMAL;
+        if(this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
+        else if(this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
     }
 }
 

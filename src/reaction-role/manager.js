@@ -491,7 +491,7 @@ class ReactionRoleManager extends EventEmitter {
      * @param {Role} options.role - Role what the bot will give/take from members when they react.
      * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
      * @param {ReactionRoleType} [options.type=1] - Type of reaction role.
-     * @param {Number} [options.max=Infinity] - Max roles to give.
+     * @param {Number} [options.max=0] - Max roles to give. If it's 0, will not have a limit.
      * @param {Object} [options.requirements={}] - Requirements to win this role.
      * @param {boolean} [options.requirements.boost=false] - Need be a booster to win this role?
      * @param {boolean} [options.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
@@ -935,7 +935,7 @@ class ReactionRoleManager extends EventEmitter {
 
         switch (action) {
             case ActionType.GIVE:
-                if (reactionRole.winners.length >= reactionRole.max) {
+                if (reactionRole.winners.length >= reactionRole.max && reactionRole.max > 0) {
                     await msgReaction.users.remove(member.id);
                     this.__debug(
                         'ROLE',
