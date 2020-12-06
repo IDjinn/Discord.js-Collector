@@ -1,6 +1,6 @@
 /**
  * Reaction role manager events.
- * @typedef {Object} REACTIONROLE_EVENT
+ * @typedef {Object} ReactionRoleEvent
  * @property {string} REACTION_ROLE_ADD='reactionRoleAdd' - Triggered when a member won some role.
  * @property {string} REACTION_ROLE_REMOVE='reactionRoleRemove' - Triggered when a member lost some role.
  * @property {string} ALL_REACTIONS_REMOVE='allReactionsRemove' - Triggered when all reactions from message was removed.
@@ -8,7 +8,7 @@
  * @property {string} READY='ready' - Triggered when reation role manager is ready.
  * @readonly
  */
-const REACTIONROLE_EVENT = Object.freeze({
+const ReactionRoleEvent = Object.freeze({
     REACTION_ROLE_ADD: 'reactionRoleAdd',
     REACTION_ROLE_REMOVE: 'reactionRoleRemove',
     ALL_REACTIONS_REMOVE: 'allReactionsRemove',
@@ -18,19 +18,19 @@ const REACTIONROLE_EVENT = Object.freeze({
 
 /**
  * Requirement type to win some role.
- * @typedef {Object} REQUIREMENT_TYPE
+ * @typedef {Object} RequirementType
  * @property {string} BOOST - Need be a booster to win this role.
  * @property {string} VERIFIED_DEVELOPER - Need be a verified developer to win this role.
  * @readonly
  */
-const REQUIREMENT_TYPE = Object.freeze({
+const RequirementType = Object.freeze({
     BOOST: 'BOOST',
     VERIFIED_DEVELOPER: 'VERIFIED_DEVELOPER',
 });
 
 /**
  * Reaction Role Type
- * @typedef {Object} REQUIREMENT_TYPE
+ * @typedef {object} ReactionRoleType
  * @property {number} NORMAL - This role works like basic reaction role.
  * @property {number} TOGGLE - You can win only one role of all toggle roles in this message (like colors system)
  * @property {number} JUST_WIN - This role you'll only win, not lose.
@@ -38,27 +38,35 @@ const REQUIREMENT_TYPE = Object.freeze({
  * @property {number} REVERSED - This is reversed role. When react, you'll lose it, when you take off reaction you'll win it.
  * @readonly
  */
-const REACTION_ROLE_TYPE = Object.freeze({
-    UNKNOWN: -1,
-    NORMAL: 0,
-    TOGGLE: 1,
-    JUST_WIN: 2,
-    JUST_LOSE: 3,
-    REVERSED: 4
+const ReactionRoleType = Object.freeze({
+    UNKNOWN: 0,
+    NORMAL: 1,
+    TOGGLE: 2,
+    JUST_WIN: 3,
+    JUST_LOSE: 4,
+    REVERSED: 5
 });
 
-const ACTION_TYPE = Object.freeze({
+/**
+ * Reaction action Type
+ * @typedef {object} ActionType
+ * @property {number} UNKNOWN - Unknown type of this reaction action.
+ * @property {number} GIVE - The member will win some reaction role.
+ * @property {number} TAKE - The member will lose some reaction role.
+ * @readonly
+ */
+const ActionType = Object.freeze({
     UNKNOWN: 0,
     GIVE: 1,
     TAKE: 2
 });
 
-const isValidReactionRoleType = (number) => !isNaN(number) && (number >= REACTION_ROLE_TYPE.NORMAL || number <= REACTION_ROLE_TYPE.REVERSED);
+const isValidReactionRoleType = (number) => !isNaN(number) && (number >= ReactionRoleType.NORMAL && number <= ReactionRoleType.REVERSED);
 
 module.exports = {
-    REQUIREMENT_TYPE,
-    REACTIONROLE_EVENT,
-    REACTION_ROLE_TYPE,
-    ACTION_TYPE,
+    RequirementType,
+    ReactionRoleEvent,
+    ReactionRoleType,
+    ActionType,
     isValidReactionRoleType,
 };
