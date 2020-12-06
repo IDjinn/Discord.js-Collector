@@ -23,7 +23,7 @@ Library to easily create message collector, reactions collector and reactions ro
 
 
 ## Warning
-Please update your version to latest version: 1.7.8, multiple bugfixs and vulnerabilities.
+Please update your version to latest version: 1.8.0, multiple bugfixs and vulnerabilities.
 
 ## Documentation
 

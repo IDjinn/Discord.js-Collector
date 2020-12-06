@@ -18,7 +18,7 @@ class ReactionRole {
      * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
      * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
      * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
-     * @param {REACTION_ROLE_TYPE} [data.type=0] - Reaction role type
+     * @param {ReactionRoleType} [data.type=1] - Reaction role type
      *
      * @return {ReactionRole}
      */
@@ -76,7 +76,7 @@ class ReactionRole {
          * @type {number}
          */
         // eslint-disable-next-line no-restricted-globals
-        this.max = isNaN(max) || max < 0 ? 0 : Number(max);
+        this.max = isNaN(max) ? 0 : Number(max);
         /**
          * Is it toggled role?
          * @type {number}
@@ -101,11 +101,10 @@ class ReactionRole {
         this.disabled = Boolean(disabled);
         /**
          * This reaction role type.
-         * @type {REACTION_ROLE_TYPE}
+         * @type {ReactionRoleType}
          */
         this.type = Number(type);
 
-        if (this.max > 10E9) this.max = 0; // 1B
         this.__handleDeprecation();
         if (!isValidReactionRoleType(this.type)) throw new Error(`Unexpected Reaction Role Type: '${this.type}' is not a valid type.`);
     }
@@ -241,6 +240,8 @@ class ReactionRole {
         /**
          * @since 1.7.9
          */
+        if (this.max > 10E9 || this.max < 0) this.max = 0; // 1B is max, 0 is inifity.
+
         if (this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
         else if (this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
     }

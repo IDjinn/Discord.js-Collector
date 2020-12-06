@@ -23,10 +23,10 @@ import Discord, {
 import { EventEmitter } from 'events';
 
 declare module 'discord.js-collector' {
-    export enum ActionType{
-    UNKNOWN = 0,
-    GIVE = 1,
-    TAKE = 2
+    export enum ActionType {
+        UNKNOWN = 0,
+        GIVE = 1,
+        TAKE = 2
     }
 
     export enum ReactionRoleType {
@@ -63,7 +63,7 @@ declare module 'discord.js-collector' {
         static fromJSON(json: JSON): ReactionRole;
         public checkDeveloperRequirement(member: GuildMember): Promise<boolean>;
         public checkBoostRequirement(member: GuildMember): boolean;
-        private __handleDeprecation():void;
+        private __handleDeprecation(): void;
         public toJSON(): JSON;
     }
 
@@ -78,9 +78,10 @@ declare module 'discord.js-collector' {
         guild: Guild | Snowflake;
         role: Role | Snowflake;
         emoji: GuildEmoji | EmojiResolvable;
-        winners: string[];
-        max: number;
-        toggle: boolean;
+        winners?: string[];
+        max?: number;
+        toggle?: boolean;
+        type?: ReactionRoleType;
     }
 
     export class ReactionRoleManager extends EventEmitter {
@@ -163,8 +164,8 @@ declare module 'discord.js-collector' {
     }
 
     export interface IDeleteRoleOptions {
-        reactionRole?: ReactionRole, 
-        message?:Message, 
+        reactionRole?: ReactionRole,
+        message?: Message,
         emoji?: Emoji
     }
 
@@ -178,7 +179,7 @@ declare module 'discord.js-collector' {
         hooks?: IHooks | null;
     }
 
-    export interface IHooks{
+    export interface IHooks {
         preRoleAddHook: (member: GuildMember, role?: Role, reactionRole: ReactionRole) => Promise<Boolean>;
         preRoleRemoveHook: (member: GuildMember, role?: Role, reactionRole: ReactionRole) => Promise<Boolean>;
     }
