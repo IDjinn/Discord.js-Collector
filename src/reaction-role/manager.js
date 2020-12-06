@@ -503,8 +503,8 @@ class ReactionRoleManager extends EventEmitter {
         {
             message, role, emoji, type, max, requirements,
         } = {
-                requirements: { boost: false, verifiedDeveloper: false },
-            },
+            requirements: { boost: false, verifiedDeveloper: false },
+        },
     ) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
@@ -946,57 +946,57 @@ class ReactionRoleManager extends EventEmitter {
         }
 
         switch (action) {
-            case ActionType.GIVE: {
-                if (reactionRole.winners.length >= reactionRole.max && reactionRole.max > 0) {
-                    await msgReaction.users.remove(member.id);
-                    this.__debug(
-                        'ROLE',
-                        `Member will not win the reaction role '${reactionRole.role}' because the maximum number of roles to give has been reached`,
-                    );
-                    break;
-                }
-
-                if (!await this.__checkRequirements(reactionRole, msgReaction, member)) break;
-                if (reactionRole.isToggle) {
-                    this.__timeoutToggledRoles(member, msgReaction.message, reactionRole);
-                    break;
-                }
-                if (await this.hooks.preRoleAddHook(member, role, reactionRole)) {
-                    if (reactionRole.winners.indexOf(member.id) <= -1) {
-                        reactionRole.winners.push(member.id);
-                        this.store(reactionRole);
-                    }
-                    if (!member.roles.cache.has(role.id)) await member.roles.add(role);
-
-                    this.emit(ReactionRoleEvent.REACTION_ROLE_ADD, member, role);
-                    this.__debug(
-                        'ROLE',
-                        `User '${member.displayName}' won the role '${role.name}'.`,
-                    );
-                }
+        case ActionType.GIVE: {
+            if (reactionRole.winners.length >= reactionRole.max && reactionRole.max > 0) {
+                await msgReaction.users.remove(member.id);
+                this.__debug(
+                    'ROLE',
+                    `Member will not win the reaction role '${reactionRole.role}' because the maximum number of roles to give has been reached`,
+                );
                 break;
             }
 
-            case ActionType.TAKE: {
-                if (await this.hooks.preRoleRemoveHook(member, role, reactionRole) && member.roles.cache.has(role.id)) {
-                    await member.roles.remove(role);
-                    this.emit(ReactionRoleEvent.REACTION_ROLE_REMOVE, member, role);
-                    this.__debug(
-                        'ROLE',
-                        `User '${member.displayName}' lost the role '${role.name}'.`,
-                    );
-                }
-
-                const index = reactionRole.winners.indexOf(member.id);
-                if (index >= 0) {
-                    reactionRole.winners.splice(index, 1);
+            if (!await this.__checkRequirements(reactionRole, msgReaction, member)) break;
+            if (reactionRole.isToggle) {
+                this.__timeoutToggledRoles(member, msgReaction.message, reactionRole);
+                break;
+            }
+            if (await this.hooks.preRoleAddHook(member, role, reactionRole)) {
+                if (reactionRole.winners.indexOf(member.id) <= -1) {
+                    reactionRole.winners.push(member.id);
                     this.store(reactionRole);
                 }
-                break;
+                if (!member.roles.cache.has(role.id)) await member.roles.add(role);
+
+                this.emit(ReactionRoleEvent.REACTION_ROLE_ADD, member, role);
+                this.__debug(
+                    'ROLE',
+                    `User '${member.displayName}' won the role '${role.name}'.`,
+                );
             }
-            default: {
-                throw new Error(`Unknow action type: ${action}`);
+            break;
+        }
+
+        case ActionType.TAKE: {
+            if (await this.hooks.preRoleRemoveHook(member, role, reactionRole) && member.roles.cache.has(role.id)) {
+                await member.roles.remove(role);
+                this.emit(ReactionRoleEvent.REACTION_ROLE_REMOVE, member, role);
+                this.__debug(
+                    'ROLE',
+                    `User '${member.displayName}' lost the role '${role.name}'.`,
+                );
             }
+
+            const index = reactionRole.winners.indexOf(member.id);
+            if (index >= 0) {
+                reactionRole.winners.splice(index, 1);
+                this.store(reactionRole);
+            }
+            break;
+        }
+        default: {
+            throw new Error(`Unknow action type: ${action}`);
+        }
         }
     }
 
