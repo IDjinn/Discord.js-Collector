@@ -17,11 +17,27 @@ import Discord, {
     GuildMember,
     GuildManager,
     GuildResolvable,
+    Emoji,
 } from 'discord.js';
 
 import { EventEmitter } from 'events';
 
 declare module 'discord.js-collector' {
+    export enum ActionType{
+    UNKNOWN = 0,
+    GIVE = 1,
+    TAKE = 2
+    }
+
+    export enum ReactionRoleType {
+        UNKNOWN = 0,
+        NORMAL = 1,
+        TOGGLE = 2,
+        JUST_WIN = 3,
+        JUST_LOSE = 4,
+        REVERSED = 5,
+    }
+
     export class ReactionRole {
         constructor(options: IReactionRoleOptions);
         get id(): string;
@@ -33,11 +49,22 @@ declare module 'discord.js-collector' {
         get emoji(): string;
         get winners(): string[];
         get max(): number;
+        /**
+         * @deprecated since 1.7.9
+         */
         get toggle(): boolean;
         get requirements(): IRequirements;
+        get type(): ReactionRoleType;
+        get isToggle(): boolean;
+        get isNormal(): boolean;
+        get isJustWin(): boolean;
+        get isJustLose(): boolean;
+        get isReversed(): boolean;
         static fromJSON(json: JSON): ReactionRole;
         public checkDeveloperRequirement(member: GuildMember): Promise<boolean>;
         public checkBoostRequirement(member: GuildMember): boolean;
+        private __handleDeprecation():void;
+        public toJSON(): JSON;
     }
 
     export interface IRequirements {
@@ -60,8 +87,8 @@ declare module 'discord.js-collector' {
         constructor(client: Client, options?: IReactionRoleManagerOptions);
         public reactionRoles: Collection<string, ReactionRole>;
         public timeouts: Collection<string, Function>;
-        public createReactionRole(options: IAddRoleOptions): Promise<void>;
-        public deleteReactionRole(role: ReactionRole): Promise<void>;
+        public createReactionRole(options: ICreateRoleOptions): Promise<ReactionRole>;
+        public deleteReactionRole(options: IDeleteRoleOptions, deleted = false): Promise<ReactionRole | void>;
         public store(...roles: ReactionRole): Promise<void>;
         private __parseStorage(): Collection<string, any>;
         private __onReactionAdd(
@@ -115,6 +142,10 @@ declare module 'discord.js-collector' {
                 reactionRole: ReactionRole
             ) => void
         ): this;
+        public on(
+            event: 'ready',
+            listener: () => void
+        ): this;
     }
 
     export enum IRequirementType {
@@ -122,13 +153,19 @@ declare module 'discord.js-collector' {
         VERIFIED_DEVELOPER = 'VERIFIED_DEVELOPER',
     }
 
-    export interface IAddRoleOptions {
+    export interface ICreateRoleOptions {
         message: Message;
         role: Role;
         emoji: EmojiIdentifierResolvable;
         max?: number;
-        toggle?: boolean;
+        type?: ReactionRoleType;
         requirements?: IRequirements;
+    }
+
+    export interface IDeleteRoleOptions {
+        reactionRole?: ReactionRole, 
+        message?:Message, 
+        emoji?: Emoji
     }
 
     export interface IReactionRoleManagerOptions {
