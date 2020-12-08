@@ -9,7 +9,7 @@
         "start": "nodemon --ignore **/*.json tests/rr.js",
         "test": "npm run lint",
         "test:typescript": "tsc",
-        "docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose",
+        "docs": "jsdoc --configure .jsdoc.json --verbose",
         "lint": "eslint src",
         "lint:fix": "eslint src --fix"
     },
