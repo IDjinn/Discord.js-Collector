@@ -1,7 +1,7 @@
 {
     "name": "discord.js-collector",
     "description": "Library to easily create message collector and reactions on discord, with customization ways",
-    "version": "1.7.9",
+    "version": "1.8.0",
     "main": "src/index.js",
     "license": "GPL-3.0",
     "types": "./typings/index.d.ts",
@@ -42,11 +42,19 @@
         "discord.js",
         "discordjs",
         "message collector",
+        "message-collector",
+        "messages-collector",
+        "messages collector",
         "reaction role",
+        "reaction roles",
+        "color roles",
+        "captcha roles",
         "reaction collector",
+        "reaction-collector",
         "reaction menu",
+        "embed menu",
         "discord paginator",
         "reaction role toggle",
-        "reaction-role"
+        "reaction roles"
     ]
 }

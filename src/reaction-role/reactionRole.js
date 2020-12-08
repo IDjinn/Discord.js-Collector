@@ -1,4 +1,5 @@
 const { GuildMember } = require('discord.js');
+const { ReactionRoleType, isValidReactionRoleType } = require('./constants');
 /**
  * Reaction role object structure.
  */
@@ -17,6 +18,7 @@ class ReactionRole {
      * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
      * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
      * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
+     * @param {ReactionRoleType} [data.type=1] - Reaction role type
      *
      * @return {ReactionRole}
      */
@@ -31,6 +33,7 @@ class ReactionRole {
         toggle,
         requirements,
         disabled,
+        type,
     }) {
         /**
          * Guild ID of message
@@ -73,10 +76,11 @@ class ReactionRole {
          * @type {number}
          */
         // eslint-disable-next-line no-restricted-globals
-        this.max = isNaN(max) ? Number.MAX_SAFE_INTEGER : Number(max);
+        this.max = isNaN(max) ? 0 : Number(max);
         /**
          * Is it toggled role?
          * @type {number}
+         * @deprecated since 1.7.9
          */
         this.toggle = Boolean(toggle);
         /**
@@ -95,6 +99,14 @@ class ReactionRole {
          * @type {boolean}
          */
         this.disabled = Boolean(disabled);
+        /**
+         * This reaction role type.
+         * @type {ReactionRoleType}
+         */
+        this.type = Number(type);
+
+        this.__handleDeprecation();
+        if (!isValidReactionRoleType(this.type)) throw new Error(`Unexpected Reaction Role Type: '${this.type}' is not a valid type.`);
     }
 
     /**
@@ -104,6 +116,51 @@ class ReactionRole {
      */
     get id() {
         return `${this.message}-${this.emoji}`;
+    }
+
+    /**
+     * Is this Reaction Toggle Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isToggle() {
+        return this.type === ReactionRoleType.TOGGLE;
+    }
+
+    /**
+     * Is this Normal Reaction Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isNormal() {
+        return this.type === ReactionRoleType.NORMAL;
+    }
+
+    /**
+     * Is this Just Win Reaction Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isJustWin() {
+        return this.type === ReactionRoleType.JUST_WIN;
+    }
+
+    /**
+     * Is this Just Lose Reaction Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isJustLose() {
+        return this.type === ReactionRoleType.JUST_LOSE;
+    }
+
+    /**
+     * Is this Reversed Reaction Role?
+     * @type {boolean}
+     * @readonly
+     */
+    get isReversed() {
+        return this.type === ReactionRoleType.REVERSED;
     }
 
     /**
@@ -119,16 +176,13 @@ class ReactionRole {
             role: this.role,
             emoji: this.emoji,
             winners: this.winners,
-            max:
-                this.max > Number.MAX_SAFE_INTEGER
-                    ? Number.MAX_SAFE_INTEGER
-                    : this.max,
-            toggle: this.toggle,
+            max: this.max,
             requirements: {
                 boost: this.requirements.boost,
                 verifiedDeveloper: this.requirements.verifiedDeveloper,
             },
             disabled: this.disabled,
+            type: this.type,
         };
     }
 
@@ -139,10 +193,10 @@ class ReactionRole {
      */
     async checkDeveloperRequirement(member) {
         return new Promise(async (resolve) => {
+            if (!this.requirements.verifiedDeveloper) return resolve(true);
             const flags = await member.user.fetchFlags();
             const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
-            if (this.requirements.verifiedDeveloper) return resolve(isVerifiedDeveloper);
-            return resolve(true);
+            return resolve(isVerifiedDeveloper);
         });
     }
 
@@ -175,7 +229,21 @@ class ReactionRole {
             toggle: json.toggle,
             requirements: json.requirements,
             disabled: json.disabled,
+            type: json.type,
         });
+    }
+
+    /**
+     * @private
+     */
+    __handleDeprecation() {
+        /**
+         * @since 1.7.9
+         */
+        if (this.max > 10E9 || this.max < 0) this.max = 0; // 1B is max, 0 is inifity.
+
+        if (this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
+        else if (this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
     }
 }
 

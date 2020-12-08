@@ -514,6 +514,184 @@
         
                 
 <div class="section-members">
+<h4 class="name" id="ActionType">ActionType</h4>
+
+
+
+
+<div class="description">
+    <p>Reaction action Type</p>
+</div>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>UNKNOWN</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Unknown type of this reaction action.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>GIVE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The member will win some reaction role.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>TAKE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The member will lose some reaction role.</p></td>
+        </tr>
+
+        
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="reaction-role_constants.js.html">reaction-role/constants.js</a>, <a href="reaction-role_constants.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>object</code></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</div>
+
+            
+                
+<div class="section-members">
 <h4 class="name" id="IHooks">IHooks</h4>
 
 
@@ -639,7 +817,7 @@ If return value is false, this action will be bypassed.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="reaction-role_manager.js.html">reaction-role/manager.js</a>, <a href="reaction-role_manager.js.html#line88">line 88</a>
+        <a href="reaction-role_manager.js.html">reaction-role/manager.js</a>, <a href="reaction-role_manager.js.html#line90">line 90</a>
     </li></ul></dd>
     
 
@@ -671,7 +849,7 @@ If return value is false, this action will be bypassed.</p></td>
             
                 
 <div class="section-members">
-<h4 class="name" id="REACTIONROLE_EVENT">REACTIONROLE_EVENT</h4>
+<h4 class="name" id="ReactionRoleEvent">ReactionRoleEvent</h4>
 
 
 
@@ -931,7 +1109,235 @@ If return value is false, this action will be bypassed.</p></td>
             
                 
 <div class="section-members">
-<h4 class="name" id="REQUIREMENT_TYPE">REQUIREMENT_TYPE</h4>
+<h4 class="name" id="ReactionRoleType">ReactionRoleType</h4>
+
+
+
+
+<div class="description">
+    <p>Reaction Role Type</p>
+</div>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>NORMAL</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>This role works like basic reaction role.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>TOGGLE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>You can win only one role of all toggle roles in this message (like colors system)</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>JUST_WIN</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>This role you'll only win, not lose.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>JUST_LOSE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>This role you'll only lose, not win.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>REVERSED</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>This is reversed role. When react, you'll lose it, when you take off reaction you'll win it.</p></td>
+        </tr>
+
+        
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="reaction-role_constants.js.html">reaction-role/constants.js</a>, <a href="reaction-role_constants.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>object</code></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</div>
+
+            
+                
+<div class="section-members">
+<h4 class="name" id="RequirementType">RequirementType</h4>
 
 
 
@@ -1097,7 +1503,7 @@ If return value is false, this action will be bypassed.</p></td>
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Nov 26 2020 22:26:39 GMT-0200 (GMT-02:00) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Sun Dec 06 2020 18:04:20 GMT-0200 (GMT-02:00) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

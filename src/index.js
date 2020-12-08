@@ -4,7 +4,9 @@ module.exports = {
     MessageCollector: require('./collectors/messageCollector.js').MessageCollector,
     ReactionRoleManager: require('./reaction-role/manager.js').ReactionRoleManager,
     ReactionRole: require('./reaction-role/reactionRole.js').ReactionRole,
-    REACTIONROLE_EVENT: require('./reaction-role/constants.js').REACTIONROLE_EVENT,
-    REQUIREMENT_TYPE: require('./reaction-role/constants.js').REQUIREMENT_TYPE,
+    ReactionRoleEvent: require('./reaction-role/constants.js').ReactionRoleEvent,
+    ReactionRoleType: require('./reaction-role/constants.js').ReactionRoleType,
+    RequirementType: require('./reaction-role/constants.js').RequirementType,
+    ActionType: require('./reaction-role/constants.js').ActionType,
     findRecursively: require('./util/find').findRecursively,
 };
