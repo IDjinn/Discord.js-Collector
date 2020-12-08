@@ -69,7 +69,7 @@ client.on("message", async (message) => {
 
         reactionRoleManager.createReactionRole({
             message: msg,
-            role,
+            roles: [role],
             emoji,
             type: ReactionRoleType.NORMAL // It's optional, normal by default
         });

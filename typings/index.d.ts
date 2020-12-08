@@ -60,6 +60,9 @@ declare module 'discord.js-collector' {
         get isJustWin(): boolean;
         get isJustLose(): boolean;
         get isReversed(): boolean;
+        /**
+         * @deprecated since 1.8.0, please use `new ReactionRole(json)` instead.
+         */
         static fromJSON(json: JSON): ReactionRole;
         public checkDeveloperRequirement(member: GuildMember): Promise<boolean>;
         public checkBoostRequirement(member: GuildMember): boolean;
@@ -130,7 +133,7 @@ declare module 'discord.js-collector' {
             event: 'allReactionsRemove',
             listener: (
                 message: Message,
-                rolesAffected: Role[],
+                rolesAffected: Collection<string,Role>,
                 membersAffected: GuildMember[],
                 reactionsTaken: number
             ) => void

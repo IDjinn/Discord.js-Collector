@@ -83,7 +83,7 @@ class ReactionRoleManager extends EventEmitter {
      *
      * @example
      * reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
-     *   console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requirement ${type}`);
+     *   console.log(`Member '${member.id}' will not win the roles '${reactionRole.roles}', because him hasn't requirement ${type}`);
      * });
      */
 
@@ -196,7 +196,7 @@ class ReactionRoleManager extends EventEmitter {
         this.client.on('messageReactionRemoveAll', (message) => this.__onRemoveAllReaction(message));
 
         this.client.on('roleDelete', async (role) => {
-            const reactionRole = this.reactionRoles.find((rr) => rr.role === role.id);
+            const reactionRole = this.reactionRoles.find((rr) => rr.roles.includes(role.id));
             if (reactionRole) return this.__handleDeleted(reactionRole, role);
         });
 
@@ -308,6 +308,10 @@ class ReactionRoleManager extends EventEmitter {
                             type: Number,
                             default: 0,
                         },
+                        roles: {
+                            type: Array,
+                            default: [],
+                        }
                     }),
                 );
                 return resolve(true);
@@ -337,16 +341,6 @@ class ReactionRoleManager extends EventEmitter {
                 this.__debug(
                     'BOOT',
                     `Role '${reactionRole.id}' failed at start, guild wasn't found.`,
-                );
-                this.__handleDeleted(reactionRole, guild);
-                continue;
-            }
-
-            const role = guild.roles.cache.get(reactionRole.role);
-            if (!role) {
-                this.__debug(
-                    'BOOT',
-                    `Role '${reactionRole.id}' failed at start, role wasn't found.`,
                 );
                 this.__handleDeleted(reactionRole, guild);
                 continue;
@@ -490,7 +484,7 @@ class ReactionRoleManager extends EventEmitter {
      * Create new reaction role.
      * @param {Object} options - Object with options to create new reaction role.
      * @param {Message} options.message - Message what will have the reactions.
-     * @param {Role} options.role - Role what the bot will give/take from members when they react.
+     * @param {Role[]} options.roles - Roles what the bot will give/take from members when they react.
      * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
      * @param {ReactionRoleType} [options.type=1] - Type of reaction role.
      * @param {Number} [options.max=0] - Max roles to give. If it's 0, will not have a limit.
@@ -501,10 +495,10 @@ class ReactionRoleManager extends EventEmitter {
      */
     createReactionRole(
         {
-            message, role, emoji, type, max, requirements,
+            message, roles, emoji, type, max, requirements,
         } = {
-            requirements: { boost: false, verifiedDeveloper: false },
-        },
+                requirements: { boost: false, verifiedDeveloper: false },
+            },
     ) {
         return new Promise(async (resolve, reject) => {
             if (message instanceof Message) {
@@ -518,8 +512,8 @@ class ReactionRoleManager extends EventEmitter {
                 if (!type) type = ReactionRoleType.NORMAL;
                 if (!max || max > Number.MAX_SAFE_INTEGER || max < 0) max = Number.MAX_SAFE_INTEGER;
                 requirements = { boost: false, verifiedDeveloper: false, ...requirements };
-                role = message.guild.roles.resolveID(role);
-                if (!role) return reject(new Error(`Bad input: I canno't resolve role ${role}`));
+                roles = roles.map(role => message.guild.roles.resolveID(role)).filter(role => role);
+                if (!roles || roles.length === 0) return reject(new Error(`Bad input: I canno't resolve the roles ${roles}`));
 
                 const emojiParsed = Util.parseEmoji(emoji);
                 emoji = this.__resolveReactionEmoji(emojiParsed);
@@ -533,7 +527,7 @@ class ReactionRoleManager extends EventEmitter {
                 await message.react(emoji);
                 const reactionRole = new ReactionRole({
                     message,
-                    role,
+                    roles,
                     emoji,
                     type,
                     max,
@@ -543,7 +537,7 @@ class ReactionRoleManager extends EventEmitter {
                 await this.store(reactionRole);
                 this.__debug(
                     'ROLE',
-                    `Role '${role}' added in reactionRoleManager!`,
+                    `Roles '[${roles}]' added in reactionRoleManager!`,
                 );
                 return resolve(reactionRole);
             }
@@ -760,18 +754,26 @@ class ReactionRoleManager extends EventEmitter {
                         continue;
                     }
 
-                    const role = member.guild.roles.cache.get(toggledRole.role);
+                    const roleID = toggledRole.roles[0];
+                    const role = member.guild.roles.cache.get(roleID);
                     if (await this.hooks.preRoleRemoveHook(member, role, toggledRole)) {
                         const index = toggledRole.winners.indexOf(member.id);
                         if (index >= 0) toggledRole.winners.splice(index, 1);
 
-                        if (member.roles.cache.has(toggledRole.id)) await member.roles.remove(toggledRole.role);
+                        if (member.roles.cache.has(toggledRole.id)) {
+                            await member.roles.remove(roleID);
+                            this.emit(
+                                ReactionRoleEvent.REACTION_ROLE_REMOVE,
+                                member,
+                                role,
+                            );
+                            this.__debug(
+                                'TOGGLE',
+                                `Take off role '${roleID}' from user '${member.id}', it's a toggled role.`,
+                            );
+                        }
 
-                        if (users.has(member.id)) { await reaction.users.remove(member.user); }
-                        this.__debug(
-                            'TOGGLE',
-                            `Take off role '${toggledRole.role}' from user '${member.id}', it's a toggled role.`,
-                        );
+                        if (users.has(member.id)) await reaction.users.remove(member.user); 
                     }
                 }
 
@@ -780,13 +782,14 @@ class ReactionRoleManager extends EventEmitter {
                         (r) => this.__resolveReactionEmoji(r.emoji) === skippedRole.emoji,
                     );
 
-                    const role = message.guild.roles.cache.get(skippedRole.role);
+                    const roleID = skippedRole.roles[0];
+                    const role = message.guild.roles.cache.get(roleID);
                     if (await this.__checkRequirements(skippedRole, reaction, member)
                         && await this.hooks.preRoleAddHook(member, role, skippedRole)) {
                         if (skippedRole.winners.indexOf(member.id) <= -1) skippedRole.winners.push(member.id);
 
-                        if (!member.roles.cache.has(skippedRole.role)) {
-                            await member.roles.add(skippedRole.role);
+                        if (!member.roles.cache.has(roleID)) {
+                            await member.roles.add(roleID);
 
                             this.emit(
                                 ReactionRoleEvent.REACTION_ROLE_ADD,
@@ -796,20 +799,20 @@ class ReactionRoleManager extends EventEmitter {
                             if (this.isReady) {
                                 this.__debug(
                                     'TOGGLE',
-                                    `Role '${skippedRole.role}' was given to '${member.id}' after check toggle roles.`,
+                                    `Role '${roleID}' was given to '${member.id}' after check toggle roles.`,
                                 );
                             } else {
                                 this.__debug(
                                     'BOOT',
                                     // eslint-disable-next-line max-len
-                                    `Role '${skippedRole.role}' was given to '${member.id}' after check toggle roles, it reacted when bot wasn't online.`,
+                                    `Role '${roleID}' was given to '${member.id}' after check toggle roles, it reacted when bot wasn't online.`,
                                 );
                             }
                         } else {
                             this.__debug(
                                 'BOOT',
                                 // eslint-disable-next-line max-len
-                                `Keeping role '${skippedRole.role}' after check toggle roles. The member '${member.id}' reacted and already have the role.`,
+                                `Keeping role '${roleID}' after check toggle roles. The member '${member.id}' reacted and already have the role.`,
                             );
                         }
                     }
@@ -872,25 +875,30 @@ class ReactionRoleManager extends EventEmitter {
     async __onRemoveAllReaction(message) {
         const messageReactionsRoles = this.reactionRoles.filter((r) => r.message === message.id).array();
         const membersAffected = [];
+        const rolesAffected = new Collection();
         let reactionsTaken = 0;
         for (let i = 0; i < messageReactionsRoles.length; i += 1) {
             const reactionRole = messageReactionsRoles[i];
             for (let j = 0; j < reactionRole.winners.length; j += 1) {
                 const winnerId = reactionRole.winners[j];
                 /**
-                 * @type {GuildMember}
+                 * @type {GuildMember?}
                  */
                 const member = message.guild.members.cache.get(winnerId);
                 if (!member) continue;
-
                 if (member.partial) await member.fetch();
 
-                const role = member.guild.roles.cache.get(reactionRole.role);
-                if (await this.hooks.preRoleRemoveHook(member, role, reactionRole)) {
-                    await member.roles.remove(role.id);
-                    if (!membersAffected.includes(member)) membersAffected.push(member);
-                }
+                for (let k = 0; k < reactionRole.roles.length; k++) {
+                    const role = member.guild.roles.cache.get(reactionRole.roles[k]);
+                    if (!role) continue;
 
+                    if (await this.hooks.preRoleRemoveHook(member, role, reactionRole)) {
+                        await member.roles.remove(role.id);
+                        if (!membersAffected.includes(member)) membersAffected.push(member);
+                    }
+
+                    if (!rolesAffected.has(role.id)) rolesAffected.set(role.id, role);
+                }
                 reactionsTaken += 1;
             }
             await this.deleteReactionRole({ reactionRole }, true);
@@ -900,7 +908,6 @@ class ReactionRoleManager extends EventEmitter {
             );
         }
 
-        const rolesAffected = messageReactionsRoles.map((rr) => message.guild.roles.cache.get(rr.role));
         this.emit(
             ReactionRoleEvent.ALL_REACTIONS_REMOVE,
             message,
@@ -924,80 +931,85 @@ class ReactionRoleManager extends EventEmitter {
         if (msgReaction.partial) await msgReaction.fetch();
 
         const { guild } = member;
-        const role = guild.roles.cache.get(reactionRole.role);
         await msgReaction.users.fetch();
-        if (!(role instanceof Role)) {
-            this.__debug(
-                'ROLE',
-                `Role '${reactionRole.role}' wasn't found in guild '${guild.id}', the member '${member.id}' will not lose the role.`,
-            );
-            return msgReaction.remove();
-        }
 
         if (reactionRole.isJustLose && action === ActionType.GIVE) {
             await msgReaction.users.remove(member.id);
             return this.__debug('ACTION',
-                `Member '${member.id}' will not win the role '${role.id}' because this reaction role is just for lose, not for win.`);
+                `Member '${member.id}' will not win the reaction role '${reactionRole.id}' because this reaction role is just for lose, not for win.`);
         }
 
         if (reactionRole.isJustWin && action === ActionType.TAKE) {
             return this.__debug('ACTION',
-                `Member '${member.id}' will not lose the role '${role.id}' because this reaction role is just for win, not for lose.`);
+                `Member '${member.id}' will not lose the reaction role '${reactionRole.id}' because this reaction role is just for win, not for lose.`);
         }
 
         switch (action) {
-        case ActionType.GIVE: {
-            if (reactionRole.winners.length >= reactionRole.max && reactionRole.max > 0) {
-                await msgReaction.users.remove(member.id);
-                this.__debug(
-                    'ROLE',
-                    `Member will not win the reaction role '${reactionRole.role}' because the maximum number of roles to give has been reached`,
-                );
-                break;
-            }
-
-            if (!await this.__checkRequirements(reactionRole, msgReaction, member)) break;
-            if (reactionRole.isToggle) {
-                this.__timeoutToggledRoles(member, msgReaction.message, reactionRole);
-                break;
-            }
-            if (await this.hooks.preRoleAddHook(member, role, reactionRole)) {
-                if (reactionRole.winners.indexOf(member.id) <= -1) {
-                    reactionRole.winners.push(member.id);
-                    this.store(reactionRole);
-                }
-                if (!member.roles.cache.has(role.id)) {
-                    await member.roles.add(role);
-                    this.emit(ReactionRoleEvent.REACTION_ROLE_ADD, member, role);
+            case ActionType.GIVE: {
+                if (reactionRole.winners.length >= reactionRole.max && reactionRole.max > 0) {
+                    await msgReaction.users.remove(member.id);
                     this.__debug(
                         'ROLE',
-                        `User '${member.displayName}' won the role '${role.name}'.`,
+                        `Member will not win the reaction role '${reactionRole.id}' because the maximum number of roles to give has been reached`,
                     );
+                    break;
                 }
-            }
-            break;
-        }
 
-        case ActionType.TAKE: {
-            if (await this.hooks.preRoleRemoveHook(member, role, reactionRole) && member.roles.cache.has(role.id)) {
-                await member.roles.remove(role);
-                this.emit(ReactionRoleEvent.REACTION_ROLE_REMOVE, member, role);
-                this.__debug(
-                    'ROLE',
-                    `User '${member.displayName}' lost the role '${role.name}'.`,
-                );
+                if (!await this.__checkRequirements(reactionRole, msgReaction, member)) break;
+                if (reactionRole.isToggle) {
+                    this.__timeoutToggledRoles(member, msgReaction.message, reactionRole);
+                    break;
+                }
+
+                for (let i = 0; i < reactionRole.roles.length; i++) {
+                    const role = guild.roles.cache.get(reactionRole.roles[i]);
+                    if (!(role instanceof Role)) {
+                        this.__debug(
+                            'ROLE',
+                            `Role '${reactionRole.id}' wasn't found in guild '${guild.id}', the member '${member.id}' will not lose the role.`,
+                        );
+                        continue;
+                    }
+                    if (await this.hooks.preRoleAddHook(member, role, reactionRole) && !member.roles.cache.has(role.id)) {
+                        await member.roles.add(role);
+                        this.emit(ReactionRoleEvent.REACTION_ROLE_ADD, member, role);
+                        this.__debug(
+                            'ROLE',
+                            `User '${member.displayName}' won the role '${role.name}'.`,
+                        );
+
+                        if (reactionRole.winners.indexOf(member.id) <= -1) {
+                            reactionRole.winners.push(member.id);
+                            this.store(reactionRole);
+                        }
+                    }
+                }
+                break;
             }
 
-            const index = reactionRole.winners.indexOf(member.id);
-            if (index >= 0) {
-                reactionRole.winners.splice(index, 1);
-                this.store(reactionRole);
+            case ActionType.TAKE: {
+                for (let i = 0; i < reactionRole.roles.length; i++) {
+                    const role = guild.roles.cache.get(reactionRole.roles[i]);
+                    if (await this.hooks.preRoleRemoveHook(member, role, reactionRole) && member.roles.cache.has(role.id)) {
+                        await member.roles.remove(role);
+                        this.emit(ReactionRoleEvent.REACTION_ROLE_REMOVE, member, role);
+                        this.__debug(
+                            'ROLE',
+                            `User '${member.displayName}' lost the role '${role.name}'.`,
+                        );
+                    }
+                }
+
+                const index = reactionRole.winners.indexOf(member.id);
+                if (index >= 0) {
+                    reactionRole.winners.splice(index, 1);
+                    this.store(reactionRole);
+                }
+                break;
             }
-            break;
-        }
-        default: {
-            throw new Error(`Unknow action type: ${action}`);
-        }
+            default: {
+                throw new Error(`Unknow action type: ${action}`);
+            }
         }
     }
 
