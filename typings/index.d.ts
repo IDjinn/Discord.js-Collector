@@ -39,32 +39,42 @@ declare module 'discord.js-collector' {
     }
 
     export class ReactionRole {
-        constructor(options: IReactionRoleOptions);
-        get id(): string;
-        public toJSON(): object;
-        get message(): string;
-        get channel(): string;
-        get guild(): string;
-        get role(): string;
-        get emoji(): string;
-        get winners(): string[];
-        get max(): number;
-        /**
-         * @deprecated since 1.7.9
-         */
-        get toggle(): boolean;
-        get requirements(): IRequirements;
-        get type(): ReactionRoleType;
-        get isToggle(): boolean;
-        get isNormal(): boolean;
-        get isJustWin(): boolean;
-        get isJustLose(): boolean;
-        get isReversed(): boolean;
-        static fromJSON(json: JSON): ReactionRole;
-        public checkDeveloperRequirement(member: GuildMember): Promise<boolean>;
-        public checkBoostRequirement(member: GuildMember): boolean;
-        private __handleDeprecation(): void;
-        public toJSON(): JSON;
+      constructor(options: IReactionRoleOptions);
+      get id(): string;
+      public toJSON(): object;
+      get message(): string;
+      get channel(): string;
+      get guild(): string;
+      /**
+       * @deprecated since 1.8.0, please use `roles` property instead.
+       */
+      get role(): string;
+      get emoji(): string;
+      get winners(): string[];
+      get max(): number;
+      /**
+       * @deprecated since 1.7.9
+       */
+      get toggle(): boolean;
+      get requirements(): IRequirements;
+      get type(): ReactionRoleType;
+      get isToggle(): boolean;
+      get isNormal(): boolean;
+      get isJustWin(): boolean;
+      get isJustLose(): boolean;
+      get isReversed(): boolean;
+      get roles(): string[];
+      /**
+       * @deprecated since 1.8.0, please use `new ReactionRole(json)` instead.
+       */
+      static fromJSON(json: JSON): ReactionRole;
+      public checkDeveloperRequirement(member: GuildMember): Promise<boolean>;
+      public checkBoostRequirement(member: GuildMember): boolean;
+      private __handleDeprecation(): void;
+      /**
+       * @deprecated since 1.8.0, please use `new ReactionRole(json)` method instead.
+       */
+      public toJSON(): JSON;
     }
 
     export interface IRequirements {
@@ -130,7 +140,7 @@ declare module 'discord.js-collector' {
             event: 'allReactionsRemove',
             listener: (
                 message: Message,
-                rolesAffected: Role[],
+                rolesAffected: Collection<string,Role>,
                 membersAffected: GuildMember[],
                 reactionsTaken: number
             ) => void
@@ -156,7 +166,7 @@ declare module 'discord.js-collector' {
 
     export interface ICreateRoleOptions {
         message: Message;
-        role: Role;
+        roles: Role[];
         emoji: EmojiIdentifierResolvable;
         max?: number;
         type?: ReactionRoleType;

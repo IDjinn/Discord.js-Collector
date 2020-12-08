@@ -16,7 +16,7 @@ module.exports = {
         indent: ['error', 4],
         'max-classes-per-file': 'off',
         'no-underscore-dangle': 'off',
-        'max-len': ['error', 150],
+        'max-len': ['error', 160],
         'consistent-return': 'off',
         'no-async-promise-executor': 'off',
         'global-require': 'off',

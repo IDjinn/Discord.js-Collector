@@ -19,6 +19,7 @@ class ReactionRole {
      * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
      * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
      * @param {ReactionRoleType} [data.type=1] - Reaction role type
+     * @param {string[]} [data.roles=[]] - All roles of this reaction role.
      *
      * @return {ReactionRole}
      */
@@ -34,6 +35,7 @@ class ReactionRole {
         requirements,
         disabled,
         type,
+        roles,
     }) {
         /**
          * Guild ID of message
@@ -56,9 +58,10 @@ class ReactionRole {
         /**
          * Role ID
          * @type {string}
+         * @deprecated since 1.8.0, please use `roles` property instead.
          * @readonly
          */
-        this.role = role.id ? role.id : role;
+        this.role = role && role.id ? role.id : role;
         /**
          * Emoji identifier
          * @type {string}
@@ -104,6 +107,11 @@ class ReactionRole {
          * @type {ReactionRoleType}
          */
         this.type = Number(type);
+        /**
+         * Roles ID's
+         * @type {string[]}
+         */
+        this.roles = Array.isArray(roles) ? roles : [];
 
         this.__handleDeprecation();
         if (!isValidReactionRoleType(this.type)) throw new Error(`Unexpected Reaction Role Type: '${this.type}' is not a valid type.`);
@@ -173,7 +181,6 @@ class ReactionRole {
             message: this.message,
             channel: this.channel,
             guild: this.guild,
-            role: this.role,
             emoji: this.emoji,
             winners: this.winners,
             max: this.max,
@@ -183,6 +190,7 @@ class ReactionRole {
             },
             disabled: this.disabled,
             type: this.type,
+            roles: this.roles,
         };
     }
 
@@ -214,6 +222,7 @@ class ReactionRole {
     /**
      * Transform json to Reaction Role object.
      * @param {object} json - Reaction role data.
+     * @deprecated since 1.8.0, please use `new ReactionRole(json)` instead.
      * @static
      * @return {ReactionRole}
      */
@@ -230,6 +239,7 @@ class ReactionRole {
             requirements: json.requirements,
             disabled: json.disabled,
             type: json.type,
+            roles: json.roles,
         });
     }
 
@@ -244,6 +254,11 @@ class ReactionRole {
 
         if (this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
         else if (this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
+
+        /**
+        * @since 1.8.0
+        */
+        if (this.role && !this.roles.includes(this.role)) this.roles.push(this.role);
     }
 }
 

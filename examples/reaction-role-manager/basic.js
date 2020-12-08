@@ -57,7 +57,7 @@ client.on("message", async (message) => {
 
         reactionRoleManager.createReactionRole({
             message: msg,
-            role,
+            roles: [role],
             emoji
         });
         message.reply('Done').then(m => m.delete({ timeout: 500 }));

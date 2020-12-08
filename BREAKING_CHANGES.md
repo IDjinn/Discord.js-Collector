@@ -1,5 +1,13 @@
 
 
+---
+#  V1.8.0 ->  V1.8.1
+
+Reaction Role Manager: \
+    - Event `ReactionRoleManager#allReactionsRemove` param `rolesAffected` now it's a `Collection<string, Role>`
+    - `ReactionRole#role` property was flaged as deprecated, please use `ReactionRole#roles` instead
+    - `static ReactionRole#fromJSON(json)` method was flaged as deprecated, use `new ReactionRole(json)` instead
+    - `ReactionRoleManager#createReactionRole(options)` param `role` is removed, it was replaced by `roles`, and now it's array of roles.
 
 ---
 #  V1.7.0 ->  V1.8.0
@@ -9,6 +17,7 @@ Reaction Role Manager: \
     - `ReactionRole#toggle` property was marked with deprecated, please use `isToggle` instead. All toggle roles will be updated to type `2` (until  v1.8.0), `toJSON()` method and default value in mongoDB schema will not longer show it.\
     - `ReactionRole#max` property was changed behavior, now 0 is infinity (and default) roles to give, and max limit is 1B roles.\
     - `ReactionRole#createReactionRole()` option `toggle` is replaced by `type` of reaction role.
+
 ---
 #  V1.6.9 ->  V1.7.0
 
