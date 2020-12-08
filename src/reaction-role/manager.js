@@ -285,7 +285,7 @@ class ReactionRoleManager extends EventEmitter {
                         winners: Array,
                         max: {
                             type: Number,
-                            default: 10E9,
+                            default: 0,
                         },
                         toggle: {
                             type: Boolean,
