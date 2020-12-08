@@ -518,7 +518,6 @@ class ReactionRoleManager extends EventEmitter {
                 if (!type) type = ReactionRoleType.NORMAL;
                 if (!max || max > Number.MAX_SAFE_INTEGER || max < 0) max = Number.MAX_SAFE_INTEGER;
                 requirements = { boost: false, verifiedDeveloper: false, ...requirements };
-                console.log(requirements);
                 role = message.guild.roles.resolveID(role);
                 if (!role) return reject(new Error(`Bad input: I canno't resolve role ${role}`));
 
