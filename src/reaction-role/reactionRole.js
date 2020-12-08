@@ -35,7 +35,7 @@ class ReactionRole {
         requirements,
         disabled,
         type,
-        roles
+        roles,
     }) {
         /**
          * Guild ID of message
@@ -190,7 +190,7 @@ class ReactionRole {
             },
             disabled: this.disabled,
             type: this.type,
-            roles: this.roles
+            roles: this.roles,
         };
     }
 
@@ -239,7 +239,7 @@ class ReactionRole {
             requirements: json.requirements,
             disabled: json.disabled,
             type: json.type,
-            roles: json.roles
+            roles: json.roles,
         });
     }
 
@@ -254,7 +254,7 @@ class ReactionRole {
 
         if (this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
         else if (this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
-        
+
         /**
         * @since 1.8.0
         */
