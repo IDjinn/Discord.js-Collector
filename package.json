@@ -42,11 +42,19 @@
         "discord.js",
         "discordjs",
         "message collector",
+        "message-collector",
+        "messages-collector",
+        "messages collector",
         "reaction role",
+        "reaction roles",
+        "color roles",
+        "captcha roles",
         "reaction collector",
+        "reaction-collector",
         "reaction menu",
+        "embed menu",
         "discord paginator",
         "reaction role toggle",
-        "reaction-role"
+        "reaction roles"
     ]
 }

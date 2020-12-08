@@ -728,8 +728,9 @@ class ReactionRoleManager extends EventEmitter {
      * @return {Promise<void>}
      */
     async __timeoutToggledRoles(member, message, skippedRole = null, tries = 0) {
-        if (++tries > 3) return;
+        if (++tries > 3) return this.__debug('TOGGLE', `Toggled roles timeout expired tries, member '${member.id}' will not be processed.`);
         if (locker.isBusy(member.id)) {
+            this.__debug('TOGGLE', `Member '${member.id}' is holding timeout queue.`);
             await sleep(Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES);
             return this.__timeoutToggledRoles(member, message, skippedRole, tries);
         }

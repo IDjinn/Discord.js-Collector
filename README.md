@@ -18,12 +18,13 @@ Library to easily create message collector, reactions collector and reactions ro
 | [Reaction Role Manager](./examples/reaction-role-manager/basic.js)\
 | [Reaction Menu](./examples/reaction-collector/menu.js)\
 ◘ Others\
-| [Changelog](CHANGELOG.md)
+| [Changelog](CHANGELOG.md)\
 | [Breaking Changes](./BREAKING_CHANGES.md)
 
 
 ## Warning
-Please update your version to latest version: 1.8.0, multiple bugfixs and vulnerabilities.
+Please update your version to: ^1.8.0, multiple bugfixs and vulnerabilities.\
+See all [Breaking Changes](./BREAKING_CHANGES.md).
 
 ## Documentation
 
@@ -39,7 +40,11 @@ You can create reactions roles, with amazing functions:\
 | • You can store the roles in a JSON file and migrate the reaction role data.\
 | • You can limit max roles given by bot, like 10 roles.\
 | • Toggled roles: Limit one of these roles to use (Util for colors reaction roles, only get one of roles)\
-| • Requirements: Limit roles to only boosters or discord developers win roles!
+| • Requirements: Limit roles to only boosters or discord developers win roles!\
+| • Just Win: you can configure a role to just give to member if him react on it!\
+| • Just Lose: you can configure a role to just take from member if him react on it!\
+| • Reversed: When react on it, member will lose the role. When take off reaction of it, member will win the role.
+
 
 ![Reaction Role Gif](./assets/reactionRoles.gif)
 

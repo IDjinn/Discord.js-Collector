@@ -1,5 +1,15 @@
 
 ---
+# CHANGELOG - V1.8.0
+
+Reaction Role Manager: new role types.\
+    - Normal: a normal reaction role.\
+    - Toggle: toggle roles, like used in color system.\
+    - Just Win: member will only win this role, not lose it.\
+    - Just Lose: member will only lose this role, not win it.\
+    - Reversed: when react on it, will lose the role, when take off reaction will win the role.
+
+---
 # CHANGELOG - V1.7.9
 
 Reaction Role Manager: new feature: hooks!
