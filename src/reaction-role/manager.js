@@ -966,13 +966,14 @@ class ReactionRoleManager extends EventEmitter {
                     reactionRole.winners.push(member.id);
                     this.store(reactionRole);
                 }
-                if (!member.roles.cache.has(role.id)) await member.roles.add(role);
-
-                this.emit(ReactionRoleEvent.REACTION_ROLE_ADD, member, role);
-                this.__debug(
-                    'ROLE',
-                    `User '${member.displayName}' won the role '${role.name}'.`,
-                );
+                if (!member.roles.cache.has(role.id)) {
+                    await member.roles.add(role);
+                    this.emit(ReactionRoleEvent.REACTION_ROLE_ADD, member, role);
+                    this.__debug(
+                        'ROLE',
+                        `User '${member.displayName}' won the role '${role.name}'.`,
+                    );
+                }
             }
             break;
         }
