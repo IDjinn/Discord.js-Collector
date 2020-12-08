@@ -58,54 +58,8 @@ To create a reaction menu with multiple pages.
 
 ![Menu Gif](./assets/reactMenu.gif)
 
-```js
-const pages = {
-    '📥': {
-        embed: {
-            title: 'Welcome Join Config',
-            description: `React below embed to configure channel or message of welcome settings.\n\n📜 Channel settings\n📢 Message settings`,
-        },
-        reactions: ['📜', '📢'],
-        pages: {
-            '📜': {
-                backEmoji: '🔙',
-                embed: {
-                    description: 'Please mention or use channel id to set as welcome channel.'
-                },
-                onMessage: async (controller, message) => {
-                    const channel = message.mentions.channels.first() || message.guild.channels.cache.get(message.content);
-                    if (!channel)
-                        return message.reply('🚫 | You\'ve forgot mention a channel or use their id.').then((m) => m.delete({ timeout: 3000 }));
+You can find this code example [here](./examples/reaction-collector/menu.js)
 
-                    // Do what you want here, like set it on database...
-                    return await message.reply(`✅ | Success! You've settled welcome channel as ${channel}.`).then(m => m.delete({ timeout: 3000 }));
-                }
-            },
-            '📢': {
-                backEmoji: '🔙',
-                embed: {
-                    description: 'Make the message used when a member join in the server.',
-                },
-                onMessage: async (controller, message) => {
-                    // Do what you want here, like set it on database..
-                    return await message.reply('✅ | Success!').then(m => m.delete({ timeout: 3000 }));
-                }
-            }
-        }
-    },
-};
-
-client.on("message", async (message) => {
-    if (message.content.startsWith('>config')) {
-        const embed = new MessageEmbed()
-            .setTitle('Server Settings')
-            .setDescription('React below to configure modules in this server.\n\n📥 Welcome module')
-        const botMessage = await message.reply(embed);
-        ReactionCollector.menu({ botMessage, user: message.author, pages });
-    }
-});
-
-```
 
 ## Simple reaction collector
 
@@ -126,23 +80,13 @@ Easier paginator embeds, with back/skip reaction to change current page.
 
 ![Question Gif](./assets/reactPaginator.gif)
 
-```js
-const { ReactionCollector } = require("discord.js-collector");
-
-const botMessage = await message.channel.send("Simple paginator...");
-ReactionCollector.paginator({
-  botMessage,
-  user: message,
-  pages: [
-    new MessageEmbed({ description: "First page content..." }),
-    new MessageEmbed({ description: "Second page content..." }),
-  ],
-});
-```
+You can find this code example [here](./examples/reaction-collector/paginator.js)
 
 ## Simple messages collector
 
-Await for messages from user, and when it's send will fire a trigger to do things. See exemple [here](https://github.com/IDjinn/Discord.js-Collector/tree/master/examples/message-collector/question.js) 
+Await for messages from user, and when it's send will fire a trigger to do things. See exemple [here]
+
+You can find this code example [here](./examples/message-collector/question.js)
 
 ![Question Gif](./assets/messageQuestion.gif)
 

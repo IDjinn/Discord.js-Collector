@@ -1,4 +1,4 @@
-const { ReactionCollector } = require('discord.js-collector')
+const { ReactionCollector } = require('../../src')
 const { Client, MessageEmbed } = require("discord.js");
 const client = new Client();
 client.on("ready", () => {
@@ -40,4 +40,4 @@ client.on("message", async (message) => {
     }
 });
 
-client.login('Token');
+client.login('NTEyOTkyNDkzMTE4MjkxOTc4.W-7PfQ.YJPLz0e2vSSbjmua5GEnD_Rlsb4');

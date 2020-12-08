@@ -3,9 +3,10 @@
 
 ---
 #  V1.7.0 ->  V1.8.0
-Reaction Role Manager: 
+
+Reaction Role Manager: \
     - `ReactionRole#type` property will define if it's normal, toggle or other reaction role types, the system have auto deprecation handler, if it's not toggle role system set it as normal, if is toggle role set it as toggle role type. Other types will not be affected.
-    - `ReactionRole#toggle` property was marked with deprecated, please use `isToggle` instead. All toggle roles will be updated to type `2` (until  v1.8.1), `toJSON()` method and default value in mongoDB schema will not longer show by default.\
+    - `ReactionRole#toggle` property was marked with deprecated, please use `isToggle` instead. All toggle roles will be updated to type `2` (until  v1.8.0), `toJSON()` method and default value in mongoDB schema will not longer show it.\
     - `ReactionRole#max` property was changed behavior, now 0 is infinity (and default) roles to give, and max limit is 1B roles.\
     - `ReactionRole#createReactionRole()` option `toggle` is replaced by `type` of reaction role.
 ---

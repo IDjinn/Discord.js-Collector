@@ -1,4 +1,4 @@
-const { ReactionRoleManager } = require('../src')
+const { ReactionRoleManager, ReactionRoleType } = require('../src')
 const { Client, Constants, WebhookClient, MessageEmbed } = require("discord.js");
 const client = new Client({partials: ['REACTION', 'MESSAGE', 'GUILD_MEMBER']});
 require('dotenv').config({ path: __dirname + '/process.env' });
@@ -70,7 +70,8 @@ client.on("message", async (message) => {
         reactionRoleManager.createReactionRole({
             message: msg,
             role,
-            emoji
+            emoji,
+            type: ReactionRoleType.NORMAL // It's optional, normal by default
         });
         message.reply('Done').then(m => m.delete({ timeout: 500 }));
         message.delete().catch();
