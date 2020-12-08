@@ -99,13 +99,16 @@ class Controller {
     async update(onlyMessage = false) {
         if (onlyMessage) return this.botMessage.edit(this.currentPage);
 
-        await this.botMessage.reactions.removeAll();
         await this.botMessage.edit(this.currentPage);
-        if (this.currentPage.reactions) {
+        await this.botMessage.reactions.removeAll();
+        if (this.currentPage.clearReactions) {
+            await this.botMessage.reactions.removeAll();
+        } else if (this.currentPage.reactions) {
             await Promise.all(
-                this.currentPage.reactions.map((x) => this.botMessage.react(x)),
+                this.currentPage.reactions.map((r) => this.botMessage.react(r)),
             );
         }
+
         if (this.currentPage.backEmoji) await this.botMessage.react(this.currentPage.backEmoji);
     }
 
@@ -254,21 +257,9 @@ class ReactionCollector {
                         ...args,
                     );
                 }
-                if (controller.currentPage.clearReactions) {
-                    await botMessage.reactions.removeAll();
-                } else if (controller.currentPage.reactions) {
-                    await botMessage.reactions.removeAll();
-                    await Promise.all(
-                        controller.currentPage.reactions.map((r) => botMessage.react(r)),
-                    );
-                } else {
-                    await reaction.users.remove(user.id);
-                }
-            } else {
-                await reaction.users.remove(user.id);
             }
-
-            await controller.update(true);
+            await controller.update();
+            await reaction.users.remove(user.id);
         });
         await Promise.all(Object.keys(pages).map((r) => botMessage.react(r)));
         collector.on('end', async () => botMessage.reactions.removeAll());
