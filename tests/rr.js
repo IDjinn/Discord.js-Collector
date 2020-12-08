@@ -73,6 +73,7 @@ client.on("message", async (message) => {
             emoji
         });
         message.reply('Done').then(m => m.delete({ timeout: 500 }));
+        message.delete().catch();
     }
     else if (message.content.startsWith('>eval')) {
         if (message.author.id !== '376460601909706773') return;

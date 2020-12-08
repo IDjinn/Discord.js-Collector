@@ -1,53 +1,52 @@
 const { ReactionCollector } = require('discord.js-collector')
-const { Client } = require("discord.js");
+const { Client, MessageEmbed } = require("discord.js");
 const client = new Client();
 client.on("ready", () => {
     console.log("ready");
 });
 
 const pages = {
-    '✅': {
-        id: 'first-page', // Page id is used to navigate cross pages.
-        content: 'Hello world!',
-        embed: { title: "What's happening?", description: "This message is a reaction menu example." },
-        reactions: ['❓'], // Reactions to acess next sub-page
-        onMessage: (controller, message) => { // You can receive message inside every page to make cool things!
-            if (message.content.startsWith('>hi')) {
-                message.reply('Hello!')
-                controller.goTo('second-page'); // With controller, you can go to other pages from menu, back to last page and others funcions...
-            }
+    '📥': {
+        embed: {
+            title: 'Welcome Join Config',
+            description: `React below embed to configure channel or message of welcome settings.\n\n📜 Channel settings\n📢 Message settings`,
         },
-        pages: { // Exemple sub-pages
-            '❓': {
-                id: 'secret-page',
-                clearReactions: true, // Clear reactions from message, if not have others sub-pages
-                content: '?',
+        reactions: ['📜', '📢'],
+        pages: {
+            '📜': {
+                backEmoji: '🔙',
                 embed: {
-                    description: 'You\'ve found the secret page.'
+                    description: 'Please mention or use channel id to set as welcome channel.'
                 },
-                onMessage: (controller) => {
-                    controller.stop(); // Stop collector
+                onMessage: async (controller, message) => {
+                    const channel = message.mentions.channels.first() || message.guild.channels.cache.get(message.content);
+                    if (!channel)
+                        return message.reply('🚫 | You\'ve forgot mention a channel or use their id.').then((m) => m.delete({ timeout: 3000 }));
+
+                    // Do what you want here, like set it on database...
+                    return await message.reply(`✅ | Success! You've settled welcome channel as ${channel}.`).then(m => m.delete({ timeout: 3000 }));
+                }
+            },
+            '📢': {
+                backEmoji: '🔙',
+                embed: {
+                    description: 'Make the message used when a member join in the server.',
+                },
+                onMessage: async (controller, message) => {
+                    // Do what you want here, like set it on database..
+                    return await message.reply('✅ | Success!').then(m => m.delete({ timeout: 3000 }));
                 }
             }
         }
     },
-    '❌': {
-        id: 'second-page',
-        content: 'You can acess others pages and sub-pages!',
-        embed: {
-            description: 'Type ">goTo secret-page"!'
-        },
-        onMessage: (controller, message) => {
-            if (message.content.startsWith('>goTo secret-page')) {
-                controller.goTo('secret-page');
-            }
-        }
-    }
-}
+};
 
 client.on("message", async (message) => {
-    if (message.content.startsWith('>help')) {
-        const botMessage = await message.reply('Reaction menu');
+    if (message.content.startsWith('>config')) {
+        const embed = new MessageEmbed()
+            .setTitle('Server Settings')
+            .setDescription('React below to configure modules in this server.\n\n📥 Welcome module')
+        const botMessage = await message.reply(embed);
         ReactionCollector.menu({ botMessage, user: message.author, pages });
     }
 });

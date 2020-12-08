@@ -8,13 +8,14 @@ client.on("ready", () => {
 });
 
 client.on("message", async (message) => {
-    if (message.content.startsWith('>test')) {
+    if (message.content.startsWith('>question')) {
         const botMessage = await message.channel.send("Awaiting a message");
         MessageCollector.question({
             botMessage,
             user: message.author.id,
             onMessage: async (botMessage, message) => { // Every message sent by user will trigger this function.
-                await botMessage.channel.send(`Your message: '${message.content}'`)
+                await message.delete();
+                await botMessage.channel.send(`Your message: '${message.content}'`);
             }
         }); 
     }
