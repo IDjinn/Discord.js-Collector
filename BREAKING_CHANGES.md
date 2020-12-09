@@ -1,6 +1,13 @@
 
 
 ---
+#  V1.8.1 -> V1.8.2
+
+Types:
+    - `IMenuPage` was renamed to `ICollectorPage` (rename was necessary, it will be used in more ways than menus collectors)
+
+
+---
 #  V1.8.0 ->  V1.8.1
 
 Reaction Role Manager: \

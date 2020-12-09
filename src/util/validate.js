@@ -48,21 +48,18 @@ module.exports.validateOptions = (options, type) => {
     else if (!isBoolean(options.deleteAllOnEnd)) validOptions.deleteAllOnEnd = Boolean(options.deleteAllOnEnd);
 
     if (options.botMessage.channel.type === 'text') {
-        if (
-            !options.botMessage.guild.me
-                .permissionsIn(options.botMessage.channel)
-                .has('ADD_REACTIONS')
+        if (!options.botMessage.guild.me
+            .permissionsIn(options.botMessage.channel)
+            .has('ADD_REACTIONS')
         ) return Promise.reject(new Error('Missing permissions: I cannot react in messages in that channel.'));
 
-        if (
-            options.deleteReaction
+        if (options.deleteReaction
             && !options.botMessage.guild.me
                 .permissionsIn(options.botMessage.channel)
                 .has('MANAGE_MESSAGES')
         ) return Promise.reject(new Error('Missing permissions: I not have permissions to Manage Messages in this channel to delete reactions.'));
 
-        if (
-            options.deleteAllOnEnd
+        if (options.deleteAllOnEnd
             && !options.botMessage.guild.me
                 .permissionsIn(options.botMessage.channel)
                 .has('MANAGE_MESSAGES')

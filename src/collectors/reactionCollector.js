@@ -3,10 +3,26 @@ const {
     MessageEmbed,
     EmojiResolvable,
     UserResolvable,
+    Emoji,
 } = require('discord.js');
 const Discord = require('discord.js');
 const { validateOptions } = require('../util/validate');
 const { findRecursively } = require('../util/find');
+
+/**
+ * Type of Menu Page object.
+ * @typedef {{[key: string]: {
+ *  id?:string|number,
+ *  content?: string,
+ *  embed?: MessageEmbed | object,
+ *  reactions?: Emoji,
+ *  pages?: ICollectorPage,
+ *  backEmoji?: Emoji,
+ *  onMessage?: Function,
+ *  onReact?: Function,
+ *  clearReactions?: boolean
+ * }}} ICollectorPage
+ */
 
 /**
  * Reaction Controller class
@@ -16,14 +32,31 @@ class Controller {
      * Reaction Controller constructor
      * @param {Message} botMessage - Message where reaction collector is working.
      * @param {Discord.ReactionCollector} collector - Collector from botMessage.
-     * @param {Object} pages - All reaction collector pages.
+     * @param {ICollectorPage} page - All reaction collector pages.
      * @return {Controller}
      */
-    constructor(botMessage, collector, pages) {
+    constructor(botMessage, collector, page) {
+        /**
+        * @private
+        */
         this._botMessage = botMessage;
+        /**
+         * @private
+         */
         this._collector = collector;
-        this._pages = pages;
+        /**
+        * @private
+        */
+        this._pages = page;
+        /**
+        * @type {ICollectorPage?}
+        * @private
+        */
         this._lastPage = null;
+        /**
+         * @type {ICollectorPage?}
+         * @private
+         */
         this._currentPage = null;
     }
 
@@ -101,13 +134,8 @@ class Controller {
 
         await this.botMessage.edit(this.currentPage);
         await this.botMessage.reactions.removeAll();
-        if (this.currentPage.clearReactions) {
-            await this.botMessage.reactions.removeAll();
-        } else if (this.currentPage.reactions) {
-            await Promise.all(
-                this.currentPage.reactions.map((r) => this.botMessage.react(r)),
-            );
-        }
+        if (this.currentPage.clearReactions) await this.botMessage.reactions.removeAll();
+        else if (this.currentPage.reactions) await Promise.all(this.currentPage.reactions.map((r) => this.botMessage.react(r)));
 
         if (this.currentPage.backEmoji) await this.botMessage.react(this.currentPage.backEmoji);
     }
@@ -123,15 +151,15 @@ class Controller {
 
     /**
      * Last page visualized by user.
-     * @type {Object?}
+     * @type {ICollectorPage?}
      * @readonly
      */
     get lastPage() {
         return this._lastPage;
     }
 
-    set messagesCollector(value) {
-        this._messagesCollector = value;
+    set lastPage(value) {
+        this._lastPage = value;
     }
 
     /**
@@ -141,6 +169,10 @@ class Controller {
      */
     get messagesCollector() {
         return this._messagesCollector;
+    }
+
+    set messagesCollector(value) {
+        this._messagesCollector = value;
     }
 
     /**
@@ -154,7 +186,7 @@ class Controller {
 
     /**
      * Current page.
-     * @type {Object}
+     * @type {ICollectorPage}
      * @readonly
      */
     get currentPage() {
@@ -166,13 +198,9 @@ class Controller {
         this._currentPage = value;
     }
 
-    set lastPage(value) {
-        this._lastPage = value;
-    }
-
     /**
-     * All pages Object
-     * @type {Object}
+     * Pages of this collector.
+     * @type {ICollectorPage}
      * @readonly
      */
     get pages() {
@@ -197,7 +225,7 @@ class ReactionCollector {
      * Create a reaction menu. See example in {@link https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-collector/menu.js}
      * @param {Object} options - Options to create a reaction menu.
      * @param {Message} options.botMessage - Bot message where collector will start work.
-     * @param {Object} options.pages - Reaction menu pages.
+     * @param {ICollectorPage} options.pages - Reaction menu pages.
      * @param {UserResolvable} options.user - User who can react this menu.
      * @param {Discord.ReactionCollectorOptions} [options.collectorOptions] - Options to create discord.js reaction collector options.
      * @param {...*} [args] - Arguments given when onReact or onMessage function was triggered.
@@ -206,10 +234,7 @@ class ReactionCollector {
     static async menu(options, ...args) {
         const {
             botMessage, user, pages, collectorOptions,
-        } = validateOptions(
-            options,
-            'reactMenu',
-        );
+        } = validateOptions(options, 'reactMenu');
 
         const keys = Object.keys(pages);
         const allReactions = findRecursively({
@@ -226,25 +251,14 @@ class ReactionCollector {
         });
         const needCollectMessages = findRecursively({ obj: pages, key: 'onMessage' }).length > 0;
 
-        const filter = (r, u) => u.id === user.id
-            && (allReactions.includes(r.emoji.id)
-                || allReactions.includes(r.emoji.name))
-            && !user.bot;
-        const collector = botMessage.createReactionCollector(
-            filter,
-            collectorOptions,
-        );
+        const filter = (r, u) => u.id === user.id && (allReactions.includes(r.emoji.id) || allReactions.includes(r.emoji.name)) && !user.bot;
+        const collector = botMessage.createReactionCollector(filter, collectorOptions);
         const controller = new Controller(botMessage, collector, pages);
         collector.on('collect', async (reaction) => {
             const emoji = reaction.emoji.id || reaction.emoji.name;
-            if (
-                controller.currentPage
-                    && emoji === controller.currentPage.backEmoji
-                    && controller.canBack
-            ) {
-                controller.back();
-                return;
-            }
+            if (controller.currentPage
+                && emoji === controller.currentPage.backEmoji
+                && controller.canBack) return controller.back();
 
             controller.currentPage = controller.currentPage && controller.currentPage.pages
                 ? controller.currentPage.pages[emoji]
@@ -265,16 +279,11 @@ class ReactionCollector {
         collector.on('end', async () => botMessage.reactions.removeAll());
 
         if (needCollectMessages) {
-            const messagesCollector = botMessage.channel.createMessageCollector(
-                (message) => message.author.id === user.id,
-                collectorOptions,
-            );
+            const messagesCollector = botMessage.channel.createMessageCollector((message) => message.author.id === user.id, collectorOptions);
             controller.messagesCollector = messagesCollector;
             messagesCollector.on('collect', async (message) => {
                 if (message.deletable) await message.delete();
-                if (
-                    controller.currentPage && typeof controller.currentPage.onMessage === 'function'
-                ) {
+                if (controller.currentPage && typeof controller.currentPage.onMessage === 'function') {
                     await controller.currentPage.onMessage(
                         controller,
                         message,
@@ -357,8 +366,7 @@ class ReactionCollector {
      */
     static question(options, ...args) {
         return this.__createReactionCollector(
-            validateOptions(options, 'reactQuestion'),
-            ...args,
+            validateOptions(options, 'reactQuestion'), ...args,
         );
     }
 
@@ -404,25 +412,15 @@ class ReactionCollector {
         } = _options;
         const reactions = Object.keys(reactionsMap) || reactionsMap;
         await Promise.all(reactions.map((r) => botMessage.react(r)));
-        const filter = (r, u) => u.id === user.id
-                && (reactions.includes(r.emoji.id)
-                    || reactions.includes(r.emoji.name))
-                && !user.bot;
-        const collector = botMessage.createReactionCollector(
-            filter,
-            collectorOptions,
-        );
+        const filter = (r, u) => u.id === user.id && (reactions.includes(r.emoji.id) || reactions.includes(r.emoji.name)) && !user.bot;
+        const collector = botMessage.createReactionCollector(filter, collectorOptions);
         collector.on('collect', async (reaction) => {
             const emoji = reaction.emoji.id || reaction.emoji.name;
             if (deleteReaction) await reaction.users.remove(user.id);
             if (typeof reactionsMap[emoji] === 'function') reactionsMap[emoji](reaction, collector, ...args);
         });
-        if (deleteAllOnEnd) {
-            collector.on(
-                'end',
-                async () => botMessage.reactions.removeAll(),
-            );
-        }
+
+        if (deleteAllOnEnd) collector.on('end', () => botMessage.reactions.removeAll());
         return collector;
     }
 
@@ -444,26 +442,15 @@ class ReactionCollector {
             } = _options;
             const reactions = Object.keys(reactionsMap) || reactionsMap;
             await Promise.all(reactions.map((r) => botMessage.react(r)));
-            const filter = (r, u) => u.id === user.id
-                && (reactions.includes(r.emoji.id)
-                    || reactions.includes(r.emoji.name))
-                && !user.bot;
-            const caughtReactions = await botMessage.awaitReactions(
-                filter,
-                collectorOptions,
-            );
+            const filter = (r, u) => u.id === user.id && (reactions.includes(r.emoji.id) || reactions.includes(r.emoji.name)) && !user.bot;
+            const caughtReactions = await botMessage.awaitReactions(filter, collectorOptions);
             if (caughtReactions.size > 0) {
                 const reactionCollected = caughtReactions.first();
                 if (deleteAllOnEnd) await reactionCollected.message.reactions.removeAll();
                 else if (deleteReaction) await reactionCollected.users.remove(user.id);
-                return resolve(
-                    reactions.indexOf(
-                        reactionCollected.emoji
-                            ? reactionCollected.emoji.name
-                                  || reactionCollected.emoji.id
-                            : reactionCollected.name || reactionCollected.id,
-                    ) === 0,
-                );
+                return resolve(reactions.indexOf(reactionCollected.emoji
+                    ? (reactionCollected.emoji.name || reactionCollected.emoji.id)
+                    : (reactionCollected.name || reactionCollected.id)) === 0);
             }
             return resolve(false);
         });

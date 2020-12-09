@@ -54,10 +54,7 @@ class MessageCollector {
             deleteMessage,
         } = _options;
         const filter = (message) => message.author.id === user.id && !message.author.bot;
-        const collector = botMessage.channel.createMessageCollector(
-            filter,
-            collectorOptions,
-        );
+        const collector = botMessage.channel.createMessageCollector(filter, collectorOptions);
         collector.on('collect', async (message) => {
             if (deleteMessage) await message.delete();
             await onMessage(botMessage, message);
@@ -78,17 +75,13 @@ class MessageCollector {
                 deleteMessage,
             } = _options;
             const filter = (message) => message.author.id === user.id && !message.author.bot;
-            const caughtMessages = await botMessage.channel.awaitMessages(
-                filter,
-                collectorOptions,
-            );
+            const caughtMessages = await botMessage.channel.awaitMessages(filter, collectorOptions);
             if (caughtMessages.size > 0) {
                 const message = caughtMessages.first();
                 if (deleteMessage) await message.delete();
                 return resolve(message);
             }
-            // eslint-disable-next-line prefer-promise-reject-errors
-            return reject(false);
+            return resolve(false);
         });
     }
 }

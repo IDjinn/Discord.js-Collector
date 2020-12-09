@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.8.2
+
+Improvements in types: the documentation has been improved within the files and the website. See [BREAKING CHANGES](./BREAKING_CHANGES.md)
+
+---
 # CHANGELOG - V1.8.0
 
 Reaction Role Manager: new role types.\
