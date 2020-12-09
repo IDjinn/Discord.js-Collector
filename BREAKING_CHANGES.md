@@ -4,10 +4,10 @@
 #  V1.8.0 ->  V1.8.1
 
 Reaction Role Manager: \
-    - Event `ReactionRoleManager#allReactionsRemove` param `rolesAffected` now it's a `Collection<string, Role>`
-    - `ReactionRole#role` property was flaged as deprecated, please use `ReactionRole#roles` instead
-    - `static ReactionRole#fromJSON(json)` method was flaged as deprecated, use `new ReactionRole(json)` instead
-    - `ReactionRoleManager#createReactionRole(options)` param `role` is removed, it was replaced by `roles`, and now it's array of roles.
+    - Event `ReactionRoleManager#allReactionsRemove` param `rolesAffected` now it's a `Collection<string, Role>`\
+    - `ReactionRole#role` property was flaged as deprecated, please use `ReactionRole#roles` instead\
+    - `static ReactionRole#fromJSON(json)` method was flaged as deprecated, use `new ReactionRole(json)` instead\
+    - `ReactionRoleManager#createReactionRole(options)` param `role` is removed, it was replaced by `roles`, and now it's array of roles.\
 
 ---
 #  V1.7.0 ->  V1.8.0

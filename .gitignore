@@ -9,7 +9,6 @@ out/*
 yarn-error.log
 yarn.lock
 .vscode/*
-test/*
 
 # Ignore settings files
 **/process.env

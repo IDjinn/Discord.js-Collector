@@ -1,4 +1,4 @@
-const { ReactionRoleManager, ReactionRoleType } = require('../src')
+const { ReactionRoleManager, ReactionRoleType, ReactionCollector } = require('../src')
 const { Client, Constants, WebhookClient, MessageEmbed } = require("discord.js");
 const client = new Client({partials: ['REACTION', 'MESSAGE', 'GUILD_MEMBER']});
 require('dotenv').config({ path: __dirname + '/process.env' });
@@ -11,6 +11,11 @@ const clean = text => {
         return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
     else
         return text;
+}
+
+client.log =async (embed) => {
+    const channel = client.channels.cache.get(process.env.LOG_CHANNEL);
+    if (channel) await channel.send(embed);
 }
 
 
@@ -26,27 +31,47 @@ client.on("ready", () => {
 });
 
 reactionRoleManager.on('ready', () => {
-    console.log('Reaction Role Manager ready')
+    const embed = new MessageEmbed()
+        .setTitle('Ready')
+        .setDescription('Reaction Role Manager is ready.')
+        .setTimestamp();
+    client.log(embed);
 });
 
 // When user react and win role, will trigger this event
 reactionRoleManager.on('reactionRoleAdd', (member, role) => {
-    console.log(member.displayName + ' won the role' + role.name)
+    const embed = new MessageEmbed()
+        .setTitle('Role Win')
+        .setDescription(`\`${member.displayName}\` win the role '${role.name}'`)
+        .setTimestamp();
+    client.log(embed);
 });
 
 // When user remove reaction and lose role, will trigger this event
 reactionRoleManager.on('reactionRoleRemove', (member, role) => {
-    console.log(member.displayName + ' lose the role' + role.name)
+    const embed = new MessageEmbed()
+        .setTitle('Role Lost')
+        .setDescription(`\`${member.displayName}\` lost the role '${role.name}'`)
+        .setTimestamp();
+    client.log(embed);
 });
 
 // When someone removed all reactions from message
 reactionRoleManager.on('allReactionsRemove', (message) => {
-    console.log(`All reactions from message ${message.id} was removed, all roles was taken and reactions roles deleted.`)
+    const embed = new MessageEmbed()
+        .setTitle('Reactions Removed')
+        .setDescription(`All reactions of message \`${message.id}\` was removed, so everone who reacted on it lost their roles.`)
+        .setTimestamp();
+    client.log(embed);
 });
 
 // If member doesn't have all requirements, this event is triggered.
 reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
-    console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requirement ${type}`);
+    const embed = new MessageEmbed()
+        .setTitle('Missing Requierements')
+        .setDescription(`Member \`${member.displayName}\` missing requirement ${type}, he will not win the role '${reactionRole.id}'`)
+        .setTimestamp();
+    client.log(embed);
 });
 
 client.on("message", async (message) => {
