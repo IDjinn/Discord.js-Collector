@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>collectors/messageCollector.js - Documentation</title>
+    <title>Home - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,117 +29,102 @@
 
 <div id="main">
     
-    <h1 class="page-title">collectors/messageCollector.js</h1>
-    
 
     
 
 
 
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>const {
-    Message,
-    MessageCollectorOptions,
-    UserResolvable,
-} = require('discord.js');
-const { validateOptions } = require('../util/validate');
 
-/**
- * Message Collector class
- */
-class MessageCollector {
-    /**
-     * @description This method create easier message collector, then collected, will execute your custom function.
-     * @param  {Object} options
-     * @param {Message} options.botMessage - Message sent from bot.
-     * @param  {UserResolvable} options.user - UserResolvable who will react.
-     * @param {MessageCollectorOptions} [options.collectorOptions=null] - Message collector options
-     * @param {Funciton} [options.onMessage] - Triggered when user sent a message
-     * @param {boolean} [options.deleteMessage=true] - Message sent from bot.
-     * @note Trigger when user sent a message must be like onMessage(botMessage, message) => {};
-     * @returns {void}
-     */
-    static question(options) {
-        return this.__createMessageCollector(
-            validateOptions(options, 'messageQuestion'),
-        );
-    }
 
-    /**
-     * @description This method create easier message collector returning Promise&lt;Message> when collected.
-     * @param  {Object} options
-     * @param {Message} options.botMessage - Message sent from bot.
-     * @param  {UserResolvable} options.user - UserResolvable who will react.
-     * @param {MessageCollectorOptions} [options.collectorOptions=null] - Message collector options
-     * @param {boolean} [options.deleteMessage=true] - Delete user message.
-     * @returns {Promise&lt;Message>}
-     */
-    static asyncQuestion(options) {
-        return this.__createAsyncMessageCollector(
-            validateOptions(options, 'messageAsyncQuestion'),
-        );
-    }
 
-    /**
-     * Internal method, do not use.
-     * @private
-     */
-    static __createMessageCollector(_options) {
-        const {
-            botMessage,
-            user,
-            collectorOptions,
-            onMessage,
-            deleteMessage,
-        } = _options;
-        const filter = (message) => message.author.id === user.id &amp;&amp; !message.author.bot;
-        const collector = botMessage.channel.createMessageCollector(
-            filter,
-            collectorOptions,
-        );
-        collector.on('collect', async (message) => {
-            if (deleteMessage) await message.delete();
-            await onMessage(botMessage, message);
-        });
-        return collector;
-    }
 
-    /**
-     * Internal method, do not use.
-     * @private
-     */
-    static async __createAsyncMessageCollector(_options) {
-        return new Promise(async (resolve, reject) => {
-            const {
-                botMessage,
-                user,
-                collectorOptions,
-                deleteMessage,
-            } = _options;
-            const filter = (message) => message.author.id === user.id &amp;&amp; !message.author.bot;
-            const caughtMessages = await botMessage.channel.awaitMessages(
-                filter,
-                collectorOptions,
-            );
-            if (caughtMessages.size > 0) {
-                const message = caughtMessages.first();
-                if (deleteMessage) await message.delete();
-                return resolve(message);
-            }
-            // eslint-disable-next-line prefer-promise-reject-errors
-            return reject(false);
-        });
-    }
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>Discord.js-collector</h1>
+<p>Library to easily create message collector, reactions collector and reactions role on discord.js v12, with customization ways.</p>
+<hr>
+<h2>Sumary</h2>
+<p>◘ Reactions Collectors:<br>
+| <a href="#reaction-role">Reaction Role</a><br>
+| <a href="#reaction-menu">Menu</a><br>
+| <a href="#simple-reaction-collector">Question</a><br>
+| <a href="#simple-boolean-reaction-collector">Yes/No Question</a><br>
+| <a href="#embeds-pagination">Embeds Paginator</a><br>
+◘ Messages Collectors:<br>
+| <a href="#simple-messages-collector">Question</a><br>
+| <a href="#async-message-collector">Async Question</a><br>
+◘ Examples<br>
+| <a href="./examples/reaction-role-manager/basic.js">Reaction Role Manager</a><br>
+| <a href="./examples/reaction-collector/menu.js">Reaction Menu</a><br>
+◘ Others<br>
+| <a href="CHANGELOG.md">Changelog</a><br>
+| <a href="./BREAKING_CHANGES.md">Breaking Changes</a></p>
+<h2>Warning</h2>
+<p>Please update your version to: ^1.8.0, multiple bugfixs and vulnerabilities.<br>
+See all <a href="./BREAKING_CHANGES.md">Breaking Changes</a>.</p>
+<h2>Discord Server</h2>
+<p>For more fast support, please join in us discord server <a href="https://discord.gg/pqzBC83juF">invite here</a></p>
+<h2>Documentation</h2>
+<p>See all documentation of last version <a href="https://idjinn.github.io/Discord.js-Collector/">here</a></p>
+<hr>
+<h2>Reaction role</h2>
+<p>You can create reactions roles, with amazing functions:<br>
+| • If you bot turns off, when it turns on all users reacted in messages will win the role.<br>
+| • If you bot turns off, if any user remove reaction, when the bot turns on will remove the role from him.<br>
+| • You can store the roles in a JSON file and migrate the reaction role data.<br>
+| • You can limit max roles given by bot, like 10 roles.<br>
+| • Toggled roles: Limit one of these roles to use (Util for colors reaction roles, only get one of roles)<br>
+| • Requirements: Limit roles to only boosters or discord developers win roles!<br>
+| • Just Win: you can configure a role to just give to member if him react on it!<br>
+| • Just Lose: you can configure a role to just take from member if him react on it!<br>
+| • Reversed: When react on it, member will lose the role. When take off reaction of it, member will win the role.</p>
+<p><img src="./assets/reactionRoles.gif" alt="Reaction Role Gif"></p>
+<p>You can find this code example <a href="./examples/reaction-role-manager/basic.js">here</a></p>
+<hr>
+<h2>Reaction menu</h2>
+<p>To create a reaction menu with multiple pages.</p>
+<p><img src="./assets/reactMenu.gif" alt="Menu Gif"></p>
+<p>You can find this code example <a href="./examples/reaction-collector/menu.js">here</a></p>
+<h2>Simple reaction collector</h2>
+<p>To use in multiple actions, react and then trigger one function to do things.</p>
+<p><img src="./assets/reactQuestion.gif" alt="Question Gif"></p>
+<h2>Simple boolean reaction collector</h2>
+<p>To use in <code>if</code> statements, the asynchronous reaction collector returning Promise <boolean> is more practical</p>
+<p><img src="./assets/reactYesNoQuestion.gif" alt="Question Gif"></p>
+<h2>Embeds pagination</h2>
+<p>Example <a href="./examples/reaction-collector/paginator.js">here</a></p>
+<p>Easier paginator embeds, with back/skip reaction to change current page.</p>
+<p><img src="./assets/reactPaginator.gif" alt="Question Gif"></p>
+<p>You can find this code example <a href="./examples/reaction-collector/paginator.js">here</a></p>
+<h2>Simple messages collector</h2>
+<p>Await for messages from user, and when it's send will fire a trigger to do things. See exemple [here]</p>
+<p>You can find this code example <a href="./examples/message-collector/question.js">here</a></p>
+<p><img src="./assets/messageQuestion.gif" alt="Question Gif"></p>
+<h2>Async message collector</h2>
+<p>Await for message from user, and when user send, will return user message as Promise<Message>.</p>
+<p><img src="./assets/messageAsyncQuestion.gif" alt="Question Gif"></p>
+<pre class="prettyprint source lang-js"><code>const { MessageCollector } = require(&quot;discord.js-collector&quot;);
+
+const botMessage = await message.channel.send(&quot;Awaiting a message&quot;);
+const userMessage = await MessageCollector.asyncQuestion({
+  botMessage,
+  user: message.author.id,
+});
+if (userMessage.content === &quot;ping&quot;) {
+  await message.channel.send(&quot;pong!&quot;);
 }
-
-module.exports = {
-    MessageCollector,
-};
-</code></pre>
-        </article>
+</code></pre></article>
     </section>
+
+
 
 
 
@@ -149,7 +134,7 @@ module.exports = {
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Fri Dec 11 2020 14:01:36 GMT-0300 (Horário Padrão de Brasília) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Fri Dec 11 2020 14:01:59 GMT-0300 (Horário Padrão de Brasília) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
