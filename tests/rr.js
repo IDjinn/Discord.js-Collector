@@ -5,7 +5,7 @@ require('dotenv').config({ path: __dirname + '/process.env' });
 const app = require('express')();
 const server = require('http').createServer(app);
 const axios = require('axios')
-
+console.clear();
 const clean = text => {
     if (typeof (text) === "string")
         return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
@@ -13,8 +13,20 @@ const clean = text => {
         return text;
 }
 
-client.log =async (embed) => {
+
+client.log =async (embed, reactionRole) => {
     const channel = client.channels.cache.get(process.env.LOG_CHANNEL);
+    if (reactionRole) {
+        try {
+            const msgChannel = client.channels.cache.get(reactionRole.channel);
+            const message = await msgChannel.fetch(reactionRole.message);
+
+            embed.description += `\n\n[Go to message](https://discord.com/channels/${channel.guild ? channel.guild.id : '@me'}/${msgChannel.id}/${message.id})`;
+        }
+        catch {
+            
+        }
+    }
     if (channel) await channel.send(embed);
 }
 
@@ -28,6 +40,22 @@ const reactionRoleManager = new ReactionRoleManager(client, {
 
 client.on("ready", () => {
     console.log("ready")
+});
+
+reactionRoleManager.on('missingPermissions', (action, member, roles, reactionRole) => {
+    console.log(`Some roles cannot be ${action === 1 ? 'given' : 'taken'} to member \`${member.displayName}\`, because i don't have permissions to manage these roles: ${roles.map(role => `\`${role.name}\``).join(',')}`);
+    const embed = new MessageEmbed()
+        .setTitle('Unmanageable Roles')
+        .setDescription(`Some roles cannot be ${action === 1 ? 'given' : 'taken'} to member \`${member.displayName}\`, because i don't have permissions to manage these roles...\n\n`)
+        .setTimestamp();
+    
+    for (let i = 0; i < roles.length; i++) {
+        const role = roles[i];
+        embed.description += `\`${role.name}\`,`;
+    }
+    embed.description = embed.description.slice(0, embed.description.length - 1);
+
+    client.log(embed, reactionRole);
 });
 
 reactionRoleManager.on('ready', () => {

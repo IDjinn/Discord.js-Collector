@@ -95,68 +95,93 @@ declare module 'discord.js-collector' {
     }
 
     export class ReactionRoleManager extends EventEmitter {
-        constructor(client: Client, options?: IReactionRoleManagerOptions);
-        public reactionRoles: Collection<string, ReactionRole>;
-        public timeouts: Collection<string, Function>;
-        public createReactionRole(options: ICreateRoleOptions): Promise<ReactionRole>;
-        public deleteReactionRole(options: IDeleteRoleOptions, deleted = false): Promise<ReactionRole | void>;
-        public store(...roles: ReactionRole): Promise<void>;
-        private __parseStorage(): Collection<string, any>;
-        private __onReactionAdd(
-            msgReaction: MessageReaction,
-            user: User
-        ): Promise<void>;
-        private __onReactionRemove(
-            msgReaction: MessageReaction,
-            user: User
-        ): Promise<void>;
-        private __onRemoveAllReaction(message: Message): Promise<void>;
-        private __resfreshOnBoot(): Promise<void>;
-        private __debug(type: string, message: string, ...args: any): void;
-        private __timeoutToggledRoles(
-            member: GuildMember,
-            message: Message
-        ): void;
-        private __handleDeleted(
-            reactionRole: ReactionRole,
-            guildResolvable: GuildResolvable
+      constructor(client: Client, options?: IReactionRoleManagerOptions);
+      private __withoutPermissionsWarned: Set<string>;
+      public reactionRoles: Collection<string, ReactionRole>;
+      public timeouts: Collection<string, Function>;
+      public createReactionRole(
+        options: ICreateRoleOptions
+      ): Promise<ReactionRole>;
+      public deleteReactionRole(
+        options: IDeleteRoleOptions,
+        deleted = false
+      ): Promise<ReactionRole | void>;
+      public store(...roles: ReactionRole): Promise<void>;
+      private __parseStorage(): Collection<string, any>;
+      private __onReactionAdd(
+        msgReaction: MessageReaction,
+        user: User
+      ): Promise<void>;
+      private __onReactionRemove(
+        msgReaction: MessageReaction,
+        user: User
+      ): Promise<void>;
+      private __onRemoveAllReaction(message: Message): Promise<void>;
+      private __resfreshOnBoot(): Promise<void>;
+      private __debug(type: string, message: string, ...args: any): void;
+      private __timeoutToggledRoles(
+        member: GuildMember,
+        message: Message
+      ): void;
+      private __handleDeleted(
+        reactionRole: ReactionRole,
+        guildResolvable: GuildResolvable
+      );
+      private __checkRequirements(
+        reactionRole: ReactionRole,
+        reaction: MessageReaction,
+        member: GuildMember
+      );
+      private __checkRolesPermissions(
+        action: ActionType,
+        reactionRole: ReactionRole,
+        member: GuildMember
+      ): Role[];
+      private __resolveReactionEmoji(emoji: any): Emoji | undefined;
+      private async __handleReactionRoleAction(
+        action: ActionType,
+        member: GuildMember,
+        reactionRole: ReactionRole,
+        msgReaction: MessageReaction
         );
-        private __checkRequirements(
-            reactionRole: ReactionRole,
-            reaction: MessageReaction,
-            member: GuildMember
-        );
+        private __readyTimeout();
 
-        public on(event: string, listener: (...args: any[]) => void): this;
-        public on(
-            event: 'reactionRoleAdd',
-            listener: (member: GuildMember, role: Role) => void
-        ): this;
-        public on(
-            event: 'reactionRoleRemove',
-            listener: (member: GuildMember, role: Role) => void
-        ): this;
-        public on(
-            event: 'allReactionsRemove',
-            listener: (
-                message: Message,
-                rolesAffected: Collection<string,Role>,
-                membersAffected: GuildMember[],
-                reactionsTaken: number
-            ) => void
-        ): this;
-        public on(
-            event: 'missingRequirements',
-            listener: (
-                type: IRequirementType,
-                member: GuildMember,
-                reactionRole: ReactionRole
-            ) => void
-        ): this;
-        public on(
-            event: 'ready',
-            listener: () => void
-        ): this;
+      public on(event: string, listener: (...args: any[]) => void): this;
+      public on(
+        event: "reactionRoleAdd",
+        listener: (member: GuildMember, role: Role) => void
+      ): this;
+      public on(
+        event: "reactionRoleRemove",
+        listener: (member: GuildMember, role: Role) => void
+      ): this;
+      public on(
+        event: "allReactionsRemove",
+        listener: (
+          message: Message,
+          rolesAffected: Collection<string, Role>,
+          membersAffected: GuildMember[],
+          reactionsTaken: number
+        ) => void
+      ): this;
+      public on(
+        event: "missingRequirements",
+        listener: (
+          type: IRequirementType,
+          member: GuildMember,
+          reactionRole: ReactionRole
+        ) => void
+      ): this;
+      public on(
+        event: "missingPermissions",
+        listener: (
+          action: ActionType,
+          member: GuildMember,
+          roles: Role[],
+          reactionRole: ReactionRole
+        ) => void
+      ): this;
+      public on(event: "ready", listener: () => void): this;
     }
 
     export enum IRequirementType {

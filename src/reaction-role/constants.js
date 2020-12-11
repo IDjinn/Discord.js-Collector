@@ -5,6 +5,7 @@
  * @property {string} REACTION_ROLE_REMOVE='reactionRoleRemove' - Triggered when a member lost some role.
  * @property {string} ALL_REACTIONS_REMOVE='allReactionsRemove' - Triggered when all reactions from message was removed.
  * @property {string} MISSING_REQUIREMENTS='missingRequirements' - Triggered when a member hasn't all requirements to win some role.
+ * @property {string} MISSING_PERMISSIONS='missingPermissions' - Triggered when the bot doesn't have permissions to manage this role.
  * @property {string} READY='ready' - Triggered when reation role manager is ready.
  * @readonly
  */
@@ -13,6 +14,7 @@ const ReactionRoleEvent = Object.freeze({
     REACTION_ROLE_REMOVE: 'reactionRoleRemove',
     ALL_REACTIONS_REMOVE: 'allReactionsRemove',
     MISSING_REQUIREMENTS: 'missingRequirements',
+    MISSING_PERMISSIONS: 'missingPermissions',
     READY: 'ready'
 });
 
