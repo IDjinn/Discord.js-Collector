@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.8.2
+
+Reaction Role Manager: fixed allReactionsRemove triggered whenever message with reactions was deleted
+
+---
 # CHANGELOG - V1.8.0
 
 Reaction Role Manager: new role types.\
