@@ -12,6 +12,7 @@ module.exports = {
         ecmaVersion: 12,
     },
     rules: {
+        'linebreak-style': ['error', 'windows'],
         'no-unused-vars': 'off',
         indent: ['error', 4],
         'max-classes-per-file': 'off',
