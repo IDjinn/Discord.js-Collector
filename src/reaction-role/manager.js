@@ -877,6 +877,9 @@ class ReactionRoleManager extends EventEmitter {
         const membersAffected = [];
         const rolesAffected = new Collection();
         let reactionsTaken = 0;
+
+        if (messageReactionsRoles.length <= 0) return; // We don't need keep running this code if no one reaction role will be deleted.
+
         for (let i = 0; i < messageReactionsRoles.length; i += 1) {
             const reactionRole = messageReactionsRoles[i];
             for (let j = 0; j < reactionRole.winners.length; j += 1) {
