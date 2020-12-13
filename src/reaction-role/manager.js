@@ -511,18 +511,18 @@ class ReactionRoleManager extends EventEmitter {
      * @param {Object} [options.requirements={}] - Requirements to win this role.
      * @param {boolean} [options.requirements.boost=false] - Need be a booster to win this role?
      * @param {boolean} [options.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
-     * 
+     *
      * @return {Promise<ReactionRole>}
      * @example
      * // update your import, add ReactionRoleType.
      *  const { ReactionRoleManager, ReactionRoleType} = require('discord.js-collector');
-     * 
+     *
      * const role = message.mentions.roles.first();
      * if (!role) return message.reply('You need mention a role').then(m => m.delete({ timeout: 1000 }));
      *
      * const emoji = args[1];
      * if (!emoji) return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1000 }));
-     * 
+     *
      * const msg = await message.channel.messages.fetch(args[2] || message.id);
      * if (!role) return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1000 }));
      *
@@ -592,15 +592,15 @@ class ReactionRoleManager extends EventEmitter {
      * @param {object} [options.message] - Message of Reaction Role. If you want delete it and not have the reaction role object
      * @param {object} [options.emoji] - Emoji of Reaction Role. If you want delete it and not have the reaction role object
      * @param {boolean} [deleted=false] - Is role deleted from guild?
-     * 
+     *
      * @return {Promise<ReactionRole | void>}
      * @example
      *  const emoji = args[0];
      *  if (!emoji) return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1000 }));
-     *  
+     *
      *  const msg = await message.channel.messages.fetch(args[1]);
      *  if (!msg) return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1000 }));
-     *  
+     *
      *  await reactionRoleManager.deleteReactionRole({message: msg, emoji});
      */
     async deleteReactionRole({ reactionRole, message, emoji }, deleted = false) {

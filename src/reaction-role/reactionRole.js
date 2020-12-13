@@ -1,4 +1,6 @@
-const { GuildMember, PermissionResolvable, RoleResolvable, UserResolvable } = require('discord.js');
+const {
+    GuildMember, PermissionResolvable, RoleResolvable, UserResolvable,
+} = require('discord.js');
 const { ReactionRoleType, isValidReactionRoleType } = require('./constants');
 
 /**
@@ -118,14 +120,14 @@ class ReactionRole {
             verifiedDeveloper: false,
             roles: {
                 allowList: [],
-                denyList: []
+                denyList: [],
             },
             users: {
                 allowList: [],
-                denyList: []
+                denyList: [],
             },
             permissionsNeed: [],
-            ...requirements
+            ...requirements,
         };
         /**
          * Is this reaction role disabled?
@@ -256,8 +258,8 @@ class ReactionRole {
      * @return {boolean}
      */
     checkRoleRequirement(member) {
-        return this.requirements.roles.allowList.every(role => member.roles.cache.has(role))
-            && this.requirements.roles.denyList.every(role => !member.roles.cache.has(role));
+        return this.requirements.roles.allowList.every((role) => member.roles.cache.has(role))
+            && this.requirements.roles.denyList.every((role) => !member.roles.cache.has(role));
     }
 
     /**
@@ -308,11 +310,11 @@ class ReactionRole {
     __check() {
         this.requirements.boost = Boolean(this.requirements.boost);
         this.requirements.verifiedDeveloper = Boolean(this.requirements.verifiedDeveloper);
-        if (typeof this.requirements.boost !== 'boolean') throw new Error(`Invalid property: requirements.boost must be a boolean.`);
-        if (typeof this.requirements.verifiedDeveloper !== 'boolean') throw new Error(`Invalid property: requirements.verifiedDeveloper must be a boolean.`);
-        if (!Array.isArray(this.requirements.roles.allowList)) throw new Error(`Invalid property: requirements.roles.allowList must be a array.`);
-        if (!Array.isArray(this.requirements.roles.denyList)) throw new Error(`Invalid property: requirements.roles.denyList must be a array.`);
-        if (!Array.isArray(this.requirements.permissionsNeed)) throw new Error(`Invalid property: requirements.permissionsNeed must be a array.`);
+        if (typeof this.requirements.boost !== 'boolean') throw new Error('Invalid property: requirements.boost must be a boolean.');
+        if (typeof this.requirements.verifiedDeveloper !== 'boolean') throw new Error('Invalid property: requirements.verifiedDeveloper must be a boolean.');
+        if (!Array.isArray(this.requirements.roles.allowList)) throw new Error('Invalid property: requirements.roles.allowList must be a array.');
+        if (!Array.isArray(this.requirements.roles.denyList)) throw new Error('Invalid property: requirements.roles.denyList must be a array.');
+        if (!Array.isArray(this.requirements.permissionsNeed)) throw new Error('Invalid property: requirements.permissionsNeed must be a array.');
     }
 }
 
