@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.8.3
+
+Reaction Role Manager: created debug event
+
+---
 # CHANGELOG - V1.8.2
 
 Reaction Role Manager: fixed allReactionsRemove triggered whenever message with reactions was deleted

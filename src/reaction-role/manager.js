@@ -29,11 +29,20 @@ const locker = new AsyncLock();
  */
 class ReactionRoleManager extends EventEmitter {
     /**
-     * Triggered when reaction role manager is ready
+     * Triggered when reaction role manager is ready.
      * @event ReactionRoleManager#ready
      * @example
      * reactionRoleManager.on('ready', () => {
      *   console.log('Reaction Role Manager is ready!');
+     * });
+     */
+
+    /**
+     * Triggered for debug messages.
+     * @event ReactionRoleManager#debug
+     * @example
+     * reactionRoleManager.on('debug', (message) => {
+     *   console.log(message);
      * });
      */
 
@@ -120,7 +129,6 @@ class ReactionRoleManager extends EventEmitter {
      * @param {boolean} [options.storage=true] - Enable/disable storage of reaction role.
      * @param {string} [options.mongoDbLink=null] - Link to connect with mongodb.
      * @param {string} [options.path=null] - Path to save json data of reactions roles.
-     * @param {boolean} [options.debug=false] - Enable/Disable debug of reaction role manager.
      * @param {IHooks} [options.hooks] - Custom hooks to execute before do things.
      * @extends EventEmitter
      * @return {ReactionRoleManager}
@@ -128,7 +136,7 @@ class ReactionRoleManager extends EventEmitter {
     constructor(
         client,
         {
-            storage, mongoDbLink, path, debug, disabledProperty, hooks,
+            storage, mongoDbLink, path, disabledProperty, hooks,
         },
     ) {
         super();
@@ -156,12 +164,6 @@ class ReactionRoleManager extends EventEmitter {
          * @default true
          */
         this.storage = typeof storage === 'boolean' ? storage : true;
-        /**
-         * Is debug enabled?
-         * @type {boolean}
-         * @default false
-         */
-        this.debug = typeof debug === 'boolean' ? debug : false;
         /**
          * Mongo db connection link.
          * @type {string?}
@@ -445,19 +447,14 @@ class ReactionRoleManager extends EventEmitter {
     }
 
     /**
-     * Print messages in console if it's in debug mode.
      * @private
-     * @param {string} type - Type or location in code where you are debugging.
-     * @param {string} message - Message to print.
-     * @param {...*} args - Other args to print after message.
-     * @return {ReturnValueDataTypeHere} Brief description of the returning value here.
+     * @param {string} type
+     * @param {string} message
+     * @param {...*} args
+     * @return {void}
      */
     __debug(type, message, ...args) {
-        if (this.debug) {
-            console.log(
-                `[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`,
-            );
-        }
+        this.emit(ReactionRoleEvent.DEBUG, `[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`);
     }
 
     /**
