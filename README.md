@@ -1,3 +1,4 @@
+![downloads-npm-total](https://img.shields.io/npm/dt/discord.js-collector) ![downloads-npm-week](https://img.shields.io/npm/dw/discord.js-collector?color=%234c00ff)  ![dependencies-deprecated-status](https://img.shields.io/david/IDjinn/Discord.js-Collector) ![npm-version](https://img.shields.io/npm/v/discord.js-collector)
 # Discord.js-collector
 
 Library to easily create message collector, reactions collector and reactions role on discord.js v12, with customization ways.
