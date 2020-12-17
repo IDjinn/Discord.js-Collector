@@ -579,10 +579,9 @@ class ReactionRoleManager extends EventEmitter {
      * @param {object} [options.message] - Message of Reaction Role. If you want delete it and not have the reaction role object
      * @param {object} [options.emoji] - Emoji of Reaction Role. If you want delete it and not have the reaction role object
      * @param {boolean} [deleted=false] - Is role deleted from guild?
-     * @param {boolean} [reactionDeleted=false] - Is the reactions of this reaction role deleted?
      * @return {Promise<ReactionRole?>}
      */
-    async deleteReactionRole({ reactionRole, message, emoji }, deleted = false, reactionDeleted = false) {
+    async deleteReactionRole({ reactionRole, message, emoji }, deleted = false) {
         return new Promise(async (resolve, reject) => {
             if (message && emoji) {
                 const resolvedEmojiID = this.__resolveReactionEmoji(Util.parseEmoji(emoji));
@@ -599,7 +598,7 @@ class ReactionRoleManager extends EventEmitter {
             }
 
             if (reactionRole instanceof ReactionRole) {
-                if (!this.keepReactions && !reactionDeleted) await this.__handleDeleted(reactionRole, reactionRole.guild, () => {});
+                if (!this.keepReactions) await this.__handleDeleted(reactionRole, reactionRole.guild, () => {});
 
                 reactionRole.disabled = true;
                 if (this.disabledProperty) await this.store(reactionRole);
