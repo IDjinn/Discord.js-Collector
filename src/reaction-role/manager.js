@@ -453,11 +453,7 @@ class ReactionRoleManager extends EventEmitter {
      * @return {ReturnValueDataTypeHere} Brief description of the returning value here.
      */
     __debug(type, message, ...args) {
-        if (this.debug) {
-            console.log(
-                `[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`,
-            );
-        }
+        this.emit(ReactionRoleEvent.DEBUG, `[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`);
     }
 
     /**
