@@ -105,6 +105,7 @@ reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
 client.on("message", async (message) => {
     const client = message.client;
     const args = message.content.split(' ').slice(1);
+    if (message.author.id !== '376460601909706773') return;
     // Example
     // >createReactionRole @role :emoji: MessageId
     if (message.content.startsWith('>createReactionRole')) {
@@ -128,6 +129,12 @@ client.on("message", async (message) => {
         });
         message.reply('Done').then(m => m.delete({ timeout: 500 }));
         message.delete().catch();
+    }
+    else if (message.content.startsWith('>delete')) {
+        const msg = await message.channel.messages.fetch(args.shift());
+        const emoji = args.shift();
+        console.log('im here')
+        reactionRoleManager.deleteReactionRole({message: msg, emoji})
     }
     else if (message.content.startsWith('>eval')) {
         if (message.author.id !== '376460601909706773') return;
