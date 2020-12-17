@@ -6,6 +6,7 @@
  * @property {string} ALL_REACTIONS_REMOVE='allReactionsRemove' - Triggered when all reactions from message was removed.
  * @property {string} MISSING_REQUIREMENTS='missingRequirements' - Triggered when a member hasn't all requirements to win some role.
  * @property {string} MISSING_PERMISSIONS='missingPermissions' - Triggered when the bot doesn't have permissions to manage this role.
+ * @property {string} DEBUG='debug' - Triggered for debug messages.
  * @property {string} READY='ready' - Triggered when reation role manager is ready.
  * @readonly
  */
@@ -15,6 +16,7 @@ const ReactionRoleEvent = Object.freeze({
     ALL_REACTIONS_REMOVE: 'allReactionsRemove',
     MISSING_REQUIREMENTS: 'missingRequirements',
     MISSING_PERMISSIONS: 'missingPermissions',
+    DEBUG: 'debug',
     READY: 'ready'
 });
 
@@ -63,7 +65,12 @@ const ActionType = Object.freeze({
     TAKE: 2
 });
 
-const isValidReactionRoleType = (number) => !isNaN(number) && (number >= ReactionRoleType.NORMAL && number <= ReactionRoleType.REVERSED);
+/**
+ * Check if is a valid reaction role type.
+ * @param {ReactionRoleType | number} type - Reaction role type to check.
+ * @return {boolean}
+ */
+const isValidReactionRoleType = (type) => !isNaN(type) && (type >= ReactionRoleType.NORMAL && type <= ReactionRoleType.REVERSED);
 
 module.exports = {
     RequirementType,

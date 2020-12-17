@@ -190,6 +190,7 @@ declare module "discord.js-collector" {
       ) => void
     ): this;
     public on(event: "ready", listener: () => void): this;
+    public on(event: "debug", listener: (message) => void): this;
   }
 
   export enum IRequirementType {
@@ -214,7 +215,6 @@ declare module "discord.js-collector" {
 
   export interface IReactionRoleManagerOptions {
     storage: boolean | true;
-    debug: boolean | false;
     path: string;
     mongoDbLink?: string;
     storageJsonPath?: string;
