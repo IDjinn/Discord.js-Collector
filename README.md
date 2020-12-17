@@ -29,7 +29,7 @@ See all [Breaking Changes](./BREAKING_CHANGES.md).
 
 ## Discord Server
 
-For more fast support, please join in us discord server [invite here](https://discord.gg/pqzBC83juF)
+For more fast support, please join in us discord server [invite here](https://discord.gg/BK5FwGt7YX)
 
 ## Documentation
 
