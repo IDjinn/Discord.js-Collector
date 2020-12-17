@@ -66,11 +66,11 @@ const ActionType = Object.freeze({
 });
 
 /**
- * Check if is a valid reaction role type.
- * @param {ReactionRoleType | number} type - Reaction role type to check.
+ * Check if a number is valid reaction role type.
+ * @param {ReactionRoleType} number - Type of reaction role to check if it's valid.
  * @return {boolean}
  */
-const isValidReactionRoleType = (type) => !isNaN(type) && (type >= ReactionRoleType.NORMAL && type <= ReactionRoleType.REVERSED);
+const isValidReactionRoleType = (number) => !isNaN(number) && (number >= ReactionRoleType.NORMAL && number <= ReactionRoleType.REVERSED);
 
 module.exports = {
     RequirementType,
