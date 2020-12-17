@@ -6,7 +6,7 @@
  * @property {string} ALL_REACTIONS_REMOVE='allReactionsRemove' - Triggered when all reactions from message was removed.
  * @property {string} MISSING_REQUIREMENTS='missingRequirements' - Triggered when a member hasn't all requirements to win some role.
  * @property {string} MISSING_PERMISSIONS='missingPermissions' - Triggered when the bot doesn't have permissions to manage this role.
- * @property {string} DEBUG='debug' - Debug messages.
+ * @property {string} DEBUG='debug' - Triggered for debug messages.
  * @property {string} READY='ready' - Triggered when reation role manager is ready.
  * @readonly
  */

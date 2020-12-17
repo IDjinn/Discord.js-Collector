@@ -1,6 +1,12 @@
 
 
 ---
+#  V1.8.1 ->  V1.8.3
+
+Reaction Role Manager: \
+    - `debug` property was removed, please use event debug instead.
+
+---
 #  V1.8.0 ->  V1.8.1
 
 Reaction Role Manager: \

@@ -1,5 +1,12 @@
 
 ---
+# CHANGELOG - V1.8.3
+
+Reaction Role Manager:\ 
+    - Created debug event.\
+    - Make the bot remove/not remove it's reaction when a reaction role is deleted.
+
+---
 # CHANGELOG - V1.8.2
 
 Reaction Role Manager: fixed allReactionsRemove triggered whenever message with reactions was deleted

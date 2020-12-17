@@ -29,11 +29,20 @@ const locker = new AsyncLock();
  */
 class ReactionRoleManager extends EventEmitter {
     /**
-     * Triggered when reaction role manager is ready
+     * Triggered when reaction role manager is ready.
      * @event ReactionRoleManager#ready
      * @example
      * reactionRoleManager.on('ready', () => {
      *   console.log('Reaction Role Manager is ready!');
+     * });
+     */
+
+    /**
+     * Triggered for debug messages.
+     * @event ReactionRoleManager#debug
+     * @example
+     * reactionRoleManager.on('debug', (message) => {
+     *   console.log(message);
      * });
      */
 
@@ -121,14 +130,15 @@ class ReactionRoleManager extends EventEmitter {
      * @param {string} [options.mongoDbLink=null] - Link to connect with mongodb.
      * @param {string} [options.path=null] - Path to save json data of reactions roles.
      * @param {boolean} [options.debug=false] - Enable/Disable debug of reaction role manager.
-     * @param {IHooks} [options.hooks] - Custom hooks to execute before do things.
+     * @param {IHooks} [options.hooks={}] - Custom hooks to execute before do things.
+     * @param {boolean} [options.keepReactions] - Keep reactions if some reaction roles was deleted.
      * @extends EventEmitter
      * @return {ReactionRoleManager}
      */
     constructor(
         client,
         {
-            storage, mongoDbLink, path, debug, disabledProperty, hooks,
+            storage, mongoDbLink, path, disabledProperty, hooks, keepReactions,
         },
     ) {
         super();
@@ -156,12 +166,6 @@ class ReactionRoleManager extends EventEmitter {
          * @default true
          */
         this.storage = typeof storage === 'boolean' ? storage : true;
-        /**
-         * Is debug enabled?
-         * @type {boolean}
-         * @default false
-         */
-        this.debug = typeof debug === 'boolean' ? debug : false;
         /**
          * Mongo db connection link.
          * @type {string?}
@@ -200,6 +204,11 @@ class ReactionRoleManager extends EventEmitter {
             preRoleRemoveHook: (...args) => true,
             ...hooks,
         };
+        /**
+         * Keep reactions if some reaction role is deleted.
+         * @type {boolean}
+         */
+        this.keepReactions = typeof keepReactions === 'boolean' ? keepReactions : false;
 
         /**
          * Set with already warned unmanaged permission roles.
@@ -261,20 +270,20 @@ class ReactionRoleManager extends EventEmitter {
      * @param {GuildResolvable} guildResolvable - Guild where need delete reaction role.
      * @return {Promise<void>}
      */
-    async __handleDeleted(reactionRole, guildResolvable) {
+    async __handleDeleted(reactionRole, guildResolvable, callback = () => this.deleteReactionRole({ reactionRole }, true)) {
+        if (this.keepReactions) return callback();
+
         const guild = this.client.guilds.resolve(guildResolvable);
-        if (!guild) return this.deleteReactionRole({ reactionRole }, true);
+        if (!guild) return callback();
 
         const channel = guild.channels.cache.get(reactionRole.channel);
-        if (!channel) return this.deleteReactionRole({ reactionRole }, true);
+        if (!channel) return callback();
 
         const message = await channel.messages.fetch(reactionRole.message);
-        if (!message) return this.deleteReactionRole({ reactionRole }, true);
+        if (!message) return callback();
 
-        const reaction = message.reactions.cache.find(
-            (x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x)}`,
-        );
-        if (!reaction) return this.deleteReactionRole({ reactionRole }, true);
+        const reaction = message.reactions.cache.find((x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`);
+        if (!reaction) return callback();
 
         await reaction.remove();
     }
@@ -445,12 +454,11 @@ class ReactionRoleManager extends EventEmitter {
     }
 
     /**
-     * Print messages in console if it's in debug mode.
      * @private
-     * @param {string} type - Type or location in code where you are debugging.
-     * @param {string} message - Message to print.
-     * @param {...*} args - Other args to print after message.
-     * @return {ReturnValueDataTypeHere} Brief description of the returning value here.
+     * @param {string} type
+     * @param {string} message
+     * @param {...*} args
+     * @return {void}
      */
     __debug(type, message, ...args) {
         this.emit(ReactionRoleEvent.DEBUG, `[${new Date().toLocaleString()}] [REACTION ROLE] [DEBUG] [${type.toUpperCase()}] - ${message} ${args}`);
@@ -571,9 +579,10 @@ class ReactionRoleManager extends EventEmitter {
      * @param {object} [options.message] - Message of Reaction Role. If you want delete it and not have the reaction role object
      * @param {object} [options.emoji] - Emoji of Reaction Role. If you want delete it and not have the reaction role object
      * @param {boolean} [deleted=false] - Is role deleted from guild?
-     * @return {Promise<ReactionRole | void>}
+     * @param {boolean} [reactionDeleted=false] - Is the reactions of this reaction role deleted?
+     * @return {Promise<ReactionRole?>}
      */
-    async deleteReactionRole({ reactionRole, message, emoji }, deleted = false) {
+    async deleteReactionRole({ reactionRole, message, emoji }, deleted = false, reactionDeleted = false) {
         return new Promise(async (resolve, reject) => {
             if (message && emoji) {
                 const resolvedEmojiID = this.__resolveReactionEmoji(Util.parseEmoji(emoji));
@@ -590,6 +599,8 @@ class ReactionRoleManager extends EventEmitter {
             }
 
             if (reactionRole instanceof ReactionRole) {
+                if (!this.keepReactions && !reactionDeleted) await this.__handleDeleted(reactionRole, reactionRole.guild, () => {});
+
                 reactionRole.disabled = true;
                 if (this.disabledProperty) await this.store(reactionRole);
                 // eslint-disable-next-line curly
