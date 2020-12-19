@@ -5,7 +5,7 @@ const client = new Client();
 const reactionRoleManager = new ReactionRoleManager(client, {
     storage: true, // Enable reaction role store in a Json file
     path: __dirname + '/roles.json', // Where will save the roles if store is enabled
-    mongoDbLink: 'url mongoose link' // See here to see how setup mongoose: https://github.com/IDjinn/Discord.js-Collector/tree/dev/examples/reaction-role-manager/Note.md
+    mongoDbLink: 'url mongoose link' // See here to see how setup mongoose: https://github.com/IDjinn/Discord.js-Collector/blob/master/examples/reaction-role-manager/Note.md
 });
 
 client.on("ready", () => {
