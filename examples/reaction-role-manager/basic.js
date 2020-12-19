@@ -58,8 +58,20 @@ client.on("message", async (message) => {
         reactionRoleManager.createReactionRole({
             message: msg,
             roles: [role],
-            emoji
+            emoji,
+            type:1
         });
+/**
+ * Reaction Role Type
+ * NORMAL [1] - This role works like basic reaction role.
+ * TOGGLE [2] - You can win only one role of all toggle roles in this message (like colors system)
+ * JUST_WIN [3] - This role you'll only win, not lose.
+ * JUST_LOSE [4] - This role you'll only lose, not win.
+ * REVERSED [5] - This is reversed role. When react, you'll lose it, when you take off reaction you'll win it.
+ * @readonly
+ */
+
+
         message.reply('Done').then(m => m.delete({ timeout: 500 }));
     }
     else if (message.content.startsWith('>deleteReactionRole')){
