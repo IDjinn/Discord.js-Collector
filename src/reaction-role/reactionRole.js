@@ -217,10 +217,7 @@ class ReactionRole {
             emoji: this.emoji,
             winners: this.winners,
             max: this.max,
-            requirements: {
-                boost: this.requirements.boost,
-                verifiedDeveloper: this.requirements.verifiedDeveloper,
-            },
+            requirements: this.requirements,
             disabled: this.disabled,
             type: this.type,
             roles: this.roles,
@@ -250,16 +247,6 @@ class ReactionRole {
         const isBoost = member.premiumSinceTimestamp != null && member.premiumSince != null;
         if (this.requirements.boost) return isBoost;
         return true;
-    }
-
-    /**
-     * Check if member have all roles requirement to win this roles.
-     * @param {GuildMember} member - The member to check.
-     * @return {boolean}
-     */
-    checkRoleRequirement(member) {
-        return this.requirements.roles.allowList.every((role) => member.roles.cache.has(role))
-            && this.requirements.roles.denyList.every((role) => !member.roles.cache.has(role));
     }
 
     /**
