@@ -37,6 +37,11 @@ reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
     console.log(`Member '${member.id}' will not win role '${reactionRole.role}', because him hasn't requirement ${type}`);
 });
 
+// Triggered when the bot doesn't have permissions to manage this role.
+reactionRoleManager.on('missingPermissions', (action, member, roles, reactionRole) => {
+    console.log(`Some roles cannot be ${action === 1 ? 'given' : 'taken'} to member \`${member.displayName}\`, because i don't have permissions to manage these roles: ${roles.map(role => `\`${role.name}\``).join(',')}`);
+});
+
 client.on("message", async (message) => {
     const client = message.client;
     const args = message.content.split(' ').slice(1);
@@ -68,7 +73,6 @@ client.on("message", async (message) => {
  * JUST_WIN [3] - This role you'll only win, not lose.
  * JUST_LOSE [4] - This role you'll only lose, not win.
  * REVERSED [5] - This is reversed role. When react, you'll lose it, when you take off reaction you'll win it.
- * @readonly
  */
 
 
