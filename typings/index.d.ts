@@ -187,7 +187,8 @@ declare module "discord.js-collector" {
       listener: (
         type: IRequirementType,
         member: GuildMember,
-        reactionRole: ReactionRole
+        reactionRole: ReactionRole,
+        missing?: any
       ) => void
     ): this;
     public on(
