@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>collectors/messageCollector.js - Documentation</title>
+    <title>reaction-role/constants.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">collectors/messageCollector.js</h1>
+    <h1 class="page-title">reaction-role/constants.js</h1>
     
 
     
@@ -39,103 +39,93 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const {
-    Message,
-    MessageCollectorOptions,
-    UserResolvable,
-} = require('discord.js');
-const { validateOptions } = require('../util/validate');
+            <pre class="prettyprint source linenums"><code>/**
+ * Reaction role manager events.
+ * @typedef {Object} ReactionRoleEvent
+ * @property {string} REACTION_ROLE_ADD='reactionRoleAdd' - Triggered when a member won some role.
+ * @property {string} REACTION_ROLE_REMOVE='reactionRoleRemove' - Triggered when a member lost some role.
+ * @property {string} ALL_REACTIONS_REMOVE='allReactionsRemove' - Triggered when all reactions from message was removed.
+ * @property {string} MISSING_REQUIREMENTS='missingRequirements' - Triggered when a member hasn't all requirements to win some role.
+ * @property {string} MISSING_PERMISSIONS='missingPermissions' - Triggered when the bot doesn't have permissions to manage this role.
+ * @property {string} DEBUG='debug' - Triggered for debug messages.
+ * @property {string} READY='ready' - Triggered when reation role manager is ready.
+ * @readonly
+ */
+const ReactionRoleEvent = Object.freeze({
+    REACTION_ROLE_ADD: 'reactionRoleAdd',
+    REACTION_ROLE_REMOVE: 'reactionRoleRemove',
+    ALL_REACTIONS_REMOVE: 'allReactionsRemove',
+    MISSING_REQUIREMENTS: 'missingRequirements',
+    MISSING_PERMISSIONS: 'missingPermissions',
+    DEBUG: 'debug',
+    READY: 'ready'
+});
 
 /**
- * Message Collector class
+ * Requirement type to win some role.
+ * @typedef {Object} RequirementType
+ * @property {number} [BOOST=1] - Need be a booster to win this role.
+ * @property {number} [VERIFIED_DEVELOPER=2] - Need be a verified developer to win this role.
+ * @property {number} [PERMISSION=3] - Need has some permissions to win this role.
+ * @property {number} [ROLES=4] - Need has all allow listed roles and hasn't all denied listed roles.
+ * @property {number} [USERS=5] - Need be inluded in allow list and not included in deny list to win this role.
+ * @readonly
  */
-class MessageCollector {
-    /**
-     * @description This method create easier message collector, then collected, will execute your custom function.
-     * @param  {Object} options
-     * @param {Message} options.botMessage - Message sent from bot.
-     * @param  {UserResolvable} options.user - UserResolvable who will react.
-     * @param {MessageCollectorOptions} [options.collectorOptions=null] - Message collector options
-     * @param {Funciton} [options.onMessage] - Triggered when user sent a message
-     * @param {boolean} [options.deleteMessage=true] - Message sent from bot.
-     * @note Trigger when user sent a message must be like onMessage(botMessage, message) => {};
-     * @returns {void}
-     */
-    static question(options) {
-        return this.__createMessageCollector(
-            validateOptions(options, 'messageQuestion'),
-        );
-    }
+const RequirementType = Object.freeze({
+    UNKNOWN: 0,
+    BOOST: 1,
+    VERIFIED_DEVELOPER: 2,
+    PERMISSION: 3,
+    ROLES: 4,
+    USERS: 5,
+});
 
-    /**
-     * @description This method create easier message collector returning Promise&lt;Message> when collected.
-     * @param  {Object} options
-     * @param {Message} options.botMessage - Message sent from bot.
-     * @param  {UserResolvable} options.user - UserResolvable who will react.
-     * @param {MessageCollectorOptions} [options.collectorOptions=null] - Message collector options
-     * @param {boolean} [options.deleteMessage=true] - Delete user message.
-     * @returns {Promise&lt;Message>}
-     */
-    static asyncQuestion(options) {
-        return this.__createAsyncMessageCollector(
-            validateOptions(options, 'messageAsyncQuestion'),
-        );
-    }
+/**
+ * Reaction Role Type
+ * @typedef {object} ReactionRoleType
+ * @property {number} NORMAL - This role works like basic reaction role.
+ * @property {number} TOGGLE - You can win only one role of all toggle roles in this message (like colors system)
+ * @property {number} JUST_WIN - This role you'll only win, not lose.
+ * @property {number} JUST_LOSE - This role you'll only lose, not win.
+ * @property {number} REVERSED - This is reversed role. When react, you'll lose it, when you take off reaction you'll win it.
+ * @readonly
+ */
+const ReactionRoleType = Object.freeze({
+    UNKNOWN: 0,
+    NORMAL: 1,
+    TOGGLE: 2,
+    JUST_WIN: 3,
+    JUST_LOSE: 4,
+    REVERSED: 5
+});
 
-    /**
-     * Internal method, do not use.
-     * @private
-     */
-    static __createMessageCollector(_options) {
-        const {
-            botMessage,
-            user,
-            collectorOptions,
-            onMessage,
-            deleteMessage,
-        } = _options;
-        const filter = (message) => message.author.id === user.id &amp;&amp; !message.author.bot;
-        const collector = botMessage.channel.createMessageCollector(
-            filter,
-            collectorOptions,
-        );
-        collector.on('collect', async (message) => {
-            if (deleteMessage) await message.delete();
-            await onMessage(botMessage, message);
-        });
-        return collector;
-    }
+/**
+ * Reaction action Type
+ * @typedef {object} ActionType
+ * @property {number} UNKNOWN - Unknown type of this reaction action.
+ * @property {number} GIVE - The member will win some reaction role.
+ * @property {number} TAKE - The member will lose some reaction role.
+ * @readonly
+ */
+const ActionType = Object.freeze({
+    UNKNOWN: 0,
+    GIVE: 1,
+    TAKE: 2
+});
 
-    /**
-     * Internal method, do not use.
-     * @private
-     */
-    static async __createAsyncMessageCollector(_options) {
-        return new Promise(async (resolve, reject) => {
-            const {
-                botMessage,
-                user,
-                collectorOptions,
-                deleteMessage,
-            } = _options;
-            const filter = (message) => message.author.id === user.id &amp;&amp; !message.author.bot;
-            const caughtMessages = await botMessage.channel.awaitMessages(
-                filter,
-                collectorOptions,
-            );
-            if (caughtMessages.size > 0) {
-                const message = caughtMessages.first();
-                if (deleteMessage) await message.delete();
-                return resolve(message);
-            }
-            // eslint-disable-next-line prefer-promise-reject-errors
-            return reject(false);
-        });
-    }
-}
+/**
+ * Check if a number is valid reaction role type.
+ * @param {ReactionRoleType} number - Type of reaction role to check if it's valid.
+ * @return {boolean}
+ */
+const isValidReactionRoleType = (number) => !isNaN(number) &amp;&amp; (number >= ReactionRoleType.NORMAL &amp;&amp; number &lt;= ReactionRoleType.REVERSED);
 
 module.exports = {
-    MessageCollector,
+    RequirementType,
+    ReactionRoleEvent,
+    ReactionRoleType,
+    ActionType,
+    isValidReactionRoleType,
 };
 </code></pre>
         </article>
@@ -149,7 +139,7 @@ module.exports = {
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Sat Dec 19 2020 15:50:38 GMT-0300 (Horário Padrão de Brasília) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Sat Dec 19 2020 15:50:51 GMT-0300 (Horário Padrão de Brasília) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
