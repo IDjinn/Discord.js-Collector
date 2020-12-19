@@ -18,6 +18,7 @@ import Discord, {
   GuildManager,
   GuildResolvable,
   Emoji,
+  PermissionResolvable,
 } from "discord.js";
 
 import { EventEmitter } from "events";
@@ -78,8 +79,17 @@ declare module "discord.js-collector" {
   }
 
   export interface IRequirements {
-    boost: boolean;
-    verifiedDeveloper: boolean;
+    boost: boolean | false;
+    verifiedDeveloper: boolean | false;
+    roles: {
+      allowList: string[];
+      denyList: string[];
+    };
+    users: {
+      allowList: string[];
+      denyList: string[];
+    };
+    permissionsNeed: PermissionResolvable[];
   }
 
   export interface IReactionRoleOptions {
