@@ -502,7 +502,7 @@ class ReactionRoleManager extends EventEmitter {
                     `Member '${member.user.id}' not have verified developer requirement, will not win this role.`,
                 );
                 return resolve(false);
-            }
+            } else {
             return resolve(true);
         });
     }
@@ -567,7 +567,7 @@ class ReactionRoleManager extends EventEmitter {
                     `Roles '[${roles}]' added in reactionRoleManager!`,
                 );
                 return resolve(reactionRole);
-            }
+            } else {
             return reject(new Error('Bad input: addRole({...}) message must be a Message Object.'));
         });
     }
@@ -621,7 +621,7 @@ class ReactionRoleManager extends EventEmitter {
                     );
                 }
                 return resolve(reactionRole && reactionRole.disabled ? reactionRole : null);
-            }
+            } else {
             return reject(new Error('Bad input: deleteReactionRole(role) must be a ReactionRole Object.'));
         });
     }
