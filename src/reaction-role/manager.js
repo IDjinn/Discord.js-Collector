@@ -598,7 +598,7 @@ class ReactionRoleManager extends EventEmitter {
             }
 
             if (reactionRole instanceof ReactionRole) {
-                if (!this.keepReactions) await this.__handleDeleted(reactionRole, reactionRole.guild, () => {});
+                if (!this.keepReactions) await this.__handleDeleted(reactionRole, reactionRole.guild, () => { });
 
                 reactionRole.disabled = true;
                 if (this.disabledProperty) await this.store(reactionRole);
