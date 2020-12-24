@@ -1,1 +1,274 @@
-[{"id":"785880455332364329-%E2%9A%AB","message":"785880455332364329","channel":"785880342690922527","guild":"515688359373438978","emoji":"%E2%9A%AB","winners":[],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":2,"roles":["776948444228222999"]},{"id":"785880455332364329-%E2%9A%AA","message":"785880455332364329","channel":"785880342690922527","guild":"515688359373438978","emoji":"%E2%9A%AA","winners":[],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":2,"roles":["776948450377072650"]},{"id":"785880455332364329-%F0%9F%9F%A2","message":"785880455332364329","channel":"785880342690922527","guild":"515688359373438978","emoji":"%F0%9F%9F%A2","winners":[],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":2,"roles":["776948442810941482"]},{"id":"785880455332364329-%F0%9F%9F%A1","message":"785880455332364329","channel":"785880342690922527","guild":"515688359373438978","emoji":"%F0%9F%9F%A1","winners":[],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":2,"roles":["776948453648629761"]},{"id":"785880455332364329-%F0%9F%9F%A0","message":"785880455332364329","channel":"785880342690922527","guild":"515688359373438978","emoji":"%F0%9F%9F%A0","winners":[],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":2,"roles":["776948450939240468"]},{"id":"785880455332364329-%F0%9F%94%B4","message":"785880455332364329","channel":"785880342690922527","guild":"515688359373438978","emoji":"%F0%9F%94%B4","winners":["376460601909706773"],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":2,"roles":["776948449164918784"]},{"id":"785880455332364329-%F0%9F%9F%A3","message":"785880455332364329","channel":"785880342690922527","guild":"515688359373438978","emoji":"%F0%9F%9F%A3","winners":[],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":2,"roles":["776948447243927563"]},{"id":"785880455332364329-%F0%9F%94%B5","message":"785880455332364329","channel":"785880342690922527","guild":"515688359373438978","emoji":"%F0%9F%94%B5","winners":[],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":2,"roles":["776948452944773120"]},{"id":"776942288424796170-%E2%98%91%EF%B8%8F","message":"776942288424796170","channel":"776939424591642645","guild":"515688359373438978","emoji":"%E2%98%91%EF%B8%8F","winners":["376460601909706773"],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":3,"roles":["776940603907899393"]},{"id":"556908119406673960-%F0%9F%94%B4","message":"556908119406673960","channel":"529295239106527291","guild":"515688359373438978","emoji":"%F0%9F%94%B4","winners":[],"max":0,"requirements":{"boost":false,"verifiedDeveloper":false},"disabled":false,"type":1,"roles":["776952342964338759"]}]
+[
+    {
+        "id": "785880455332364329-%E2%9A%AB",
+        "message": "785880455332364329",
+        "channel": "785880342690922527",
+        "guild": "515688359373438978",
+        "emoji": "%E2%9A%AB",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 2,
+        "roles": [
+            "776948444228222999"
+        ]
+    },
+    {
+        "id": "785880455332364329-%E2%9A%AA",
+        "message": "785880455332364329",
+        "channel": "785880342690922527",
+        "guild": "515688359373438978",
+        "emoji": "%E2%9A%AA",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 2,
+        "roles": [
+            "776948450377072650"
+        ]
+    },
+    {
+        "id": "785880455332364329-%F0%9F%9F%A2",
+        "message": "785880455332364329",
+        "channel": "785880342690922527",
+        "guild": "515688359373438978",
+        "emoji": "%F0%9F%9F%A2",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 2,
+        "roles": [
+            "776948442810941482"
+        ]
+    },
+    {
+        "id": "785880455332364329-%F0%9F%9F%A1",
+        "message": "785880455332364329",
+        "channel": "785880342690922527",
+        "guild": "515688359373438978",
+        "emoji": "%F0%9F%9F%A1",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 2,
+        "roles": [
+            "776948453648629761"
+        ]
+    },
+    {
+        "id": "785880455332364329-%F0%9F%9F%A0",
+        "message": "785880455332364329",
+        "channel": "785880342690922527",
+        "guild": "515688359373438978",
+        "emoji": "%F0%9F%9F%A0",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": ["776938900769734656"],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": ["ADMINISTRATOR"]
+        },
+        "disabled": false,
+        "type": 2,
+        "roles": [
+            "776948450939240468"
+        ]
+    },
+    {
+        "id": "785880455332364329-%F0%9F%94%B4",
+        "message": "785880455332364329",
+        "channel": "785880342690922527",
+        "guild": "515688359373438978",
+        "emoji": "%F0%9F%94%B4",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 2,
+        "roles": [
+            "776948449164918784"
+        ]
+    },
+    {
+        "id": "785880455332364329-%F0%9F%9F%A3",
+        "message": "785880455332364329",
+        "channel": "785880342690922527",
+        "guild": "515688359373438978",
+        "emoji": "%F0%9F%9F%A3",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 2,
+        "roles": [
+            "776948447243927563"
+        ]
+    },
+    {
+        "id": "785880455332364329-%F0%9F%94%B5",
+        "message": "785880455332364329",
+        "channel": "785880342690922527",
+        "guild": "515688359373438978",
+        "emoji": "%F0%9F%94%B5",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 2,
+        "roles": [
+            "776948452944773120"
+        ]
+    },
+    {
+        "id": "776942288424796170-%E2%98%91%EF%B8%8F",
+        "message": "776942288424796170",
+        "channel": "776939424591642645",
+        "guild": "515688359373438978",
+        "emoji": "%E2%98%91%EF%B8%8F",
+        "winners": [
+            "376460601909706773"
+        ],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 3,
+        "roles": [
+            "776940603907899393"
+        ]
+    },
+    {
+        "id": "556908119406673960-%F0%9F%94%B4",
+        "message": "556908119406673960",
+        "channel": "529295239106527291",
+        "guild": "515688359373438978",
+        "emoji": "%F0%9F%94%B4",
+        "winners": [],
+        "max": 0,
+        "requirements": {
+            "boost": false,
+            "verifiedDeveloper": false,
+            "roles": {
+                "allowList": [],
+                "denyList": []
+            },
+            "users": {
+                "allowList": [],
+                "denyList": []
+            },
+            "permissionsNeed": []
+        },
+        "disabled": false,
+        "type": 1,
+        "roles": [
+            "776952342964338759"
+        ]
+    }
+]

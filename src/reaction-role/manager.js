@@ -86,9 +86,10 @@ class ReactionRoleManager extends EventEmitter {
     /**
      * Triggered when someone tried won role, but not have it requirements.
      * @event ReactionRoleManager#missingRequirements
-     * @property {REQUIREMENT_TYPE} requirementType - The missing requirement to win this role.
+     * @property {RequirementType} requirementType - The missing requirement to win this role.
      * @property {GuildMember} member - Member who will not win this role.
      * @property {ReactionRole} reactionRole - This reaction role what the member hasn't the requirements.
+     * @property {object?} requirementsMissing - All things missing to win this role (e.g roles)
      *
      * @example
      * reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
@@ -476,19 +477,21 @@ class ReactionRoleManager extends EventEmitter {
         return new Promise(async (resolve) => {
             if (reactionRole.requirements.permissionsNeed.length > 0) {
                 const missingPermissions = member.permissions.missing(reactionRole.requirements.permissionsNeed);
-                this.emit(
-                    ReactionRoleEvent.MISSING_REQUIREMENTS,
-                    RequirementType.PERMISSION,
-                    member,
-                    reactionRole,
-                    missingPermissions,
-                );
-                await reaction.users.remove(member.user);
-                this.__debug(
-                    'BOOT',
-                    `Member '${member.id}' not have all permissions requirement, will not win this role.`,
-                );
-                return resolve(false);
+                if (missingPermissions.length > 0) {
+                    this.emit(
+                        ReactionRoleEvent.MISSING_REQUIREMENTS,
+                        RequirementType.PERMISSION,
+                        member,
+                        reactionRole,
+                        missingPermissions,
+                    );
+                    await reaction.users.remove(member.user);
+                    this.__debug(
+                        'BOOT',
+                        `Member '${member.id}' not have all permissions requirement, will not win this role.`,
+                    );
+                    return resolve(false);
+                }
             }
 
             if (reactionRole.requirements.roles.allowList.length > 0
@@ -501,19 +504,21 @@ class ReactionRoleManager extends EventEmitter {
                     withDeniedRoles: withDeniedRoles.map((roleId) => member.guild.roles.resolve(roleId)),
                 };
 
-                this.emit(
-                    ReactionRoleEvent.MISSING_REQUIREMENTS,
-                    RequirementType.ROLES,
-                    member,
-                    reactionRole,
-                    roles,
-                );
-                await reaction.users.remove(member.user);
-                this.__debug(
-                    'BOOT',
-                    `Member '${member.id}' not have all allowed roles requirement or has some denied roles, will not win this role.`,
-                );
-                return resolve(false);
+                if (withoutAllowedRoles.length > 0 || withDeniedRoles.length > 0) {
+                    this.emit(
+                        ReactionRoleEvent.MISSING_REQUIREMENTS,
+                        RequirementType.ROLES,
+                        member,
+                        reactionRole,
+                        roles,
+                    );
+                    await reaction.users.remove(member.user);
+                    this.__debug(
+                        'BOOT',
+                        `Member '${member.id}' not have all allowed roles requirement or has some denied roles, will not win this role.`,
+                    );
+                    return resolve(false);
+                }
             }
 
             if (reactionRole.requirements.users.allowList.length > 0
@@ -522,9 +527,9 @@ class ReactionRoleManager extends EventEmitter {
                 const deniedUsers = reactionRole.requirements.users.denyList.map((userId) => member.guild.members.resolve(userId));
 
                 const users = { allowedUsers, deniedUsers };
-
-                if ((allowedUsers.length > 0 && !allowedUsers.has(member.id))
-                    || (deniedUsers.length > 0 && deniedUsers.has(member.id))) {
+                /* eslint-disable no-shadow */
+                if ((allowedUsers.length > 0 && !allowedUsers.find((member) => member.id))
+                    || (deniedUsers.length > 0 && deniedUsers.find((member) => member.id))) {
                     this.emit(
                         ReactionRoleEvent.MISSING_REQUIREMENTS,
                         RequirementType.USERS,
@@ -539,6 +544,7 @@ class ReactionRoleManager extends EventEmitter {
                     );
                     return resolve(false);
                 }
+                /* eslint-enable no-shadow */
             }
 
             if (!reactionRole.checkBoostRequirement(member)) {
@@ -695,7 +701,7 @@ class ReactionRoleManager extends EventEmitter {
             }
 
             if (reactionRole instanceof ReactionRole) {
-                if (!this.keepReactions) await this.__handleDeleted(reactionRole, reactionRole.guild, () => {});
+                if (!this.keepReactions) await this.__handleDeleted(reactionRole, reactionRole.guild, () => { });
 
                 reactionRole.disabled = true;
                 if (this.disabledProperty) await this.store(reactionRole);
