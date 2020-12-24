@@ -1,6 +1,20 @@
 
 
 ---
+#  V1.8.3 ->  V1.8.4
+
+Reaction Role Manager: \
+    - `RequirementType` now is enum check [here](https://idjinn.github.io/Discord.js-Collector/global.html#RequirementType) new values.\
+    - `IRequirementType` now was improved, check [here](https://idjinn.github.io/Discord.js-Collector/global.html#IRequirementType) new fields.\
+
+
+---
+#  V1.8.1 ->  V1.8.3
+
+Reaction Role Manager: \
+    - `debug` property was removed, please use event debug instead.
+
+---
 #  V1.8.1 ->  V1.8.3
 
 Reaction Role Manager: \

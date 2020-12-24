@@ -23,6 +23,7 @@ const ReactionRoleEvent = Object.freeze({
 /**
  * Requirement type to win some role.
  * @typedef {Object} RequirementType
+ * @property {number} [UNKNOWN=0]
  * @property {number} [BOOST=1] - Need be a booster to win this role.
  * @property {number} [VERIFIED_DEVELOPER=2] - Need be a verified developer to win this role.
  * @property {number} [PERMISSION=3] - Need has some permissions to win this role.

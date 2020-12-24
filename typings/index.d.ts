@@ -248,8 +248,12 @@ declare module "discord.js-collector" {
   }
 
   export enum RequirementType {
-    BOOST = 'BOOST',
-    VERIFIED_DEVELOPER = 'VERIFIED_DEVELOPER',
+    UNKNOWN,
+    BOOST,
+    VERIFIED_DEVELOPER,
+    PERMISSION,
+    ROLES,
+    USERS,
   }
 
   export interface ICreateRoleOptions {
