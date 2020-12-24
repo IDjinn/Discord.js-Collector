@@ -554,7 +554,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="reaction-role_constants.js.html">reaction-role/constants.js</a>, <a href="reaction-role_constants.js.html#line73">line 73</a>
+        <a href="reaction-role_constants.js.html">reaction-role/constants.js</a>, <a href="reaction-role_constants.js.html#line80">line 80</a>
     </li></ul></dd>
     
 
@@ -816,7 +816,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="reaction-role_constants.js.html">reaction-role/constants.js</a>, <a href="reaction-role_constants.js.html#line54">line 54</a>
+        <a href="reaction-role_constants.js.html">reaction-role/constants.js</a>, <a href="reaction-role_constants.js.html#line61">line 61</a>
     </li></ul></dd>
     
 
@@ -991,6 +991,678 @@ If return value is false, this action will be bypassed.</p></td>
         <li>
             
 <span class="param-type"><code>Object</code></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</div>
+
+            
+                
+<div class="section-members">
+<h4 class="name" id="IRequirementRolesType">IRequirementRolesType</h4>
+
+
+
+
+<div class="description">
+    <p>Requirement type object struct</p>
+</div>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>allowList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;RoleResolvable></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>List of roles ID's need to win this role.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>denyList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;RoleResolvable></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>List of roles ID's denied to win this role.</p></td>
+        </tr>
+
+        
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="reaction-role_reactionRole.js.html">reaction-role/reactionRole.js</a>, <a href="reaction-role_reactionRole.js.html#line16">line 16</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>object</code></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</div>
+
+            
+                
+<div class="section-members">
+<h4 class="name" id="IRequirementType">IRequirementType</h4>
+
+
+
+
+<div class="description">
+    <p>Requirement type object struct</p>
+</div>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>boost</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>boolean</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>User need have boost in server to win this role.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>verifiedDeveloper</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>boolean</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>User need verified developer badge to win this role.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>roles</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="global.html#IRequirementRolesType">IRequirementRolesType</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"><p>Roles requirements</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>users</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="global.html#IRequirementUsersType">IRequirementUsersType</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>Users requirements</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>permissionsNeed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;PermissionResolvable></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>Permissions requirements</p></td>
+        </tr>
+
+        
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="reaction-role_reactionRole.js.html">reaction-role/reactionRole.js</a>, <a href="reaction-role_reactionRole.js.html#line6">line 6</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>object</code></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</div>
+
+            
+                
+<div class="section-members">
+<h4 class="name" id="IRequirementUsersType">IRequirementUsersType</h4>
+
+
+
+
+<div class="description">
+    <p>Requirement type object struct</p>
+</div>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>allowList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;UserResolvable></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>List of users ID's allowed to win this role.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>denyList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;UserResolvable></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>List of users ID's denied to win this role.</p></td>
+        </tr>
+
+        
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="reaction-role_reactionRole.js.html">reaction-role/reactionRole.js</a>, <a href="reaction-role_reactionRole.js.html#line23">line 23</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>object</code></span>
 
 
         </li>
@@ -1523,7 +2195,7 @@ If return value is false, this action will be bypassed.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="reaction-role_constants.js.html">reaction-role/constants.js</a>, <a href="reaction-role_constants.js.html#line35">line 35</a>
+        <a href="reaction-role_constants.js.html">reaction-role/constants.js</a>, <a href="reaction-role_constants.js.html#line42">line 42</a>
     </li></ul></dd>
     
 
@@ -1582,7 +2254,11 @@ If return value is false, this action will be bypassed.</p></td>
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -1600,14 +2276,28 @@ If return value is false, this action will be bypassed.</p></td>
             <td class="type">
             
                 
-<span class="param-type"><code>string</code></span>
+<span class="param-type"><code>number</code></span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    1
+                
+                </td>
             
 
             <td class="description last"><p>Need be a booster to win this role.</p></td>
@@ -1625,17 +2315,148 @@ If return value is false, this action will be bypassed.</p></td>
             <td class="type">
             
                 
-<span class="param-type"><code>string</code></span>
+<span class="param-type"><code>number</code></span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    2
+                
+                </td>
             
 
             <td class="description last"><p>Need be a verified developer to win this role.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>PERMISSION</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    3
+                
+                </td>
+            
+
+            <td class="description last"><p>Need has some permissions to win this role.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ROLES</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    4
+                
+                </td>
+            
+
+            <td class="description last"><p>Need has all allow listed roles and hasn't all denied listed roles.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>USERS</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    5
+                
+                </td>
+            
+
+            <td class="description last"><p>Need be inluded in allow list and not included in deny list to win this role.</p></td>
         </tr>
 
         
@@ -1721,7 +2542,7 @@ If return value is false, this action will be bypassed.</p></td>
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Dec 17 2020 11:27:12 GMT-0300 (Horário Padrão de Brasília) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Dec 24 2020 15:34:35 GMT-0200 (GMT-02:00) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

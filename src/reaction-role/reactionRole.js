@@ -1,5 +1,32 @@
-const { GuildMember } = require('discord.js');
+const {
+    GuildMember, PermissionResolvable, RoleResolvable, UserResolvable,
+} = require('discord.js');
 const { ReactionRoleType, isValidReactionRoleType } = require('./constants');
+
+/**
+ * Requirement type object struct
+ * @typedef {object} IRequirementType
+ * @property {boolean} [boost=false] - User need have boost in server to win this role.
+ * @property {boolean} [verifiedDeveloper=false] - User need verified developer badge to win this role.
+ * @property {IRequirementRolesType} [roles={}] - Roles requirements
+ * @property {IRequirementUsersType} [users=false] - Users requirements
+ * @property {PermissionResolvable[]} [permissionsNeed=[]] - Permissions requirements
+ */
+
+/**
+ * Requirement type object struct
+ * @typedef {object} IRequirementRolesType
+ * @property {RoleResolvable[]} [allowList=[]] - List of roles ID's need to win this role.
+ * @property {RoleResolvable[]} [denyList=[]] - List of roles ID's denied to win this role.
+ */
+
+/**
+ * Requirement type object struct
+ * @typedef {object} IRequirementUsersType
+ * @property {UserResolvable[]} [allowList=[]] - List of users ID's allowed to win this role.
+ * @property {UserResolvable[]} [denyList=[]] - List of users ID's denied to win this role.
+ */
+
 /**
  * Reaction role object structure.
  */
@@ -14,9 +41,7 @@ class ReactionRole {
      * @param {string[]} [data.winners=[]] - List with role winners ID;
      * @param {number} [data.max=Number.MAX_SAFE_INTEGER] - Max roles available to give.
      * @param {boolean} [data.toggle=false] - User will have only one of these message roles.
-     * @param {object} [data.requirements={}] - Requirements to win this role.
-     * @param {boolean} [data.requirements.boost=false] - Need be a booster to win this role?
-     * @param {boolean} [data.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
+     * @param {IRequirementType} [data.requirements={}] - Requirements to win this role.
      * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
      * @param {ReactionRoleType} [data.type=1] - Reaction role type
      * @param {string[]} [data.roles=[]] - All roles of this reaction role.
@@ -88,14 +113,21 @@ class ReactionRole {
         this.toggle = Boolean(toggle);
         /**
          * Requirement to win this role.
-         * @property {boolean} [boost=false] - Need be a booster to win this role.
-         * @property {boolean} [verifiedDeveloper=false] - Need be a verified bot developer to win this role.
+         * @type {IRequirementType}
          */
         this.requirements = {
-            boost: Boolean(requirements ? requirements.boost : null),
-            verifiedDeveloper: Boolean(
-                requirements ? requirements.verifiedDeveloper : null,
-            ),
+            boost: false,
+            verifiedDeveloper: false,
+            roles: {
+                allowList: [],
+                denyList: [],
+            },
+            users: {
+                allowList: [],
+                denyList: [],
+            },
+            permissionsNeed: [],
+            ...requirements,
         };
         /**
          * Is this reaction role disabled?
@@ -113,6 +145,7 @@ class ReactionRole {
          */
         this.roles = Array.isArray(roles) ? roles : [];
 
+        this.__check();
         this.__handleDeprecation();
         if (!isValidReactionRoleType(this.type)) throw new Error(`Unexpected Reaction Role Type: '${this.type}' is not a valid type.`);
     }
@@ -184,10 +217,7 @@ class ReactionRole {
             emoji: this.emoji,
             winners: this.winners,
             max: this.max,
-            requirements: {
-                boost: this.requirements.boost,
-                verifiedDeveloper: this.requirements.verifiedDeveloper,
-            },
+            requirements: this.requirements,
             disabled: this.disabled,
             type: this.type,
             roles: this.roles,
@@ -195,7 +225,7 @@ class ReactionRole {
     }
 
     /**
-     * Check if member have developer requirement to win this role.
+     * Check if member have developer requirement to win this roles.
      * @param {GuildMember} member - The member to check.
      * @return {Promise<boolean>}
      */
@@ -209,7 +239,7 @@ class ReactionRole {
     }
 
     /**
-     * Check if member have boost requirement to win this role.
+     * Check if member have boost requirement to win this roles.
      * @param {GuildMember} member - The member to check.
      * @return {boolean}
      */
@@ -259,6 +289,19 @@ class ReactionRole {
         * @since 1.8.0
         */
         if (this.role && !this.roles.includes(this.role)) this.roles.push(this.role);
+    }
+
+    /**
+     * @private
+     */
+    __check() {
+        this.requirements.boost = Boolean(this.requirements.boost);
+        this.requirements.verifiedDeveloper = Boolean(this.requirements.verifiedDeveloper);
+        if (typeof this.requirements.boost !== 'boolean') throw new Error('Invalid property: requirements.boost must be a boolean.');
+        if (typeof this.requirements.verifiedDeveloper !== 'boolean') throw new Error('Invalid property: requirements.verifiedDeveloper must be a boolean.');
+        if (!Array.isArray(this.requirements.roles.allowList)) throw new Error('Invalid property: requirements.roles.allowList must be a array.');
+        if (!Array.isArray(this.requirements.roles.denyList)) throw new Error('Invalid property: requirements.roles.denyList must be a array.');
+        if (!Array.isArray(this.requirements.permissionsNeed)) throw new Error('Invalid property: requirements.permissionsNeed must be a array.');
     }
 }
 

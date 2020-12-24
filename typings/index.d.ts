@@ -18,7 +18,9 @@ import Discord, {
   GuildManager,
   GuildResolvable,
   Emoji,
-} from "discord.js";
+  PermissionResolvable,
+  RoleResolvable,
+} from 'discord.js';
 
 import { EventEmitter } from "events";
 
@@ -56,7 +58,7 @@ declare module "discord.js-collector" {
      * @deprecated since 1.7.9
      */
     get toggle(): boolean;
-    get requirements(): IRequirements;
+    get requirements(): IRequirementType;
     get type(): ReactionRoleType;
     get isToggle(): boolean;
     get isNormal(): boolean;
@@ -77,9 +79,21 @@ declare module "discord.js-collector" {
     public toJSON(): JSON;
   }
 
-  export interface IRequirements {
+  export interface IRequirementType {
     boost: boolean;
     verifiedDeveloper: boolean;
+    roles: IRequirementRolesType;
+    users: IRequirementUsersType;
+    permissionsNeed: PermissionResolvable[];
+  }
+
+  export interface IRequirementRolesType {
+    allowList: RoleResolvable[];
+    denyList: RoleResolvable[];
+  }
+  export interface IRequirementUsersType {
+    allowList: UserResolvable[];
+    denyList: UserResolvable[];
   }
 
   export interface IReactionRoleOptions {
@@ -178,6 +192,45 @@ declare module "discord.js-collector" {
       listener: (
         type: IRequirementType,
         member: GuildMember,
+        reactionRole: ReactionRole,
+        missing?: any
+      ) => void
+    ): this;
+    public on(
+      event: "missingPermissions",
+      listener: (
+        action: ActionType,
+        member: GuildMember,
+        reactionRole: ReactionRole,
+        msgReaction: MessageReaction
+      ) => void
+    ): this;
+
+    private __readyTimeout();
+
+    public on(event: string, listener: (...args: any[]) => void): this;
+    public on(
+      event: "reactionRoleAdd",
+      listener: (member: GuildMember, role: Role) => void
+    ): this;
+    public on(
+      event: "reactionRoleRemove",
+      listener: (member: GuildMember, role: Role) => void
+    ): this;
+    public on(
+      event: "allReactionsRemove",
+      listener: (
+        message: Message,
+        rolesAffected: Collection<string, Role>,
+        membersAffected: GuildMember[],
+        reactionsTaken: number
+      ) => void
+    ): this;
+    public on(
+      event: "missingRequirements",
+      listener: (
+        type: RequirementType,
+        member: GuildMember,
         reactionRole: ReactionRole
       ) => void
     ): this;
@@ -191,12 +244,12 @@ declare module "discord.js-collector" {
       ) => void
     ): this;
     public on(event: "ready", listener: () => void): this;
-    public on(event: "debug", listener: (message) => void): this;
+    public on(event: "debug", listener: (message: string) => void): this;
   }
 
-  export enum IRequirementType {
-    BOOST = "BOOST",
-    VERIFIED_DEVELOPER = "VERIFIED_DEVELOPER",
+  export enum RequirementType {
+    BOOST = 'BOOST',
+    VERIFIED_DEVELOPER = 'VERIFIED_DEVELOPER',
   }
 
   export interface ICreateRoleOptions {
@@ -205,7 +258,7 @@ declare module "discord.js-collector" {
     emoji: EmojiIdentifierResolvable;
     max?: number;
     type?: ReactionRoleType;
-    requirements?: IRequirements;
+    requirements?: IRequirementType;
   }
 
   export interface IDeleteRoleOptions {

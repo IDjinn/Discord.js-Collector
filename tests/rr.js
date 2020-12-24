@@ -94,7 +94,8 @@ reactionRoleManager.on('allReactionsRemove', (message) => {
 });
 
 // If member doesn't have all requirements, this event is triggered.
-reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
+reactionRoleManager.on('missingRequirements', (type, member, reactionRole, object) => {
+    console.log(object)
     const embed = new MessageEmbed()
         .setTitle('Missing Requierements')
         .setDescription(`Member \`${member.displayName}\` missing requirement ${type}, he will not win the role '${reactionRole.id}'`)

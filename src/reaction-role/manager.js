@@ -15,7 +15,7 @@ const { EventEmitter } = require('events');
 const fs = require('fs');
 const AsyncLock = require('async-lock');
 const Constants = require('../util/constants');
-const { ReactionRole } = require('./reactionRole');
+const { ReactionRole, IRequirementType } = require('./reactionRole');
 const {
     ReactionRoleEvent, ReactionRoleType, RequirementType, ActionType, isValidReactionRoleType,
 } = require('./constants');
@@ -86,9 +86,10 @@ class ReactionRoleManager extends EventEmitter {
     /**
      * Triggered when someone tried won role, but not have it requirements.
      * @event ReactionRoleManager#missingRequirements
-     * @property {REQUIREMENT_TYPE} requirementType - The missing requirement to win this role.
+     * @property {RequirementType} requirementType - The missing requirement to win this role.
      * @property {GuildMember} member - Member who will not win this role.
      * @property {ReactionRole} reactionRole - This reaction role what the member hasn't the requirements.
+     * @property {object?} requirementsMissing - All things missing to win this role (e.g roles)
      *
      * @example
      * reactionRoleManager.on('missingRequirements', (type, member, reactionRole) => {
@@ -474,6 +475,78 @@ class ReactionRoleManager extends EventEmitter {
      */
     async __checkRequirements(reactionRole, reaction, member) {
         return new Promise(async (resolve) => {
+            if (reactionRole.requirements.permissionsNeed.length > 0) {
+                const missingPermissions = member.permissions.missing(reactionRole.requirements.permissionsNeed);
+                if (missingPermissions.length > 0) {
+                    this.emit(
+                        ReactionRoleEvent.MISSING_REQUIREMENTS,
+                        RequirementType.PERMISSION,
+                        member,
+                        reactionRole,
+                        missingPermissions,
+                    );
+                    await reaction.users.remove(member.user);
+                    this.__debug(
+                        'BOOT',
+                        `Member '${member.id}' not have all permissions requirement, will not win this role.`,
+                    );
+                    return resolve(false);
+                }
+            }
+
+            if (reactionRole.requirements.roles.allowList.length > 0
+                || reactionRole.requirements.roles.denyList.length > 0) {
+                const withoutAllowedRoles = reactionRole.requirements.roles.allowList.filter((roleId) => !member.roles.cache.has(roleId));
+                const withDeniedRoles = reactionRole.requirements.roles.denyList.filter((roleId) => member.roles.cache.has(roleId));
+
+                const roles = {
+                    withoutAllowedRoles: withoutAllowedRoles.map((roleId) => member.guild.roles.resolve(roleId)),
+                    withDeniedRoles: withDeniedRoles.map((roleId) => member.guild.roles.resolve(roleId)),
+                };
+
+                if (withoutAllowedRoles.length > 0 || withDeniedRoles.length > 0) {
+                    this.emit(
+                        ReactionRoleEvent.MISSING_REQUIREMENTS,
+                        RequirementType.ROLES,
+                        member,
+                        reactionRole,
+                        roles,
+                    );
+                    await reaction.users.remove(member.user);
+                    this.__debug(
+                        'BOOT',
+                        `Member '${member.id}' not have all allowed roles requirement or has some denied roles, will not win this role.`,
+                    );
+                    return resolve(false);
+                }
+            }
+
+            if (reactionRole.requirements.users.allowList.length > 0
+                || reactionRole.requirements.users.denyList.length > 0) {
+                const allowedUsers = reactionRole.requirements.users.allowList.map((userId) => member.guild.members.resolve(userId));
+                const deniedUsers = reactionRole.requirements.users.denyList.map((userId) => member.guild.members.resolve(userId));
+
+                const users = { allowedUsers, deniedUsers };
+                /* eslint-disable no-shadow */
+                if ((allowedUsers.length > 0 && !allowedUsers.find((member) => member.id))
+                    || (deniedUsers.length > 0 && deniedUsers.find((member) => member.id))) {
+                    this.emit(
+                        ReactionRoleEvent.MISSING_REQUIREMENTS,
+                        RequirementType.USERS,
+                        member,
+                        reactionRole,
+                        users,
+                    );
+                    await reaction.users.remove(member.user);
+                    this.__debug(
+                        'BOOT',
+                        `Member '${member.id}' not have all allowed users requirement or has included in some denied users list, will not win this role.`,
+                    );
+                    return resolve(false);
+                }
+                /* eslint-enable no-shadow */
+            }
+
             if (!reactionRole.checkBoostRequirement(member)) {
                 this.emit(
                     ReactionRoleEvent.MISSING_REQUIREMENTS,
@@ -487,7 +560,9 @@ class ReactionRoleManager extends EventEmitter {
                     `Member '${member.id}' not have boost requirement, will not win this role.`,
                 );
                 return resolve(false);
-            } if (
+            }
+
+            if (
                 !(await reactionRole.checkDeveloperRequirement(member))
             ) {
                 this.emit(
@@ -515,10 +590,30 @@ class ReactionRoleManager extends EventEmitter {
      * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
      * @param {ReactionRoleType} [options.type=1] - Type of reaction role.
      * @param {Number} [options.max=0] - Max roles to give. If it's 0, will not have a limit.
-     * @param {Object} [options.requirements={}] - Requirements to win this role.
+     * @param {IRequirementType} [options.requirements] - Requirements to win this role.
      * @param {boolean} [options.requirements.boost=false] - Need be a booster to win this role?
      * @param {boolean} [options.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
+     *
      * @return {Promise<ReactionRole>}
+     * @example
+     * // update your import, add ReactionRoleType.
+     *  const { ReactionRoleManager, ReactionRoleType} = require('discord.js-collector');
+     *
+     * const role = message.mentions.roles.first();
+     * if (!role) return message.reply('You need mention a role').then(m => m.delete({ timeout: 1000 }));
+     *
+     * const emoji = args[1];
+     * if (!emoji) return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1000 }));
+     *
+     * const msg = await message.channel.messages.fetch(args[2] || message.id);
+     * if (!role) return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1000 }));
+     *
+     * reactionRoleManager.createReactionRole({
+     *     message: msg,
+     *     roles: [role],
+     *     emoji,
+     *     type: ReactionRoleType.NORMAL // It's optional, normal by default
+     * });
      */
     createReactionRole(
         {
@@ -538,7 +633,6 @@ class ReactionRoleManager extends EventEmitter {
                 if (type && !isValidReactionRoleType(type)) return reject(new Error(`Bad input: Invalid reaction role type: '${type}'.`));
                 if (!type) type = ReactionRoleType.NORMAL;
                 if (!max || max > Number.MAX_SAFE_INTEGER || max < 0) max = Number.MAX_SAFE_INTEGER;
-                requirements = { boost: false, verifiedDeveloper: false, ...requirements };
                 roles = roles.map((role) => message.guild.roles.resolveID(role)).filter((role) => role);
                 if (!roles || roles.length === 0) return reject(new Error(`Bad input: I canno't resolve the roles ${roles}`));
 
@@ -580,6 +674,15 @@ class ReactionRoleManager extends EventEmitter {
      * @param {object} [options.emoji] - Emoji of Reaction Role. If you want delete it and not have the reaction role object
      * @param {boolean} [deleted=false] - Is role deleted from guild?
      * @return {Promise<ReactionRole?>}
+     *
+     * @example
+     *  const emoji = args[0];
+     *  if (!emoji) return message.reply('You need use a valid emoji.').then(m => m.delete({ timeout: 1000 }));
+     *
+     *  const msg = await message.channel.messages.fetch(args[1]);
+     *  if (!msg) return message.reply('Message not found! Wtf...').then(m => m.delete({ timeout: 1000 }));
+     *
+     *  await reactionRoleManager.deleteReactionRole({message: msg, emoji});
      */
     async deleteReactionRole({ reactionRole, message, emoji }, deleted = false) {
         return new Promise(async (resolve, reject) => {
