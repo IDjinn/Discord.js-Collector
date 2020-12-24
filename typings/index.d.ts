@@ -99,6 +99,7 @@ declare module "discord.js-collector" {
     private __withoutPermissionsWarned: Set<string>;
     public reactionRoles: Collection<string, ReactionRole>;
     public timeouts: Collection<string, Function>;
+    private mongoose: any;
     public get isReady(): boolean;
     public get readyAt(): Date;
     public get client(): Client;
