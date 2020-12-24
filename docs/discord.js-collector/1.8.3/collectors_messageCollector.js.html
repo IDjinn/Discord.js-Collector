@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>collectors/messageCollector.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Constants.html">Constants</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Controller.html">Controller</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#back">back</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#goTo">goTo</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#resetTimer">resetTimer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#stop">stop</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Controller.html#update">update</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="MessageCollector.html">MessageCollector</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageCollector.html#.asyncQuestion">asyncQuestion</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageCollector.html#.question">question</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ReactionCollector.html">ReactionCollector</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionCollector.html#.menu">menu</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionCollector.html#.paginator">paginator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionCollector.html#.question">question</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionCollector.html#.yesNoQuestion">yesNoQuestion</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ReactionRole.html">ReactionRole</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRole.html#.fromJSON">fromJSON</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRole.html#checkBoostRequirement">checkBoostRequirement</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRole.html#checkDeveloperRequirement">checkDeveloperRequirement</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRole.html#toJSON">toJSON</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="ReactionRoleManager.html">ReactionRoleManager</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRoleManager.html#createReactionRole">createReactionRole</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRoleManager.html#deleteReactionRole">deleteReactionRole</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="ReactionRoleManager.html#store">store</a></span></li><li class="nav-heading">Events</li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:allReactionsRemove">allReactionsRemove</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:debug">debug</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:missingPermissions">missingPermissions</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:missingRequirements">missingRequirements</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:reactionRoleAdd">reactionRoleAdd</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:reactionRoleRemove">reactionRoleRemove</a></span></li><li class="nav-heading"><span class="nav-item-type type-event">E</span><span class="nav-item-name"><a href="ReactionRoleManager.html#event:ready">ready</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#findRecursively">findRecursively</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#isValidReactionRoleType">isValidReactionRoleType</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">collectors/messageCollector.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const {
+    Message,
+    MessageCollectorOptions,
+    UserResolvable,
+} = require('discord.js');
+const { validateOptions } = require('../util/validate');
+
+/**
+ * Message Collector class
+ */
+class MessageCollector {
+    /**
+     * @description This method create easier message collector, then collected, will execute your custom function.
+     * @param  {Object} options
+     * @param {Message} options.botMessage - Message sent from bot.
+     * @param  {UserResolvable} options.user - UserResolvable who will react.
+     * @param {MessageCollectorOptions} [options.collectorOptions=null] - Message collector options
+     * @param {Funciton} [options.onMessage] - Triggered when user sent a message
+     * @param {boolean} [options.deleteMessage=true] - Message sent from bot.
+     * @note Trigger when user sent a message must be like onMessage(botMessage, message) => {};
+     * @returns {void}
+     */
+    static question(options) {
+        return this.__createMessageCollector(
+            validateOptions(options, 'messageQuestion'),
+        );
+    }
+
+    /**
+     * @description This method create easier message collector returning Promise&lt;Message> when collected.
+     * @param  {Object} options
+     * @param {Message} options.botMessage - Message sent from bot.
+     * @param  {UserResolvable} options.user - UserResolvable who will react.
+     * @param {MessageCollectorOptions} [options.collectorOptions=null] - Message collector options
+     * @param {boolean} [options.deleteMessage=true] - Delete user message.
+     * @returns {Promise&lt;Message>}
+     */
+    static asyncQuestion(options) {
+        return this.__createAsyncMessageCollector(
+            validateOptions(options, 'messageAsyncQuestion'),
+        );
+    }
+
+    /**
+     * Internal method, do not use.
+     * @private
+     */
+    static __createMessageCollector(_options) {
+        const {
+            botMessage,
+            user,
+            collectorOptions,
+            onMessage,
+            deleteMessage,
+        } = _options;
+        const filter = (message) => message.author.id === user.id &amp;&amp; !message.author.bot;
+        const collector = botMessage.channel.createMessageCollector(
+            filter,
+            collectorOptions,
+        );
+        collector.on('collect', async (message) => {
+            if (deleteMessage) await message.delete();
+            await onMessage(botMessage, message);
+        });
+        return collector;
+    }
+
+    /**
+     * Internal method, do not use.
+     * @private
+     */
+    static async __createAsyncMessageCollector(_options) {
+        return new Promise(async (resolve, reject) => {
+            const {
+                botMessage,
+                user,
+                collectorOptions,
+                deleteMessage,
+            } = _options;
+            const filter = (message) => message.author.id === user.id &amp;&amp; !message.author.bot;
+            const caughtMessages = await botMessage.channel.awaitMessages(
+                filter,
+                collectorOptions,
+            );
+            if (caughtMessages.size > 0) {
+                const message = caughtMessages.first();
+                if (deleteMessage) await message.delete();
+                return resolve(message);
+            }
+            // eslint-disable-next-line prefer-promise-reject-errors
+            return reject(false);
+        });
+    }
+}
+
+module.exports = {
+    MessageCollector,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a> on Thu Dec 17 2020 11:27:31 GMT-0300 (Horário Padrão de Brasília) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
