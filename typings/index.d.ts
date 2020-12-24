@@ -202,199 +202,201 @@ declare module "discord.js-collector" {
         member: GuildMember,
         reactionRole: ReactionRole,
         msgReaction: MessageReaction
-      );
-      private __readyTimeout();
+      ) => void
+    ): this;
 
-      public on(event: string, listener: (...args: any[]) => void): this;
-      public on(
-        event: "reactionRoleAdd",
-        listener: (member: GuildMember, role: Role) => void
-      ): this;
-      public on(
-          event: "reactionRoleRemove",
-          listener: (member: GuildMember, role: Role) => void
-      ): this;
-      public on(
-            event: "allReactionsRemove",
-            listener: (
-              message: Message,
-              rolesAffected: Collection<string, Role>,
-              membersAffected: GuildMember[],
-              reactionsTaken: number
-            ) => void
-      ): this;
-      public on(
-              event: "missingRequirements",
-              listener: (
-                type: RequirementType,
-                member: GuildMember,
-                reactionRole: ReactionRole
-              ) => void
-      ): this;
-      public on(
-                event: "missingPermissions",
-                listener: (
-                  action: ActionType,
-                  member: GuildMember,
-                  roles: Role[],
-                  reactionRole: ReactionRole
-                ) => void
-      ): this;
-      public on(event: "ready", listener: () => void): this;
-      public on(event: "debug", listener: (message: string) => void): this;
-}
+    private __readyTimeout();
 
-export enum RequirementType {
-  BOOST = 'BOOST',
-  VERIFIED_DEVELOPER = 'VERIFIED_DEVELOPER',
-}
+    public on(event: string, listener: (...args: any[]) => void): this;
+    public on(
+      event: "reactionRoleAdd",
+      listener: (member: GuildMember, role: Role) => void
+    ): this;
+    public on(
+      event: "reactionRoleRemove",
+      listener: (member: GuildMember, role: Role) => void
+    ): this;
+    public on(
+      event: "allReactionsRemove",
+      listener: (
+        message: Message,
+        rolesAffected: Collection<string, Role>,
+        membersAffected: GuildMember[],
+        reactionsTaken: number
+      ) => void
+    ): this;
+    public on(
+      event: "missingRequirements",
+      listener: (
+        type: RequirementType,
+        member: GuildMember,
+        reactionRole: ReactionRole
+      ) => void
+    ): this;
+    public on(
+      event: "missingPermissions",
+      listener: (
+        action: ActionType,
+        member: GuildMember,
+        roles: Role[],
+        reactionRole: ReactionRole
+      ) => void
+    ): this;
+    public on(event: "ready", listener: () => void): this;
+    public on(event: "debug", listener: (message: string) => void): this;
+  }
 
-export interface ICreateRoleOptions {
-  message: Message;
-  roles: Role[];
-  emoji: EmojiIdentifierResolvable;
-  max?: number;
-  type?: ReactionRoleType;
-  requirements?: IRequirementType;
-}
+  export enum RequirementType {
+    BOOST = 'BOOST',
+    VERIFIED_DEVELOPER = 'VERIFIED_DEVELOPER',
+  }
 
-export interface IDeleteRoleOptions {
-  reactionRole?: ReactionRole;
-  message?: Message;
-  emoji?: Emoji;
-}
+  export interface ICreateRoleOptions {
+    message: Message;
+    roles: Role[];
+    emoji: EmojiIdentifierResolvable;
+    max?: number;
+    type?: ReactionRoleType;
+    requirements?: IRequirementType;
+  }
 
-export interface IReactionRoleManagerOptions {
-  storage: boolean | true;
-  path: string;
-  mongoDbLink?: string;
-  storageJsonPath?: string;
-  disabledProperty?: boolean | true;
-  hooks?: IHooks | null;
-  keepReactions?: boolean | false;
-}
+  export interface IDeleteRoleOptions {
+    reactionRole?: ReactionRole;
+    message?: Message;
+    emoji?: Emoji;
+  }
 
-export interface IHooks {
-  preRoleAddHook: (
-    member: GuildMember,
-    role?: Role,
-    reactionRole: ReactionRole
-  ) => Promise<Boolean>;
-  preRoleRemoveHook: (
-    member: GuildMember,
-    role?: Role,
-    reactionRole: ReactionRole
-  ) => Promise<Boolean>;
-}
+  export interface IReactionRoleManagerOptions {
+    storage: boolean | true;
+    path: string;
+    mongoDbLink?: string;
+    storageJsonPath?: string;
+    disabledProperty?: boolean | true;
+    hooks?: IHooks | null;
+    keepReactions?: boolean | false;
+  }
 
-export class MessageCollector {
-  public static question(
-    options: IMessageQuestionOptions
-  ): Discord.MessageCollector;
-  public static asyncQuestion(
-    options: IMessageQuestionOptions
-  ): Promise<Message>;
-  private __createMessageCollector(_options): Discord.MessageCollector;
-  private __createAsyncMessageCollector(_options): Promise<Message>;
-}
+  export interface IHooks {
+    preRoleAddHook: (
+      member: GuildMember,
+      role?: Role,
+      reactionRole: ReactionRole
+    ) => Promise<Boolean>;
+    preRoleRemoveHook: (
+      member: GuildMember,
+      role?: Role,
+      reactionRole: ReactionRole
+    ) => Promise<Boolean>;
+  }
 
-export interface IMessageQuestionOptions {
-  botMessage: Message;
-  user: UserResolvable;
-  onReact: (botMessage: Message) => {};
-  reactions?: EmojiIdentifierResolvable[];
-  collectorOptions?: CollectorOptions;
-  deleteMessage?: boolean;
-}
+  export class MessageCollector {
+    public static question(
+      options: IMessageQuestionOptions
+    ): Discord.MessageCollector;
+    public static asyncQuestion(
+      options: IMessageQuestionOptions
+    ): Promise<Message>;
+    private __createMessageCollector(_options): Discord.MessageCollector;
+    private __createAsyncMessageCollector(_options): Promise<Message>;
+  }
 
-export interface ITimerOptions {
-  time?: number;
-  idle?: number;
-}
-
-export class Controller {
-  constructor(
-    botMessage: Message,
-    collector: Discord.ReactionCollector,
-    pages: IMenuPage
-  );
-  public stop(): void;
-  public restTimer(options?: ITimerOptions): void;
-  public async back(): Promise<void>;
-  public async goTo(pageId: string | number): Promise<void>;
-  public async update(bool: boolean): Promise<void>;
-  public get canBack(): boolean;
-  get botMessage(): Message;
-  get lastPage(): IMenuPage;
-  set messagesCollector(value);
-  get messagesCollector(): Discord.MessageCollector;
-  get collector(): Discord.ReactionCollector;
-  get currentPage(): IMenuPage;
-  set currentPage(value);
-  set lastPage(value);
-  get pages(): IMenuPage;
-}
-
-export class ReactionCollector {
-  public static menu(options: IReactMenuOptions): Controller;
-  public static paginator(
-    options: IPaginatorOptions
-  ): Discord.ReactionCollector;
-  public static question(
-    options: IReactQuestionOptions,
-    ...args: any
-  ): Discord.ReactionCollector;
-  public static yesNoQuestion(
-    options: IReactQuestionOptions
-  ): Promise<boolean>;
-  private static __createReactionCollector(
-    _options,
-    ...args: any
-  ): Discord.ReactionCollector;
-  private static __createYesNoReactionCollector(_options): Promise<boolean>;
-}
-
-export interface IReactQuestionOptions {
-  botMessage: Message;
-  user: UserResolvable;
-  reactions?: IReactionMapAction;
-  collectorOptions?: CollectorOptions;
-  deleteReaction?: boolean;
-  deleteAllOnEnd?: boolean;
-}
-
-export interface IPaginatorOptions {
-  pages: MessageEmbed;
-  botMessage: Message;
-  user: UserResolvable;
-  reactions?: IReactionMapAction;
-  collectorOptions?: CollectorOptions;
-  deleteReaction?: boolean;
-  deleteAllOnEnd?: boolean;
-}
-
-export interface IReactMenuOptions {
-  pages: IMenuPage;
-  botMessage: Message;
-  user: UserResolvable;
-  collectorOptions?: CollectorOptions;
-}
-
-export interface IReactionMapAction {
-  [key: string]: (reaction: MessageReaction, ...args: any) => {};
-}
-
-export interface IMenuPage {
-  [key: string]: {
-    id?: string | number;
-    embed?: MessageEmbed | object;
-    content?: string;
+  export interface IMessageQuestionOptions {
+    botMessage: Message;
+    user: UserResolvable;
+    onReact: (botMessage: Message) => {};
     reactions?: EmojiIdentifierResolvable[];
-    backEmoji?: EmojiIdentifierResolvable;
-    clearReactions?: boolean;
-    pages?: IMenuPage;
-    onMessage?: (controller: Controller, message: Message) => {};
-    onReact?: (controller: Controller, reaction: MessageReaction) => {};
-  };
-}
+    collectorOptions?: CollectorOptions;
+    deleteMessage?: boolean;
+  }
+
+  export interface ITimerOptions {
+    time?: number;
+    idle?: number;
+  }
+
+  export class Controller {
+    constructor(
+      botMessage: Message,
+      collector: Discord.ReactionCollector,
+      pages: IMenuPage
+    );
+    public stop(): void;
+    public restTimer(options?: ITimerOptions): void;
+    public async back(): Promise<void>;
+    public async goTo(pageId: string | number): Promise<void>;
+    public async update(bool: boolean): Promise<void>;
+    public get canBack(): boolean;
+    get botMessage(): Message;
+    get lastPage(): IMenuPage;
+    set messagesCollector(value);
+    get messagesCollector(): Discord.MessageCollector;
+    get collector(): Discord.ReactionCollector;
+    get currentPage(): IMenuPage;
+    set currentPage(value);
+    set lastPage(value);
+    get pages(): IMenuPage;
+  }
+
+  export class ReactionCollector {
+    public static menu(options: IReactMenuOptions): Controller;
+    public static paginator(
+      options: IPaginatorOptions
+    ): Discord.ReactionCollector;
+    public static question(
+      options: IReactQuestionOptions,
+      ...args: any
+    ): Discord.ReactionCollector;
+    public static yesNoQuestion(
+      options: IReactQuestionOptions
+    ): Promise<boolean>;
+    private static __createReactionCollector(
+      _options,
+      ...args: any
+    ): Discord.ReactionCollector;
+    private static __createYesNoReactionCollector(_options): Promise<boolean>;
+  }
+
+  export interface IReactQuestionOptions {
+    botMessage: Message;
+    user: UserResolvable;
+    reactions?: IReactionMapAction;
+    collectorOptions?: CollectorOptions;
+    deleteReaction?: boolean;
+    deleteAllOnEnd?: boolean;
+  }
+
+  export interface IPaginatorOptions {
+    pages: MessageEmbed;
+    botMessage: Message;
+    user: UserResolvable;
+    reactions?: IReactionMapAction;
+    collectorOptions?: CollectorOptions;
+    deleteReaction?: boolean;
+    deleteAllOnEnd?: boolean;
+  }
+
+  export interface IReactMenuOptions {
+    pages: IMenuPage;
+    botMessage: Message;
+    user: UserResolvable;
+    collectorOptions?: CollectorOptions;
+  }
+
+  export interface IReactionMapAction {
+    [key: string]: (reaction: MessageReaction, ...args: any) => {};
+  }
+
+  export interface IMenuPage {
+    [key: string]: {
+      id?: string | number;
+      embed?: MessageEmbed | object;
+      content?: string;
+      reactions?: EmojiIdentifierResolvable[];
+      backEmoji?: EmojiIdentifierResolvable;
+      clearReactions?: boolean;
+      pages?: IMenuPage;
+      onMessage?: (controller: Controller, message: Message) => {};
+      onReact?: (controller: Controller, reaction: MessageReaction) => {};
+    };
+  }
 }
