@@ -18,6 +18,8 @@ import Discord, {
     GuildManager,
     GuildResolvable,
     Emoji,
+    PermissionResolvable,
+    RoleResolvable,
 } from 'discord.js';
 
 import { EventEmitter } from 'events';
@@ -56,7 +58,7 @@ declare module 'discord.js-collector' {
        * @deprecated since 1.7.9
        */
       get toggle(): boolean;
-      get requirements(): IRequirements;
+      get requirements(): IRequirementType;
       get type(): ReactionRoleType;
       get isToggle(): boolean;
       get isNormal(): boolean;
@@ -77,9 +79,21 @@ declare module 'discord.js-collector' {
       public toJSON(): JSON;
     }
 
-    export interface IRequirements {
+    export interface IRequirementType {
         boost: boolean;
         verifiedDeveloper: boolean;
+        roles:IRequirementRolesType;
+        users: IRequirementUsersType;
+        permissionsNeed: PermissionResolvable[];
+    }
+
+    export interface IRequirementRolesType{
+      allowList:RoleResolvable[];
+      denyList:RoleResolvable[];
+    }
+    export interface IRequirementUsersType{
+      allowList:UserResolvable[];
+      denyList:UserResolvable[];
     }
 
     export interface IReactionRoleOptions {
@@ -167,7 +181,7 @@ declare module 'discord.js-collector' {
       public on(
         event: "missingRequirements",
         listener: (
-          type: IRequirementType,
+          type: RequirementType,
           member: GuildMember,
           reactionRole: ReactionRole
         ) => void
@@ -185,7 +199,7 @@ declare module 'discord.js-collector' {
       public on(event: "debug", listener: (message: string) => void): this;
     }
 
-    export enum IRequirementType {
+    export enum RequirementType {
         BOOST = 'BOOST',
         VERIFIED_DEVELOPER = 'VERIFIED_DEVELOPER',
     }
@@ -196,7 +210,7 @@ declare module 'discord.js-collector' {
         emoji: EmojiIdentifierResolvable;
         max?: number;
         type?: ReactionRoleType;
-        requirements?: IRequirements;
+        requirements?: IRequirementType;
     }
 
     export interface IDeleteRoleOptions {

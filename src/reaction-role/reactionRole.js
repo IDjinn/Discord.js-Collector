@@ -6,25 +6,25 @@ const { ReactionRoleType, isValidReactionRoleType } = require('./constants');
 /**
  * Requirement type object struct
  * @typedef {object} IRequirementType
- * @property {boolean} [boost=false]
- * @property {boolean} [verifiedDeveloper=false]
- * @property {IRequirementRolesType} [roles={}]
- * @property {IRequirementUsersType} [users=false]
- * @property {PermissionResolvable[]} [permissionsNeed=[]]
+ * @property {boolean} [boost=false] - User need have boost in server to win this role.
+ * @property {boolean} [verifiedDeveloper=false] - User need verified developer badge to win this role.
+ * @property {IRequirementRolesType} [roles={}] - Roles requirements
+ * @property {IRequirementUsersType} [users=false] - Users requirements
+ * @property {PermissionResolvable[]} [permissionsNeed=[]] - Permissions requirements
  */
 
 /**
  * Requirement type object struct
  * @typedef {object} IRequirementRolesType
- * @property {RoleResolvable[]} [allowList=[]]
- * @property {RoleResolvable[]} [denyList=[]]
+ * @property {RoleResolvable[]} [allowList=[]] - List of roles ID's need to win this role.
+ * @property {RoleResolvable[]} [denyList=[]] - List of roles ID's denied to win this role.
  */
 
 /**
  * Requirement type object struct
  * @typedef {object} IRequirementUsersType
- * @property {UserResolvable[]} [allowList=[]]
- * @property {UserResolvable[]} [denyList=[]]
+ * @property {UserResolvable[]} [allowList=[]] - List of users ID's allowed to win this role.
+ * @property {UserResolvable[]} [denyList=[]] - List of users ID's denied to win this role.
  */
 
 /**

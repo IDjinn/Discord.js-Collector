@@ -15,7 +15,7 @@ const { EventEmitter } = require('events');
 const fs = require('fs');
 const AsyncLock = require('async-lock');
 const Constants = require('../util/constants');
-const { ReactionRole } = require('./reactionRole');
+const { ReactionRole, IRequirementType } = require('./reactionRole');
 const {
     ReactionRoleEvent, ReactionRoleType, RequirementType, ActionType, isValidReactionRoleType,
 } = require('./constants');
@@ -508,7 +508,7 @@ class ReactionRoleManager extends EventEmitter {
      * @param {Emoji} options.emoji - Emoji or emoji id what member will react to win/lose the role.
      * @param {ReactionRoleType} [options.type=1] - Type of reaction role.
      * @param {Number} [options.max=0] - Max roles to give. If it's 0, will not have a limit.
-     * @param {Object} [options.requirements={}] - Requirements to win this role.
+     * @param {IRequirementType} [options.requirements] - Requirements to win this role.
      * @param {boolean} [options.requirements.boost=false] - Need be a booster to win this role?
      * @param {boolean} [options.requirements.verifiedDeveloper=false] - Need be a verified developer to win this role?
      *
@@ -551,7 +551,6 @@ class ReactionRoleManager extends EventEmitter {
                 if (type && !isValidReactionRoleType(type)) return reject(new Error(`Bad input: Invalid reaction role type: '${type}'.`));
                 if (!type) type = ReactionRoleType.NORMAL;
                 if (!max || max > Number.MAX_SAFE_INTEGER || max < 0) max = Number.MAX_SAFE_INTEGER;
-                requirements = { boost: false, verifiedDeveloper: false, ...requirements };
                 roles = roles.map((role) => message.guild.roles.resolveID(role)).filter((role) => role);
                 if (!roles || roles.length === 0) return reject(new Error(`Bad input: I canno't resolve the roles ${roles}`));
 
