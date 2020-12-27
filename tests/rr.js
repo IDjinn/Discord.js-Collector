@@ -1,6 +1,6 @@
 const { ReactionRoleManager, ReactionRoleType, ReactionCollector } = require('../src')
 const { Client, Constants, WebhookClient, MessageEmbed } = require("discord.js");
-const client = new Client({partials: ['REACTION', 'MESSAGE', 'GUILD_MEMBER']});
+const client = new Client({ partials: ['REACTION', 'MESSAGE', 'GUILD_MEMBER'] });
 require('dotenv').config({ path: __dirname + '/process.env' });
 const app = require('express')();
 const server = require('http').createServer(app);
@@ -14,7 +14,7 @@ const clean = text => {
 }
 
 
-client.log =async (embed, reactionRole) => {
+client.log = async (embed, reactionRole) => {
     const channel = client.channels.cache.get(process.env.LOG_CHANNEL);
     if (reactionRole) {
         try {
@@ -24,7 +24,7 @@ client.log =async (embed, reactionRole) => {
             embed.description += `\n\n[Go to message](https://discord.com/channels/${channel.guild ? channel.guild.id : '@me'}/${msgChannel.id}/${message.id})`;
         }
         catch {
-            
+
         }
     }
     if (channel) await channel.send(embed);
@@ -48,7 +48,7 @@ reactionRoleManager.on('missingPermissions', (action, member, roles, reactionRol
         .setTitle('Unmanageable Roles')
         .setDescription(`Some roles cannot be ${action === 1 ? 'given' : 'taken'} to member \`${member.displayName}\`, because i don't have permissions to manage these roles...\n\n`)
         .setTimestamp();
-    
+
     for (let i = 0; i < roles.length; i++) {
         const role = roles[i];
         embed.description += `\`${role.name}\`,`;
@@ -135,7 +135,7 @@ client.on("message", async (message) => {
         const msg = await message.channel.messages.fetch(args.shift());
         const emoji = args.shift();
         console.log('im here')
-        reactionRoleManager.deleteReactionRole({message: msg, emoji})
+        reactionRoleManager.deleteReactionRole({ message: msg, emoji })
     }
     else if (message.content.startsWith('>eval')) {
         if (message.author.id !== '376460601909706773') return;
@@ -150,6 +150,18 @@ client.on("message", async (message) => {
         } catch (err) {
             message.channel.send(`\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
         }
+    }
+    else if (message.content.startsWith('>test')) {
+        const botMessage = await message.reply('Curse or Pray?');
+        ReactionCollector.question({
+            botMessage,
+            user: message.author,
+            reactions: {
+                '👍': async (reaction) => await message.react(reaction.emoji.name), // Your custom function here.
+                '👎': async (reaction) => await message.react(reaction.emoji.name),
+                '🕒': async (reaction) => await message.react(reaction.emoji.name)
+            }
+        });
     }
     else if (message.content.startsWith('>clear')) {
         const amount = parseInt(args[0]);

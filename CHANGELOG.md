@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.8.5
+
+Reaction Collector: Fix custom emojis not working
+
+---
 # CHANGELOG - V1.8.4
 
 Reaction Role Manager feature: new Requirements types! Now you can limit roles/users/permissions needed or denied to win some role.
