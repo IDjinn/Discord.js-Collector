@@ -81,14 +81,14 @@ module.exports.validateOptions = (options, type) => {
     case 'reactPaginator':
     case 'reactMenu':
         validOptions.reactionsMap = options.reactions;
-        if (options.reactionsMap
-                && Object.keys(options.reactionsMap).filter(
+        if (options.reactions
+                && Object.keys(options.reactions).filter(
                     (emoji) => !client.emojis.resolveIdentifier(emoji),
                 ).length > 0
         ) return Promise.reject(new Error('Invalid input: reactions is invalid type.'));
 
-        if (!options.reactionsMap) {
-            validOptions.reactionsMap = type !== 'reactPaginator'
+        if (!options.reactions) {
+            validOptions.reactions = type !== 'reactPaginator'
                 ? Constants.DEFAULT_YES_NO_MAP
                 : Constants.DEFAULT_PAGINATOR_REACTIONS_MAP;
         }
