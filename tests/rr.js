@@ -38,9 +38,17 @@ const reactionRoleManager = new ReactionRoleManager(client, {
     disabledProperty: false
 });
 
+
+
 client.on("ready", () => {
     console.log("ready")
 });
+
+reactionRoleManager.on('debug', msg => console.log(msg))
+
+process.on('uncaughtException', msg => console.log(msg));
+process.on('uncaughtExceptionMonitor', msg => console.log(msg));
+process.on('unhandledRejection', msg => console.log(msg));
 
 reactionRoleManager.on('missingPermissions', (action, member, roles, reactionRole) => {
     console.log(`Some roles cannot be ${action === 1 ? 'given' : 'taken'} to member \`${member.displayName}\`, because i don't have permissions to manage these roles: ${roles.map(role => `\`${role.name}\``).join(',')}`);
@@ -51,9 +59,9 @@ reactionRoleManager.on('missingPermissions', (action, member, roles, reactionRol
 
     for (let i = 0; i < roles.length; i++) {
         const role = roles[i];
-        embed.description += `\`${role.name}\`,`;
+        embed.description += `\`${role.name}\`, `;
     }
-    embed.description = embed.description.slice(0, embed.description.length - 1);
+    embed.description = embed.description.slice(0, embed.description.length - 2);
 
     client.log(embed, reactionRole);
 });
@@ -152,16 +160,20 @@ client.on("message", async (message) => {
         }
     }
     else if (message.content.startsWith('>test')) {
-        const botMessage = await message.reply('Curse or Pray?');
-        ReactionCollector.question({
-            botMessage,
-            user: message.author,
-            reactions: {
-                '👍': async (reaction) => await message.react(reaction.emoji.name), // Your custom function here.
-                '👎': async (reaction) => await message.react(reaction.emoji.name),
-                '🕒': async (reaction) => await message.react(reaction.emoji.name)
-            }
-        });
+        const { MessageCollector } = require("../src");
+
+        const questions = ["q1", "q2"];
+        const answers = [];
+        for (const question of questions) {
+            const botMessage = await message.channel.send(question);
+            const msg = await MessageCollector.asyncQuestion({
+                botMessage,
+                user: message.author.id,
+                collectorOptions: { time: 5 * 60 * 1000, max: 1 }
+            });
+            answers.push(msg.content);
+        }
+        console.log(answers)
     }
     else if (message.content.startsWith('>clear')) {
         const amount = parseInt(args[0]);

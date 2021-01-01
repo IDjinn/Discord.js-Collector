@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.8.6
+
+Reaction Role Manager: fix Unknown message error.
+
+---
 # CHANGELOG - V1.8.5
 
 Reaction Collector: Fix custom emojis not working
