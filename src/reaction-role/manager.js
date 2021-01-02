@@ -394,8 +394,15 @@ class ReactionRoleManager extends EventEmitter {
             }
 
             try {
-                const message = await channel.messages.fetch(reactionRole.message).catch(() => null);
-                if (!message || !(message instanceof Message)) continue;
+                const message = await channel.messages.fetch(reactionRole.message);
+                if (!message || !(message instanceof Message)) {
+                    this.__debug(
+                        'BOOT',
+                        `Role '${reactionRole.id}' failed at start, message wasn't found.`,
+                    );
+                    this.__handleDeleted(reactionRole, guild);
+                    continue;
+                }
                 if (message.partial) await message.fetch();
                 if (!message.reactions.cache.has(reactionRole.emoji)) await message.react(reactionRole.emoji);
 
@@ -708,13 +715,24 @@ class ReactionRoleManager extends EventEmitter {
                 if (!this.keepReactions) await this.__handleDeleted(reactionRole, reactionRole.guild, () => { });
 
                 reactionRole.disabled = true;
-                if (this.disabledProperty) await this.store(reactionRole);
                 // eslint-disable-next-line curly
-                else if (this.mongoose) await this.mongoose
-                    .model('ReactionRoles')
-                    .deleteOne({ id: reactionRole.id })
-                    .exec();
-                else this.reactionRoles.delete(reactionRole.id);
+                if (this.disabledProperty && this.mongoose) {
+                    await this.mongoose
+                        .model('ReactionRoles')
+                        .updateOne({ id: reactionRole.id }, reactionRole)
+                        .exec();
+
+                }
+                else {
+                    if (this.mongoose) {
+                        await this.mongoose
+                            .model('ReactionRoles')
+                            .deleteOne({ id: reactionRole.id })
+                            .exec();
+                    }
+                    this.reactionRoles.delete(reactionRole.id);
+                }
+                await this.store(reactionRole);
 
                 if (deleted) {
                     this.__debug(

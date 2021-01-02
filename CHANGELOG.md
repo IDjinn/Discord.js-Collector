@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.8.7
+
+Reaction Role Manager: fix rr not deleted properly.
+
+---
 # CHANGELOG - V1.8.6
 
 Reaction Role Manager: fix Unknown message error.
