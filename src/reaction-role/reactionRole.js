@@ -1,7 +1,8 @@
 const {
-    GuildMember, PermissionResolvable, RoleResolvable, UserResolvable,
+    GuildMember, PermissionResolvable, RoleResolvable, UserResolvable, Guild, TextChannel, Message, Emoji, MessageReaction, Role, Client,
 } = require('discord.js');
-const { ReactionRoleType, isValidReactionRoleType } = require('./constants');
+const { ReactionRoleType, isValidReactionRoleType, ActionType } = require('./constants');
+const { ReactionRoleManager } = require('./manager');
 
 /**
  * Requirement type object struct
@@ -34,6 +35,8 @@ class ReactionRole {
     /**
      * Reaction Role constructor.
      * @param {Object} data
+     * @param {Client} data.client - Bot client.
+     * @param {ReactionRoleManager} data.manager - Reaction Role Manager.
      * @param {string} data.message - Message ID of reaction role.
      * @param {string} data.channel - Channel ID of message.
      * @param {string} data.guild - Guild ID of channel.
@@ -44,15 +47,16 @@ class ReactionRole {
      * @param {IRequirementType} [data.requirements={}] - Requirements to win this role.
      * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
      * @param {ReactionRoleType} [data.type=1] - Reaction role type
-     * @param {string[]} [data.roles=[]] - All roles of this reaction role.
+     * @param {RoleResolvable[]} [data.roles=[]] - All roles of this reaction role.
      *
      * @return {ReactionRole}
      */
     constructor({
+        client,
+        manager,
         message,
         channel,
         guild,
-        role,
         emoji,
         winners,
         max,
@@ -63,42 +67,45 @@ class ReactionRole {
         roles,
     }) {
         /**
+         * Bot client
+         * @type {Client}
+         */
+        this.client = client;
+        /**
+         * Reaction Role Manager
+         * @type {ReactionRoleManager}
+         */
+        this.manager = manager;
+        /**
          * Guild ID of message
          * @type {string}
          * @readonly
          */
-        this.guild = message.guild ? message.guild.id : guild;
+        this.guildId = message.guild ? message.guild.id : guild;
         /**
          * Channel ID of message
          * @type {string}
          * @readonly
          */
-        this.channel = message.channel ? message.channel.id : channel;
+        this.channelId = message.channel ? message.channel.id : channel;
         /**
          * Message ID of reaction role
          * @type {string}
          * @readonly
          */
-        this.message = message.id ? message.id : message;
-        /**
-         * Role ID
-         * @type {string}
-         * @deprecated since 1.8.0, please use `roles` property instead.
-         * @readonly
-         */
-        this.role = role && role.id ? role.id : role;
+        this.messageId = message.id ? message.id : message;
         /**
          * Emoji identifier
          * @type {string}
          * @readonly
          */
-        this.emoji = emoji.id || emoji.name ? emoji.id : emoji.name || emoji;
+        this.emojiId = emoji.id || emoji.name ? emoji.id : emoji.name || emoji;
         /**
-         * List of who won this role
+         * ID's list of who won this role
          * @type {string[]}
          * @readonly
          */
-        this.winners = winners || [];
+        this.winnersId = winners || [];
         /**
          * Max roles available to give
          * @type {number}
@@ -143,7 +150,45 @@ class ReactionRole {
          * Roles ID's
          * @type {string[]}
          */
-        this.roles = Array.isArray(roles) ? roles : [];
+        this.rolesId = Array.isArray(roles) ? roles : [];
+
+        /**
+         * Guild from this Reaction Role
+         * @type {Guild}
+         */
+        this.guild = guild instanceof Guild ? guild : null;
+        /**
+         * TextChannel from this Reaction Role
+         * @type {TextChannel}
+         */
+        this.channel = channel instanceof TextChannel ? channel : null;
+        /**
+         * Message from this Reaction Role
+         * @type {Message}
+         */
+        this.message = message instanceof Message ? message : null;
+        /**
+         * Emoji from this Reaction Role
+         * @type {Emoji}
+         */
+        this.emoji = null;
+        /**
+         * MessageReaction from this Reaction Role
+         * @type {MessageReaction}
+         */
+        this.messageReaction = null;
+        /**
+         * Members who win this role
+         * @type {GuildMember[]}
+         */
+        this.winners = [];
+        /**
+         * Roles that will be given/taken
+         * @type {Role[]}
+         */
+        this.roles = [];
+
+        this.__isValid = false;
 
         this.__check();
         this.__handleDeprecation();
@@ -156,7 +201,7 @@ class ReactionRole {
      * @readonly
      */
     get id() {
-        return `${this.message}-${this.emoji}`;
+        return `${this.messageId}-${this.emojiId}`;
     }
 
     /**
@@ -205,22 +250,29 @@ class ReactionRole {
     }
 
     /**
+     * Is this Reaction Role valid?
+     */
+    get isValid() {
+        return this.__isValid;
+    }
+
+    /**
      * Convert Reaction Role object to JSON.
      * @return {JSON} - Parsed json object.
      */
     toJSON() {
         return {
             id: this.id,
-            message: this.message,
-            channel: this.channel,
-            guild: this.guild,
-            emoji: this.emoji,
-            winners: this.winners,
+            message: this.messageId,
+            channel: this.channelId,
+            guild: this.guildId,
+            emoji: this.emojiId,
+            winnersId: this.winnersId,
             max: this.max,
             requirements: this.requirements,
             disabled: this.disabled,
             type: this.type,
-            roles: this.roles,
+            roles: this.rolesId,
         };
     }
 
@@ -263,13 +315,127 @@ class ReactionRole {
             guild: json.guild,
             role: json.role,
             emoji: json.emoji,
-            winners: json.winners,
+            winnersId: json.winnersId,
             max: json.max,
             toggle: json.toggle,
             requirements: json.requirements,
             disabled: json.disabled,
             type: json.type,
             roles: json.roles,
+        });
+    }
+
+    /**
+     * Resolve this reaction role.
+     * @return {Promise<ReactionRole>}
+     */
+    resolve() {
+        return new Promise(async(resolve, reject) => {
+            this.guild = this.client.guilds.cache.get(this.guildId);
+            if (!this.guild) {
+                this.manager.__debug(
+                    'BOOT',
+                    `Role '${this.id}' failed at start, guild wasn't found.`,
+                );
+                return reject(this.manager.__handleDeleted(this, this.guildId));
+            }
+
+            this.channel = this.guild.channels.cache.get(this.channelId);
+            if (!this.channel) {
+                this.manager.__debug(
+                    'BOOT',
+                    `Role '${this.id}' failed at start, channel wasn't found.`,
+                );
+                return reject(this.manager.__handleDeleted(this, this.guildId));
+            }
+
+            try {
+                this.message = await this.channel.messages.fetch(this.messageId);
+                if (!this.message || !(this.message instanceof Message)) {
+                    this.manager.__debug(
+                        'BOOT',
+                        `Role '${this.id}' failed at start, message wasn't found.`,
+                    );
+                    return reject(this.manager.__handleDeleted(this, this.guildId));
+                }
+
+                if (this.message.partial) await this.message.fetch();
+                if (!this.message.reactions.cache.has(this.emojiId)) await this.message.react(this.emojiId);
+
+                this.messageReaction = this.message.reactions.cache.find(
+                    (x) => this.id === `${this.message.id}-${this.manager.__resolveReactionEmoji(x.emoji)}`,
+                );
+                this.emoji =this.messageReaction.emoji;
+
+                if (this.messageReaction.partial) await this.messageReaction.fetch();
+
+                const users = await this.messageReaction.users.fetch();
+                const usersArray = users.array();
+                for (let j = 0; j < usersArray.length; j += 1) {
+                    const user = usersArray[j];
+                    if (user.partial) await user.fetch();
+                    if (user.bot) continue;// Ignore bots, please!
+
+                    const member = this.guild.members.cache.get(user.id);
+                    if (!member) {
+                        await this.messageReaction.users.remove(user.id);
+                        this.manager.__debug(
+                            'BOOT',
+                            `Member '${user.id}' wasn't found, reaction of his was removed from message.`,
+                        );
+                        continue;
+                    }
+
+                    this.manager.__handleReactionRoleAction(ActionType.GIVE, member, this, this.messageReaction);
+                }
+
+                for (let j = 0; j < this.winnersId.length; j += 1) {
+                    const winnerId = this.winnersId[j];
+                    const member = this.guild.members.cache.get(winnerId);
+                    if (!member) {
+                        this.winnersId.splice(j, 1);
+                        this.manager.__debug(
+                            'BOOT',
+                            `Member '${winnerId}' wasn't found, his was removed from winner list.`,
+                        );
+                        continue;
+                    }
+
+                    if (member.partial) await member.fetch();
+                    if (member.user.partial) await member.user.fetch();
+                    if (member.user.bot) continue;
+
+                    if (!users.has(winnerId)) this.manager.__handleReactionRoleAction(ActionType.TAKE, member, this, this.messageReaction);
+                }
+
+                for (let j = 0; j < this.rolesId.length; j++) {
+                    const roleId = this.rolesId[j];
+                    const role = this.guild.roles.resolve(roleId);
+                    if (role) this.roles.push(role);
+                }
+                
+                if(this.roles.length === 0){
+                    this.manager.__debug(
+                        'BOOT',
+                        `Role '${this.id}' failed at start, roles is invalid.`,
+                    );
+                    return reject(this.manager.__handleDeleted(this, this.guildId));
+                }
+
+                this.__isValid = true;
+                return resolve(this);
+            } catch (error) {
+                if (error && error.code === 10008) {
+                    this.manager.__debug(
+                        'BOOT',
+                        `Role '${this.id}' failed at start, message wasn't found.`,
+                    );
+                    return reject(this.manager.__handleDeleted(this, this.guild));
+                }
+                else {
+                    return reject(error);
+                }
+            }
         });
     }
 
@@ -284,11 +450,6 @@ class ReactionRole {
 
         if (this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
         else if (this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
-
-        /**
-        * @since 1.8.0
-        */
-        if (this.role && !this.roles.includes(this.role)) this.roles.push(this.role);
     }
 
     /**

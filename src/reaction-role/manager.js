@@ -229,28 +229,28 @@ class ReactionRoleManager extends EventEmitter {
         this.client.on('messageReactionRemoveAll', (message) => this.__onRemoveAllReaction(message));
 
         this.client.on('roleDelete', async (role) => {
-            const reactionRole = this.reactionRoles.find((rr) => rr.roles.includes(role.id));
+            const reactionRole = this.reactionRoles.find((rr) => rr.roles.includes(role));
             if (reactionRole) return this.__handleDeleted(reactionRole, role);
         });
 
         this.client.on('emojiDelete', async (emoji) => {
             const emojiIdentifier = this.__resolveReactionEmoji(emoji);
-            const reactionRole = this.reactionRoles.find((rr) => rr.emoji === emojiIdentifier);
+            const reactionRole = this.reactionRoles.find((rr) => rr.emojiId === emojiIdentifier);
             if (reactionRole) return this.__handleDeleted(reactionRole, emoji);
         });
 
         this.client.on('guildDelete', async (guild) => {
-            const reactionRole = this.reactionRoles.find((rr) => rr.guild === guild.id);
+            const reactionRole = this.reactionRoles.find((rr) => rr.guildId === guild.id);
             if (reactionRole) return this.__handleDeleted(reactionRole, guild);
         });
 
         this.client.on('channelDelete', async (channel) => {
-            const reactionRole = this.reactionRoles.find((rr) => rr.channel === channel.id);
+            const reactionRole = this.reactionRoles.find((rr) => rr.channelId === channel.id);
             if (reactionRole) return this.__handleDeleted(reactionRole, channel);
         });
 
         const messageDeleteHandler = async (message) => {
-            const reactionRole = this.reactionRoles.find((rr) => rr.message === message.id);
+            const reactionRole = this.reactionRoles.find((rr) => rr.messageId === message.id);
             if (reactionRole) return this.__handleDeleted(reactionRole, message);
         };
 
@@ -262,6 +262,15 @@ class ReactionRoleManager extends EventEmitter {
                 messageDeleteHandler(array[i]);
             }
         });
+    }
+
+    /**
+     * @private
+     * @type {number}
+     */
+    get __toggleCooldown(){
+        if(this.isReady) return Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES;
+        return Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES * 10;
     }
 
     /**
@@ -277,11 +286,11 @@ class ReactionRoleManager extends EventEmitter {
         const guild = this.client.guilds.resolve(guildResolvable);
         if (!guild) return callback();
 
-        const channel = guild.channels.cache.get(reactionRole.channel);
+        const channel = guild.channels.cache.get(reactionRole.channelId);
         if (!channel) return callback();
 
         try {
-            const message = await channel.messages.fetch(reactionRole.message);
+            const message = await channel.messages.fetch(reactionRole.messageId);
             if (!message) return callback();
 
             const reaction = message.reactions.cache.find((x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`);
@@ -373,94 +382,7 @@ class ReactionRoleManager extends EventEmitter {
         const reactionRoleArray = this.reactionRoles.array();
         for (let i = 0; i < reactionRoleArray.length; i += 1) {
             const reactionRole = reactionRoleArray[i];
-            const guild = this.client.guilds.cache.get(reactionRole.guild);
-            if (!guild) {
-                this.__debug(
-                    'BOOT',
-                    `Role '${reactionRole.id}' failed at start, guild wasn't found.`,
-                );
-                this.__handleDeleted(reactionRole, guild);
-                continue;
-            }
-
-            const channel = guild.channels.cache.get(reactionRole.channel);
-            if (!channel) {
-                this.__debug(
-                    'BOOT',
-                    `Role '${reactionRole.id}' failed at start, channel wasn't found.`,
-                );
-                this.__handleDeleted(reactionRole, guild);
-                continue;
-            }
-
-            try {
-                const message = await channel.messages.fetch(reactionRole.message);
-                if (!message || !(message instanceof Message)) {
-                    this.__debug(
-                        'BOOT',
-                        `Role '${reactionRole.id}' failed at start, message wasn't found.`,
-                    );
-                    this.__handleDeleted(reactionRole, guild);
-                    continue;
-                }
-                if (message.partial) await message.fetch();
-                if (!message.reactions.cache.has(reactionRole.emoji)) await message.react(reactionRole.emoji);
-
-                const reaction = message.reactions.cache.find(
-                    (x) => reactionRole.id === `${message.id}-${this.__resolveReactionEmoji(x.emoji)}`,
-                );
-
-                if (reaction.partial) await reaction.fetch();
-
-                const users = await reaction.users.fetch();
-                const usersArray = users.array();
-                for (let j = 0; j < usersArray.length; j += 1) {
-                    const user = usersArray[j];
-                    if (user.partial) await user.fetch();
-                    if (user.bot) continue;// Ignore bots, please!
-
-                    const member = guild.members.cache.get(user.id);
-                    if (!member) {
-                        await reaction.users.remove(user.id);
-                        this.__debug(
-                            'BOOT',
-                            `Member '${user.id}' wasn't found, reaction of his was removed from message.`,
-                        );
-                        continue;
-                    }
-
-                    await this.__handleReactionRoleAction(ActionType.GIVE, member, reactionRole, reaction);
-                }
-
-                for (let j = 0; j < reactionRole.winners.length; j += 1) {
-                    const winnerId = reactionRole.winners[j];
-                    const member = guild.members.cache.get(winnerId);
-                    if (!member) {
-                        reactionRole.winners.splice(j, 1);
-                        this.__debug(
-                            'BOOT',
-                            `Member '${winnerId}' wasn't found, his was removed from winner list.`,
-                        );
-                        continue;
-                    }
-
-                    if (member.partial) await member.fetch();
-                    if (member.user.partial) await member.fetch();
-                    if (member.user.bot) continue;
-
-                    if (!users.has(winnerId)) await this.__handleReactionRoleAction(ActionType.TAKE, member, reactionRole, reaction);
-                }
-            } catch (error) {
-                if (error && error.code === 10008) {
-                    this.__debug(
-                        'BOOT',
-                        `Role '${reactionRole.id}' failed at start, message wasn't found.`,
-                    );
-                    this.__handleDeleted(reactionRole, guild);
-                    continue;
-                }
-                throw error;
-            }
+            await reactionRole.resolve();
             this.__readyTimeout();
         }
     }
@@ -701,7 +623,7 @@ class ReactionRoleManager extends EventEmitter {
                 const resolvedEmojiID = this.__resolveReactionEmoji(Util.parseEmoji(emoji));
                 const messageID = message && message.id ? message.id : message;
                 if (!messageID) return reject(new Error('Bad input: invalid message param type, must be instance of Message.'));
-                reactionRole = this.reactionRoles.find((rr) => rr.message === messageID && rr.emoji === resolvedEmojiID);
+                reactionRole = this.reactionRoles.find((rr) => rr.messageId === messageID && rr.emojiId === resolvedEmojiID);
                 if (!(reactionRole instanceof ReactionRole)) {
                     return reject(
                         new Error(
@@ -819,11 +741,15 @@ class ReactionRoleManager extends EventEmitter {
 
                 for (let i = 0; i < roles.length; i += 1) {
                     const role = roles[i];
-                    if (!role || !role.message || role.disabled) continue;
+                    if (!role || role.disabled) continue;
 
                     this.reactionRoles.set(
                         role.id,
-                        ReactionRole.fromJSON(role),
+                        new ReactionRole({
+                            client: this.client,
+                            manager: this,
+                            ...role
+                        }),
                     );
                 }
             }
@@ -879,8 +805,7 @@ class ReactionRoleManager extends EventEmitter {
         if (++tries > 3) return this.__debug('TOGGLE', `Toggled roles timeout expired tries, member '${member.id}' will not be processed.`);
         if (locker.isBusy(member.id)) {
             this.__debug('TOGGLE', `Member '${member.id}' is holding timeout queue.`);
-            await sleep(Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES);
-            return this.__timeoutToggledRoles(member, message, skippedRole, tries);
+            return sleep(this.__toggleCooldown).then(() => this.__timeoutToggledRoles(member, message, skippedRole, tries));
         }
 
         const timeout = this.timeouts.get(member.id);
@@ -889,36 +814,34 @@ class ReactionRoleManager extends EventEmitter {
         this.timeouts.set(
             member.id,
             setTimeout(async () => locker.acquire(member.id, async () => {
-                const toggledRoles = this.reactionRoles.filter((rr) => rr.message === message.id && rr.isToggle);
+                const toggledRoles = this.reactionRoles.filter((rr) => rr.messageId === message.id && rr.isToggle);
                 const toggledRolesArray = toggledRoles.array();
                 for (let i = 0; i < toggledRolesArray.length; i += 1) {
                     const toggledRole = toggledRolesArray[i];
                     if (toggledRole.disabled) continue;
 
-                    const reaction = message.reactions.cache.find(
-                        (r) => this.__resolveReactionEmoji(r.emoji) === toggledRole.emoji,
-                    );
-
+                    /*
+                    toggledRole.messageReaction = message.reactions.cache.find(
+                        (r) => this.__resolveReactionEmoji(r.emoji) === toggledRole.emojiId,
+                    );*/
                     if (member.partial) await member.fetch();
-                    if (reaction.partial) await reaction.fetch();
+                    if (toggledRole.messageReaction.partial) await toggledRole.messageReaction.fetch();
 
-                    const users = await reaction.users.fetch();
+                    const users = await toggledRole.messageReaction.users.fetch();
                     if (users.has(member.id) && (!skippedRole || skippedRole.id === toggledRole.id)) {
                         skippedRole = toggledRole;
                         continue;
                     }
 
-                    const roleID = toggledRole.roles[0];
-                    const role = member.guild.roles.cache.get(roleID);
-
+                    const role = toggledRole.roles[0];
                     this.__checkRolesPermissions(ActionType.TAKE, toggledRole, member);
 
                     if (role.editable && await this.hooks.preRoleRemoveHook(member, role, toggledRole)) {
-                        const index = toggledRole.winners.indexOf(member.id);
+                        const index = toggledRole.winners.indexOf(member);
                         if (index >= 0) toggledRole.winners.splice(index, 1);
 
-                        if (member.roles.cache.has(toggledRole.id)) {
-                            await member.roles.remove(roleID);
+                        if (member.roles.cache.has(role.id)) {
+                            await member.roles.remove(role);
                             this.emit(
                                 ReactionRoleEvent.REACTION_ROLE_REMOVE,
                                 member,
@@ -926,32 +849,30 @@ class ReactionRoleManager extends EventEmitter {
                             );
                             this.__debug(
                                 'TOGGLE',
-                                `Take off role '${roleID}' from user '${member.id}', it's a toggled role.`,
+                                `Take off role '${role}' from user '${member.id}', it's a toggled role.`,
                             );
                         }
 
-                        if (users.has(member.id)) await reaction.users.remove(member.user);
-                    } else await reaction.users.remove(member.id);
+                        if (users.has(member.id)) await toggledRole.messageReaction.users.remove(member.user);
+                    } else await toggledRole.messageReaction.users.remove(member.id);
                 }
 
                 if (skippedRole instanceof ReactionRole) {
                     const reaction = message.reactions.cache.find(
-                        (r) => this.__resolveReactionEmoji(r.emoji) === skippedRole.emoji,
+                        (r) => this.__resolveReactionEmoji(r.emoji) === skippedRole.emojiId,
                     );
 
-                    const roleID = skippedRole.roles[0];
-                    const role = message.guild.roles.cache.get(roleID);
-
+                    const role = skippedRole.roles[0];
                     this.__checkRolesPermissions(ActionType.GIVE, skippedRole, member);
 
                     if (role.editable
                         && await this.__checkRequirements(skippedRole, reaction, member)
                         && await this.hooks.preRoleAddHook(member, role, skippedRole)
                     ) {
-                        if (skippedRole.winners.indexOf(member.id) <= -1) skippedRole.winners.push(member.id);
+                        if (skippedRole.winners.indexOf(member) <= -1) skippedRole.winners.push(member);
 
-                        if (!member.roles.cache.has(roleID)) {
-                            await member.roles.add(roleID);
+                        if (!member.roles.cache.has(role.id)) {
+                            await member.roles.add(role);
 
                             this.emit(
                                 ReactionRoleEvent.REACTION_ROLE_ADD,
@@ -961,34 +882,34 @@ class ReactionRoleManager extends EventEmitter {
                             if (this.isReady) {
                                 this.__debug(
                                     'TOGGLE',
-                                    `Role '${roleID}' was given to '${member.id}' after check toggle roles.`,
+                                    `Role '${role}' was given to '${member.id}' after check toggle roles.`,
                                 );
                             } else {
                                 this.__debug(
                                     'BOOT',
                                     // eslint-disable-next-line max-len
-                                    `Role '${roleID}' was given to '${member.id}' after check toggle roles, it reacted when bot wasn't online.`,
+                                    `Role '${role}' was given to '${member.id}' after check toggle roles, it reacted when bot wasn't online.`,
                                 );
                             }
                         } else {
                             this.__debug(
                                 'BOOT',
                                 // eslint-disable-next-line max-len
-                                `Keeping role '${roleID}' after check toggle roles. The member '${member.id}' reacted and already have the role.`,
+                                `Keeping role '${role}' after check toggle roles. The member '${member.id}' reacted and already have the role.`,
                             );
                         }
                     } else await reaction.users.remove(member.id);
                 }
 
                 await this.store(...toggledRoles);
-            }), Constants.DEFAULT_TIMEOUT_TOGGLED_ROLES),
+            }), this.__toggleCooldown),
         );
     }
 
     __readyTimeout() {
+        if (this.isReady) return;
         const readyTimeout = this.timeouts.get('ready_timeout');
         if (readyTimeout) this.client.clearTimeout(readyTimeout);
-        if (this.isReady) return;
 
         this.timeouts.set('ready_timeout', setTimeout(() => {
             this.isReady = true;
@@ -1134,9 +1055,9 @@ class ReactionRoleManager extends EventEmitter {
                             `User '${member.displayName}' won the role '${role.name}'.`,
                         );
 
-                        if (reactionRole.winners.indexOf(member.id) <= -1) {
-                            reactionRole.winners.push(member.id);
-                            this.store(reactionRole);
+                        if (reactionRole.winners.indexOf(member) <= -1) {
+                            reactionRole.winners.push(member);
+                            await this.store(reactionRole);
                         }
                     }
                 }
@@ -1156,10 +1077,10 @@ class ReactionRoleManager extends EventEmitter {
                     }
                 }
 
-                const index = reactionRole.winners.indexOf(member.id);
+                const index = reactionRole.winners.indexOf(member);
                 if (index >= 0) {
                     reactionRole.winners.splice(index, 1);
-                    this.store(reactionRole);
+                    await this.store(reactionRole);
                 }
                 break;
             }
@@ -1177,9 +1098,8 @@ class ReactionRoleManager extends EventEmitter {
      * @return {Role[]}
      */
     __checkRolesPermissions(action, reactionRole, member) {
-        const roles = reactionRole.roles.map((role) => member.guild.roles.resolve(role)).filter((role) => role);
-        const rolesWithoutPermission = roles.filter((role) => !role.editable && !this.__withoutPermissionsWarned.has(`${role.id}-${member.id}`));
-        const rolesWithPermission = roles.filter((role) => role.editable);
+        const rolesWithoutPermission = reactionRole.roles.filter((role) => !role.editable && !this.__withoutPermissionsWarned.has(`${role.id}-${member.id}`));
+        const rolesWithPermission = reactionRole.roles.filter((role) => role.editable);
         if (rolesWithoutPermission.length > 0) {
             for (let i = 0; i < rolesWithoutPermission.length; i++) {
                 const role = rolesWithoutPermission[i];
