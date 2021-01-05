@@ -1,4 +1,5 @@
-const { Collection,Client } = require("discord.js")
+/* eslint-disable */
+const { Collection, Client } = require('discord.js');
 
 module.exports = class CollectorManager {
     constructor(client) {
@@ -11,8 +12,7 @@ module.exports = class CollectorManager {
          */
         this.client = client;
 
-        client.on('message',message => {});
-        client.on('messageReactionAdd',handleMessageEvent.bind(this));
+        client.on('message', (message) => {});
+        client.on('messageReactionAdd', handleMessageEvent.bind(this));
     }
-    
-}
+};

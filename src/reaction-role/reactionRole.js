@@ -330,7 +330,7 @@ class ReactionRole {
      * @return {Promise<ReactionRole>}
      */
     resolve() {
-        return new Promise(async(resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             this.guild = this.client.guilds.cache.get(this.guildId);
             if (!this.guild) {
                 this.manager.__debug(
@@ -365,7 +365,7 @@ class ReactionRole {
                 this.messageReaction = this.message.reactions.cache.find(
                     (x) => this.id === `${this.message.id}-${this.manager.__resolveReactionEmoji(x.emoji)}`,
                 );
-                this.emoji =this.messageReaction.emoji;
+                this.emoji = this.messageReaction.emoji;
 
                 if (this.messageReaction.partial) await this.messageReaction.fetch();
 
@@ -408,13 +408,13 @@ class ReactionRole {
                     if (!users.has(winnerId)) this.manager.__handleReactionRoleAction(ActionType.TAKE, member, this, this.messageReaction);
                 }
 
-                for (let j = 0; j < this.rolesId.length; j++) {
+                for (let j = 0; j < this.rolesId.length; j += 1) {
                     const roleId = this.rolesId[j];
                     const role = this.guild.roles.resolve(roleId);
                     if (role) this.roles.push(role);
                 }
-                
-                if(this.roles.length === 0){
+
+                if (this.roles.length === 0) {
                     this.manager.__debug(
                         'BOOT',
                         `Role '${this.id}' failed at start, roles is invalid.`,
@@ -432,9 +432,8 @@ class ReactionRole {
                     );
                     return reject(this.manager.__handleDeleted(this, this.guild));
                 }
-                else {
-                    return reject(error);
-                }
+
+                return reject(error);
             }
         });
     }
