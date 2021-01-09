@@ -1,5 +1,15 @@
 const {
-    GuildMember, PermissionResolvable, RoleResolvable, UserResolvable, Guild, TextChannel, Message, Emoji, MessageReaction, Role, Client,
+    GuildMember,
+    PermissionResolvable,
+    RoleResolvable,
+    UserResolvable,
+    Guild,
+    TextChannel,
+    Message,
+    Emoji,
+    MessageReaction,
+    Role,
+    Client,
 } = require('discord.js');
 const { ReactionRoleType, isValidReactionRoleType, ActionType } = require('./constants');
 const { ReactionRoleManager } = require('./manager');
@@ -282,7 +292,7 @@ class ReactionRole {
      * @return {Promise<boolean>}
      */
     async checkDeveloperRequirement(member) {
-        return new Promise(async (resolve) => {
+        return new Promise(async(resolve) => {
             if (!this.requirements.verifiedDeveloper) return resolve(true);
             const flags = await member.user.fetchFlags();
             const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
@@ -330,14 +340,14 @@ class ReactionRole {
      * @return {Promise<ReactionRole>}
      */
     resolve() {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async(resolve) => {
             this.guild = this.client.guilds.cache.get(this.guildId);
             if (!this.guild) {
                 this.manager.__debug(
                     'BOOT',
                     `Role '${this.id}' failed at start, guild wasn't found.`,
                 );
-                return reject(this.manager.__handleDeleted(this, this.guildId));
+                return resolve(this.manager.__handleDeleted(this, this.guildId));
             }
 
             this.channel = this.guild.channels.cache.get(this.channelId);
@@ -346,7 +356,7 @@ class ReactionRole {
                     'BOOT',
                     `Role '${this.id}' failed at start, channel wasn't found.`,
                 );
-                return reject(this.manager.__handleDeleted(this, this.guildId));
+                return resolve(this.manager.__handleDeleted(this, this.guildId));
             }
 
             try {
@@ -356,7 +366,7 @@ class ReactionRole {
                         'BOOT',
                         `Role '${this.id}' failed at start, message wasn't found.`,
                     );
-                    return reject(this.manager.__handleDeleted(this, this.guildId));
+                    return resolve(this.manager.__handleDeleted(this, this.guildId));
                 }
 
                 if (this.message.partial) await this.message.fetch();
@@ -374,7 +384,7 @@ class ReactionRole {
                 for (let j = 0; j < usersArray.length; j += 1) {
                     const user = usersArray[j];
                     if (user.partial) await user.fetch();
-                    if (user.bot) continue;// Ignore bots, please!
+                    if (user.bot) continue; // Ignore bots, please!
 
                     const member = this.guild.members.cache.get(user.id);
                     if (!member) {
@@ -412,14 +422,21 @@ class ReactionRole {
                     const roleId = this.rolesId[j];
                     const role = this.guild.roles.resolve(roleId);
                     if (role) this.roles.push(role);
+                    else {
+                        this.manager.__debug(
+                            'BOOT',
+                            `Role '${roleId}' wasn't found in reaction role '${this.id}', so it was removed.`,
+                        );
+                        this.rolesId.splice(j, 1);
+                    }
                 }
 
                 if (this.roles.length === 0) {
                     this.manager.__debug(
                         'BOOT',
-                        `Role '${this.id}' failed at start, roles is invalid.`,
+                        `Reaction Role '${this.id}' failed at start, roles is invalid.`,
                     );
-                    return reject(this.manager.__handleDeleted(this, this.guildId));
+                    return resolve(this.manager.__handleDeleted(this, this.guildId));
                 }
 
                 this.__isValid = true;
@@ -430,10 +447,10 @@ class ReactionRole {
                         'BOOT',
                         `Role '${this.id}' failed at start, message wasn't found.`,
                     );
-                    return reject(this.manager.__handleDeleted(this, this.guild));
+                    return resolve(this.manager.__handleDeleted(this, this.guild));
                 }
 
-                return reject(error);
+                return resolve(error);
             }
         });
     }

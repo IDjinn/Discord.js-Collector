@@ -7,25 +7,17 @@ const server = require('http').createServer(app);
 const axios = require('axios')
 console.clear();
 const clean = text => {
-    if (typeof (text) === "string")
+    if (typeof(text) === "string")
         return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
     else
         return text;
 }
 
 
-client.log = async (embed, reactionRole) => {
+client.log = async(embed, reactionRole) => {
     const channel = client.channels.cache.get(process.env.LOG_CHANNEL);
     if (reactionRole) {
-        try {
-            const msgChannel = client.channels.cache.get(reactionRole.channel);
-            const message = await msgChannel.fetch(reactionRole.message);
-
-            embed.description += `\n\n[Go to message](https://discord.com/channels/${channel.guild ? channel.guild.id : '@me'}/${msgChannel.id}/${message.id})`;
-        }
-        catch {
-
-        }
+        embed.description += `\n\n[Go to message](https://discord.com/channels/${reactionRole.guild.id}/${reactionRole.channel.id}/${reactionRole.message.id})`;
     }
     if (channel) await channel.send(embed);
 }
@@ -51,7 +43,7 @@ process.on('uncaughtExceptionMonitor', msg => console.log(msg));
 process.on('unhandledRejection', msg => console.log(msg));
 
 reactionRoleManager.on('missingPermissions', (action, member, roles, reactionRole) => {
-    console.log(`Some roles cannot be ${action === 1 ? 'given' : 'taken'} to member \`${member.displayName}\`, because i don't have permissions to manage these roles: ${roles.map(role => `\`${role.name}\``).join(',')}`);
+            console.log(`Some roles cannot be ${action === 1 ? 'given' : 'taken'} to member \`${member.displayName}\`, because i don't have permissions to manage these roles: ${roles.map(role => `\`${role.name}\``).join(',')}`);
     const embed = new MessageEmbed()
         .setTitle('Unmanageable Roles')
         .setDescription(`Some roles cannot be ${action === 1 ? 'given' : 'taken'} to member \`${member.displayName}\`, because i don't have permissions to manage these roles...\n\n`)
@@ -65,50 +57,49 @@ reactionRoleManager.on('missingPermissions', (action, member, roles, reactionRol
 
     client.log(embed, reactionRole);
 });
-
+/*
 reactionRoleManager.on('ready', () => {
     const embed = new MessageEmbed()
         .setTitle('Ready')
         .setDescription('Reaction Role Manager is ready.')
         .setTimestamp();
     client.log(embed);
-});
+});*/
 
 // When user react and win role, will trigger this event
-reactionRoleManager.on('reactionRoleAdd', (member, role) => {
+reactionRoleManager.on('reactionRoleAdd', (member, role, reactionRole) => {
     const embed = new MessageEmbed()
         .setTitle('Role Win')
         .setDescription(`\`${member.displayName}\` win the role '${role.name}'`)
         .setTimestamp();
-    client.log(embed);
+    client.log(embed, reactionRole);
 });
 
 // When user remove reaction and lose role, will trigger this event
-reactionRoleManager.on('reactionRoleRemove', (member, role) => {
+reactionRoleManager.on('reactionRoleRemove', (member, role, reactionRole) => {
     const embed = new MessageEmbed()
         .setTitle('Role Lost')
         .setDescription(`\`${member.displayName}\` lost the role '${role.name}'`)
         .setTimestamp();
-    client.log(embed);
+    client.log(embed, reactionRole);
 });
 
 // When someone removed all reactions from message
-reactionRoleManager.on('allReactionsRemove', (message) => {
+reactionRoleManager.on('allReactionsRemove', (message, _, __, ___, reactionRoles) => {
     const embed = new MessageEmbed()
         .setTitle('Reactions Removed')
         .setDescription(`All reactions of message \`${message.id}\` was removed, so everone who reacted on it lost their roles.`)
         .setTimestamp();
-    client.log(embed);
+    client.log(embed, reactionRoles[0]);
 });
 
 // If member doesn't have all requirements, this event is triggered.
 reactionRoleManager.on('missingRequirements', (type, member, reactionRole, object) => {
-    console.log(object)
     const embed = new MessageEmbed()
         .setTitle('Missing Requierements')
         .setDescription(`Member \`${member.displayName}\` missing requirement ${type}, he will not win the role '${reactionRole.id}'`)
         .setTimestamp();
-    client.log(embed);
+    client.log(embed, reactionRole);
 });
 
 client.on("message", async (message) => {

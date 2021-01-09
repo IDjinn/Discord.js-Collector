@@ -1,3 +1,6 @@
+const { GuildMember, Role } = require('discord.js');
+const { ReactionRole } = require('./reactionRole');
+
 /**
  * Reaction role manager events.
  * @typedef {Object} ReactionRoleEvent
@@ -80,10 +83,46 @@ const ActionType = Object.freeze({
  */
 const isValidReactionRoleType = (number) => !isNaN(number) && (number >= ReactionRoleType.NORMAL && number <= ReactionRoleType.REVERSED);
 
+/**
+ * Create your custom hooks to execute before/after Reaction Role Manager do things.
+ * @summary Pay attention: return value must be boolean! If is not, will not work like you wish.
+ * @typedef {Object} IHooks
+ * @property {preRoleAddHook} preRoleAddHook - Function executed before add a role to some member.
+ * If return value is false, this action will be bypassed.
+ * @property {preRoleRemoveHook} preRoleRemoveHook - Function executed before remove a role from some member.
+ * If return value is false, this action will be bypassed.
+ */
+
+/**
+ * @param {GuildMember} member - Member who reacted.
+ * @param {Role} role - Role to add.
+ * @param {ReactionRole} reactionRole - Reaction role of this event.
+ * 
+ * @return {Promise<boolean>} - This action is allowed, member will win the role.
+ */
+async function preRoleAddHook(member, role, reactionRole) { // This is just for typedef purposes
+    return true;
+}
+
+/**
+ * @param {GuildMember} member - Member who reacted.
+ * @param {Role} role - Role to remove.
+ * @param {ReactionRole} reactionRole - Reaction role of this event.
+ * 
+ * @return {Promise<boolean>} - This action is allowed, member will lose the role.
+ */
+async function preRoleRemoveHook(member, role, reactionRole) { // This is just for typedef purposes
+    return true;
+}
+
 module.exports = {
     RequirementType,
     ReactionRoleEvent,
     ReactionRoleType,
     ActionType,
     isValidReactionRoleType,
+    defaultHooks: {
+        preRoleAddHook,
+        preRoleRemoveHook
+    }
 };
