@@ -292,7 +292,7 @@ class ReactionRole {
      * @return {Promise<boolean>}
      */
     async checkDeveloperRequirement(member) {
-        return new Promise(async(resolve) => {
+        return new Promise(async (resolve) => {
             if (!this.requirements.verifiedDeveloper) return resolve(true);
             const flags = await member.user.fetchFlags();
             const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
@@ -340,7 +340,7 @@ class ReactionRole {
      * @return {Promise<ReactionRole>}
      */
     resolve() {
-        return new Promise(async(resolve) => {
+        return new Promise(async (resolve) => {
             this.guild = this.client.guilds.cache.get(this.guildId);
             if (!this.guild) {
                 this.manager.__debug(
