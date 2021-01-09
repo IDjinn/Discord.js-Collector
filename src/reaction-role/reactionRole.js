@@ -51,12 +51,11 @@ class ReactionRole {
      * @param {string} data.channel - Channel ID of message.
      * @param {string} data.guild - Guild ID of channel.
      * @param {string} data.emoji - Emoji ID of reaction role.
+     * @param {ReactionRoleType} data.type - Reaction role type
      * @param {string[]} [data.winners=[]] - List with role winners ID;
-     * @param {number} [data.max=Number.MAX_SAFE_INTEGER] - Max roles available to give.
-     * @param {boolean} [data.toggle=false] - User will have only one of these message roles.
+     * @param {number} [data.max=0] - Max roles available to give.
      * @param {IRequirementType} [data.requirements={}] - Requirements to win this role.
      * @param {boolean} [data.disabled=false] - Is this reaction role disabled?
-     * @param {ReactionRoleType} [data.type=1] - Reaction role type
      * @param {RoleResolvable[]} [data.roles=[]] - All roles of this reaction role.
      *
      * @return {ReactionRole}
@@ -70,7 +69,6 @@ class ReactionRole {
         emoji,
         winners,
         max,
-        toggle,
         requirements,
         disabled,
         type,
@@ -119,18 +117,14 @@ class ReactionRole {
         /**
          * Max roles available to give
          * @type {number}
+         * @readonly
          */
         // eslint-disable-next-line no-restricted-globals
         this.max = isNaN(max) ? 0 : Number(max);
         /**
-         * Is it toggled role?
-         * @type {number}
-         * @deprecated since 1.7.9
-         */
-        this.toggle = Boolean(toggle);
-        /**
          * Requirement to win this role.
          * @type {IRequirementType}
+         * @readonly
          */
         this.requirements = {
             boost: false,
@@ -154,17 +148,20 @@ class ReactionRole {
         /**
          * This reaction role type.
          * @type {ReactionRoleType}
+         * @readonly
          */
         this.type = Number(type);
         /**
          * Roles ID's
          * @type {string[]}
+         * @readonly
          */
         this.rolesId = Array.isArray(roles) ? roles : [];
 
         /**
          * Guild from this Reaction Role
          * @type {Guild}
+         * @readonly
          */
         this.guild = guild instanceof Guild ? guild : null;
         /**
@@ -175,21 +172,25 @@ class ReactionRole {
         /**
          * Message from this Reaction Role
          * @type {Message}
+         * @readonly
          */
         this.message = message instanceof Message ? message : null;
         /**
          * Emoji from this Reaction Role
          * @type {Emoji}
+         * @readonly
          */
         this.emoji = null;
         /**
          * MessageReaction from this Reaction Role
          * @type {MessageReaction}
+         * @readonly
          */
         this.messageReaction = null;
         /**
          * Members who win this role
          * @type {GuildMember[]}
+         * @readonly
          */
         this.winners = [];
         /**
@@ -292,7 +293,7 @@ class ReactionRole {
      * @return {Promise<boolean>}
      */
     async checkDeveloperRequirement(member) {
-        return new Promise(async (resolve) => {
+        return new Promise(async(resolve) => {
             if (!this.requirements.verifiedDeveloper) return resolve(true);
             const flags = await member.user.fetchFlags();
             const isVerifiedDeveloper = flags.has('VERIFIED_DEVELOPER');
@@ -311,36 +312,13 @@ class ReactionRole {
         return true;
     }
 
-    /**
-     * Transform json to Reaction Role object.
-     * @param {object} json - Reaction role data.
-     * @deprecated since 1.8.0, please use `new ReactionRole(json)` instead.
-     * @static
-     * @return {ReactionRole}
-     */
-    static fromJSON(json) {
-        return new ReactionRole({
-            message: json.message,
-            channel: json.channel,
-            guild: json.guild,
-            role: json.role,
-            emoji: json.emoji,
-            winnersId: json.winnersId,
-            max: json.max,
-            toggle: json.toggle,
-            requirements: json.requirements,
-            disabled: json.disabled,
-            type: json.type,
-            roles: json.roles,
-        });
-    }
 
     /**
      * Resolve this reaction role.
      * @return {Promise<ReactionRole>}
      */
     resolve() {
-        return new Promise(async (resolve) => {
+        return new Promise(async(resolve) => {
             this.guild = this.client.guilds.cache.get(this.guildId);
             if (!this.guild) {
                 this.manager.__debug(
@@ -463,9 +441,9 @@ class ReactionRole {
          * @since 1.7.9
          */
         if (this.max > 10E9 || this.max < 0) this.max = 0; // 1B is max, 0 is inifity.
-
-        if (this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
-        else if (this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL;
+        /* Removed. not needed anymore
+                if (this.toggle && this.type !== ReactionRoleType.TOGGLE) this.type = ReactionRoleType.TOGGLE;
+                else if (this.type === ReactionRoleType.UNKNOWN) this.type = ReactionRoleType.NORMAL; */
     }
 
     /**

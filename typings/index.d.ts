@@ -20,6 +20,8 @@ import Discord, {
   Emoji,
   PermissionResolvable,
   RoleResolvable,
+  MessageResolvable,
+  GuildChannelResolvable,
 } from 'discord.js';
 
 import { EventEmitter } from "events";
@@ -43,21 +45,18 @@ declare module "discord.js-collector" {
   export class ReactionRole {
     constructor(options: IReactionRoleOptions);
     get id(): string;
-    public toJSON(): object;
-    get message(): string;
-    get channel(): string;
-    get guild(): string;
-    /**
-     * @deprecated since 1.8.0, please use `roles` property instead.
-     */
-    get role(): string;
-    get emoji(): string;
+    get guildId(): string;
+    get guild(): Guild;
+    get messageId(): string;
+    get message(): Message;
+    get channelId(): string;
+    get channel(): TextChannel;
+    get rolesId(): string[];
+    get roles(): Role[];
+    get emojiId(): string;
+    get emoji(): Emoji;
     get winners(): string[];
     get max(): number;
-    /**
-     * @deprecated since 1.7.9
-     */
-    get toggle(): boolean;
     get requirements(): IRequirementType;
     get type(): ReactionRoleType;
     get isToggle(): boolean;
@@ -65,18 +64,14 @@ declare module "discord.js-collector" {
     get isJustWin(): boolean;
     get isJustLose(): boolean;
     get isReversed(): boolean;
-    get roles(): string[];
-    /**
-     * @deprecated since 1.8.0, please use `new ReactionRole(json)` instead.
-     */
-    static fromJSON(json: JSON): ReactionRole;
+    get messageReaction(): MessageReaction;
+    get isValid(): boolean;
     public checkDeveloperRequirement(member: GuildMember): Promise<boolean>;
     public checkBoostRequirement(member: GuildMember): boolean;
     private __handleDeprecation(): void;
-    /**
-     * @deprecated since 1.8.0, please use `new ReactionRole(json)` method instead.
-     */
     public toJSON(): JSON;
+    private __check();
+    private resolve();
   }
 
   export interface IRequirementType {
@@ -97,15 +92,17 @@ declare module "discord.js-collector" {
   }
 
   export interface IReactionRoleOptions {
-    message: Message | Snowflake;
-    channel: TextChannel | Snowflake;
-    guild: Guild | Snowflake;
-    role: Role | Snowflake;
-    emoji: GuildEmoji | EmojiResolvable;
-    winners?: string[];
-    max?: number;
-    toggle?: boolean;
-    type?: ReactionRoleType;
+    manager: ReactionRoleManager;
+    guild: GuildResolvable;
+    channel: GuildChannelResolvable;
+    message: MessageResolvable;
+    roles: RoleResolvable[];
+    emoji: EmojiResolvable[];
+    type: ReactionRoleType;
+    disabled?: boolean = false;
+    winners?: string[] = [];
+    max?: number = 0;
+    requirements?: IRequirementType;
   }
 
   export class ReactionRoleManager extends EventEmitter {
