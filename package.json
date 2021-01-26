@@ -1,10 +1,20 @@
 {
+  "scripts": {
+    "dev": "npx tsc -w",
+    "dev-nodemon": "npx nodemon ./build/Test.js"
+  },
   "devDependencies": {
+    "@types/async-lock": "^1.1.2",
     "@types/es6-promise": "^3.3.0",
     "typescript": "^4.1.3"
   },
   "dependencies": {
+    "@types/node": "^14.14.22",
+    "async-lock": "^1.2.8",
+    "await-lock": "^2.1.0",
+    "await-semaphore": "^0.1.3",
     "discord.js": "^12.5.1",
+    "node-async-locks": "^2.0.0",
     "tslib": "^2.1.0"
   }
 }

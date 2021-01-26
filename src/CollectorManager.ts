@@ -10,7 +10,7 @@ export class CollectorManager {
      * Init collector manager
      * @param client - discord client
      */
-    public static CollectorManager(client: Client) {
+    public static init(client: Client) {
         return new CollectorManager(client);
     }
     /**
@@ -82,8 +82,8 @@ export class CollectorManager {
 
 declare module "discord.js" {
     export interface Client {
-        collectorManager?: CollectorManager;
+        collectorManager: CollectorManager;
     }
 }
 
-export default CollectorManager.CollectorManager;
+export default CollectorManager.init;

@@ -4,12 +4,13 @@ import { BaseCollector, IMessageCollector, IOptions, IValidOptions } from "../..
 
 
 export default class MessageQuestionCollector extends BaseCollector implements IMessageCollector {
+    private onCollectFx: Function;
     constructor(options: IMessageQuestionOptions) {
         super(MessageQuestionCollector.validate(options));
 
+        this.onCollectFx = options.onMessage;
         // lazy loading into client object
-        options.client!.collectorManager!.addMessageCollector(this);
-        this.onCollect = options.onMessage;
+        this.basicOptions.client.collectorManager.addMessageCollector(this);
     }
 
     protected static validate(options: IMessageQuestionOptions): IValidOptions {
@@ -18,10 +19,13 @@ export default class MessageQuestionCollector extends BaseCollector implements I
         return validOptions;
     }
 
-    onCollect(message: Message) {}
+    onCollect(message: Message) {
+        this.onCollectFx(message);
+        super.afterCollect();
+    }
 }
 
 export interface IMessageQuestionOptions extends IOptions {
     //@ts-ignore
-    onMessage(message: Message);
+    onMessage: Function;
 }
