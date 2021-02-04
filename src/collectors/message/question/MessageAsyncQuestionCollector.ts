@@ -3,17 +3,17 @@ import { Constants } from "../../../others/Constants";
 import { BaseCollector, IMessageCollector, IOptions, IValidOptions } from "../../../structures/BaseCollector";
 import { Semaphore } from 'await-semaphore';
 
-export default class MessageAsyncQuestionCollector extends BaseCollector implements IMessageCollector {
+export default class MessageAsyncQuestionCollector extends BaseCollector<IValidMessageAsyncQuestionOptions> implements IMessageCollector {
     private messages: Message[] = [];
     private resolveOnCollect?: Function;
-    constructor(options: IOptions) {
-        super(MessageAsyncQuestionCollector.validate(options));
+    constructor(options: IValidMessageAsyncQuestionOptions) {
+        super(options);
 
         // lazy loading into client object
-        this.basicOptions.client.collectorManager.addMessageCollector(this);
+        this.options.client.collectorManager.addMessageCollector(this);
     }
 
-    public get first(){
+    public get next(){
         return new Promise(resolve => {
             this.resolveOnCollect = resolve;
         }).then(()=>this.messages.shift());
@@ -32,10 +32,6 @@ export default class MessageAsyncQuestionCollector extends BaseCollector impleme
         }
     }
 
-    protected static validate(options: IOptions): IValidOptions {
-        return super.validate(options);
-    }
-
     public dispose() {
         super.dispose();
         this.messages = [];
@@ -48,4 +44,12 @@ export default class MessageAsyncQuestionCollector extends BaseCollector impleme
 
         if (this.resolveOnCollect) this.resolveOnCollect();
     }
+}
+
+export interface IMessageAsyncQuestionOptions extends IOptions{
+
+}
+
+export interface IValidMessageAsyncQuestionOptions extends IValidOptions{
+    
 }

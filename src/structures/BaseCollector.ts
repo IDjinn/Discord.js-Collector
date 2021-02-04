@@ -4,34 +4,26 @@ import { Channel, ChannelResolvable, Client, DMChannel, Message, TextChannel, Us
 import init, { CollectorManager } from "../CollectorManager";
 import { Constants } from "../others/Constants";
 
-export abstract class BaseCollector {
+export abstract class BaseCollector<T extends IValidOptions> {
     protected expiresAt: number;
     protected client: Client;
     protected channel: TextChannel | DMChannel;
     protected collected = 0;
     protected max:number;
-    constructor(public readonly basicOptions: IValidOptions) {
-        if (!basicOptions) throw new Error(Constants.Errors.GENERIC_MISSING_OPTIONS);
+    protected options: T;
+    constructor(optionsToCheck: IOptions) {
+        if (!optionsToCheck) throw new Error(Constants.Errors.GENERIC_MISSING_OPTIONS);
 
-        this.client = basicOptions.client;
-        this.channel = basicOptions.channel;
-        this.max = basicOptions.max;
-        this.expiresAt = Date.now() + this.basicOptions.time;
+        const channel = optionsToCheck.channel instanceof Channel ? optionsToCheck.channel : optionsToCheck.client instanceof Client ? optionsToCheck.client.channels.resolve(optionsToCheck.channel) : null;
+        if(!channel) throw new Error(Constants.Errors.INVALID_CHANNEL_OPTION(optionsToCheck.channel));
 
-        CollectorManager.init(this.client);
-    }
+        const client = optionsToCheck.client instanceof Client ? optionsToCheck.client : channel.client;
+        const users = optionsToCheck.users?.map(x => client.users.resolve(x)).filter(x =>x) as User[];
+        if(!users || !users.length) throw new Error(Constants.Errors.INVALID_USERS_OPTION(optionsToCheck.users));
 
-    protected static validate(options: IOptions): IValidOptions {
-        const channel = options.channel instanceof Channel ? options.channel : options.client instanceof Client ? options.client.channels.resolve(options.channel) : null;
-        if(!channel) throw new Error(Constants.Errors.INVALID_CHANNEL_OPTION(options.channel));
-
-        const client = options.client instanceof Client ? options.client : channel.client;
-        const users = options.users?.map(x => client.users.resolve(x)).filter(x =>x) as User[];
-        if(!users || !users.length) throw new Error(Constants.Errors.INVALID_USERS_OPTION(options.users));
-
-        const validOptions: IValidOptions = {
-            time: Number(options.time),
-            max: Number(options.max),
+        const validOptions = {
+            time: Number(optionsToCheck.time),
+            max: Number(optionsToCheck.max),
             client,
             users,
             channel: channel as TextChannel | DMChannel,
@@ -55,7 +47,13 @@ export abstract class BaseCollector {
             || validOptions.users.filter(x => !(x instanceof User)).length)
             throw new Error(Constants.Errors.INVALID_USERS_OPTION(validOptions.users));
 
-        return validOptions;
+        this.options = validOptions as T;
+        this.client = this.options.client;
+        this.channel = this.options.channel;
+        this.max = this.options.max;
+        this.expiresAt = Date.now() + this.options.time;
+
+        CollectorManager.init(this.client);
     }
 
     public async isMach(userToResolve: UserResolvable){
@@ -63,7 +61,7 @@ export abstract class BaseCollector {
         if(!user) return false;
 
         if(user.partial) await user.fetch();
-        return this.basicOptions.users.some(x => x.id == user.id);
+        return this.options.users.some(x => x.id == user.id);
     }
 
     public afterCollect(){
@@ -99,12 +97,12 @@ export interface IOptions {
     users: UserResolvable[];
 }
 
-export interface IMessageCollector extends BaseCollector{
+export interface IMessageCollector{
     //@ts-ignore
     onCollect(message: Message);
 }
 
-export interface IReactionCollector extends BaseCollector{
+export interface IReactionCollector{
     onCollect(messageReaction: MessageReaction, user: User | PartialUser):void ;
 }
 

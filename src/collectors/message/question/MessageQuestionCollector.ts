@@ -3,20 +3,15 @@ import { Constants } from "../../../others/Constants";
 import { BaseCollector, IMessageCollector, IOptions, IValidOptions } from "../../../structures/BaseCollector";
 
 
-export default class MessageQuestionCollector extends BaseCollector implements IMessageCollector {
+export default class MessageQuestionCollector extends BaseCollector<IValidMessageQuestionOptions> implements IMessageCollector {
     private onCollectFx: Function;
     constructor(options: IMessageQuestionOptions) {
-        super(MessageQuestionCollector.validate(options));
+        super(options);
 
+        if (!options.onMessage || typeof options.onMessage !== 'function') throw new Error(Constants.Errors.INVALID_ONMESSAGE_HOOK(options.onMessage));
         this.onCollectFx = options.onMessage;
         // lazy loading into client object
-        this.basicOptions.client.collectorManager.addMessageCollector(this);
-    }
-
-    protected static validate(options: IMessageQuestionOptions): IValidOptions {
-        const validOptions = super.validate(options);
-        if (!options.onMessage || typeof options.onMessage !== 'function') throw new Error(Constants.Errors.INVALID_ONMESSAGE_HOOK(options.onMessage));
-        return validOptions;
+        this.options.client.collectorManager.addMessageCollector(this);
     }
 
     onCollect(message: Message) {
@@ -26,6 +21,11 @@ export default class MessageQuestionCollector extends BaseCollector implements I
 }
 
 export interface IMessageQuestionOptions extends IOptions {
+    //@ts-ignore
+    onMessage: Function;
+}
+
+export interface IValidMessageQuestionOptions extends IValidOptions {
     //@ts-ignore
     onMessage: Function;
 }
