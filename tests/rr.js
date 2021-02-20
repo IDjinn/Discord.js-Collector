@@ -1,4 +1,4 @@
-const { ReactionRoleManager, ReactionRoleType, ReactionCollector } = require('../src')
+const { ReactionRoleManager, ReactionRoleType, ReactionCollector,MessageCollector } = require('../src')
 const { Client, Constants, WebhookClient, MessageEmbed } = require("discord.js");
 const client = new Client({ partials: ['REACTION', 'MESSAGE', 'GUILD_MEMBER'] });
 require('dotenv').config({ path: __dirname + '/process.env' });
@@ -65,14 +65,14 @@ reactionRoleManager.on('missingPermissions', (action, member, roles, reactionRol
 
     client.log(embed, reactionRole);
 });
-
+/*
 reactionRoleManager.on('ready', () => {
     const embed = new MessageEmbed()
         .setTitle('Ready')
         .setDescription('Reaction Role Manager is ready.')
         .setTimestamp();
     client.log(embed);
-});
+});*/
 
 // When user react and win role, will trigger this event
 reactionRoleManager.on('reactionRoleAdd', (member, role) => {
@@ -138,6 +138,111 @@ client.on("message", async (message) => {
         });
         message.reply('Done').then(m => m.delete({ timeout: 500 }));
         message.delete().catch();
+    }
+    else if (message.content.startsWith('>paginator')) {
+        const botMessage = await message.reply('Need help? Here list with all my commands!');
+        ReactionCollector.paginator({
+            botMessage,
+            user: message.author,
+            pages: [
+                new MessageEmbed()
+                    .setTitle('Moderation')
+                    .addField('Kick', 'Kick one member from the server')
+                    .addField('Ban', 'Ban one member from server')
+                    .addField('Mute', 'Remove permissions from member to talk in chats while is muted')
+                    .addField('Clear', 'Clear messages from text channel'),
+                new MessageEmbed()
+                    .setTitle('Util')
+                    .addField('Ping', 'Bot ping latency')
+                    .addField('Botinfo', 'Ban one member from server')
+                    .addField('Avatar', 'Show a user avatar'),
+                new MessageEmbed()
+                    .setTitle('Economy')
+                    .addField('Daily', 'Pick up daily reward')
+                    .addField('Pay', 'Pay some amount to other user'),
+                new MessageEmbed()
+                    .setTitle('Administration')
+                    .addField('Autorole', 'Configure autorole in this server')
+                    .addField('Prefix', 'Change bot prefix')
+            ],
+            collectorOptions: {
+                time: 60000
+            }
+        });
+    }
+    else if (message.content.startsWith('>reactionQuestion')) {
+        const botMessage = await message.reply('Are you sure? This action canno\'t be undo!');
+        ReactionCollector.question({
+            botMessage,
+            user: message.author,
+            reactions: {
+                '✅': async () => await message.channel.delete(),
+                '❌': async () => await message.reply('Ok, operation cancelled!'),
+            }
+        });
+    }
+    else if (message.content.startsWith('>yesNoQuestion')) {
+        const botMessage = await message.reply('Are you sure? This action canno\'t be undo!');
+        if (await ReactionCollector.yesNoQuestion({ botMessage, user: message.author })) {
+            await message.channel.delete();
+            await message.reply('Done!');
+        }
+        else {
+            await message.reply('Ok, operation cancelled!');
+        }
+    }
+    else if (message.content.startsWith('>menu')) {
+        const pages = {
+            '📥': {
+                embed: {
+                    title: 'Welcome Join Config',
+                    description: `React below embed to configure channel or message of welcome settings.\n\n📜 Channel settings\n📢 Message settings`,
+                },
+                reactions: ['📜', '📢'],
+                pages: {
+                    '📜': {
+                        backEmoji: '🔙',
+                        embed: {
+                            description: 'Please mention or use channel id to set as welcome channel.'
+                        },
+                        onMessage: async (controller, message) => {
+                            const channel = message.mentions.channels.first() || message.guild.channels.cache.get(message.content);
+                            if (!channel)
+                                return message.reply('🚫 | You\'ve forgot mention a channel or use their id.').then((m) => m.delete({ timeout: 3000 }));
+        
+                            // Do what you want here, like set it on database...
+                            return await message.reply(`✅ | Success! You've settled welcome channel as ${channel}.`).then(m => m.delete({ timeout: 3000 }));
+                        }
+                    },
+                    '📢': {
+                        backEmoji: '🔙',
+                        embed: {
+                            description: 'Make the message used when a member join in the server.',
+                        },
+                        onMessage: async (controller, message) => {
+                            // Do what you want here, like set it on database..
+                            return await message.reply('✅ | Success!').then(m => m.delete({ timeout: 3000 }));
+                        }
+                    }
+                }
+            },
+        };
+        const embed = new MessageEmbed()
+            .setTitle('Server Settings')
+            .setDescription('React below to configure modules in this server.\n\n📥 Welcome module')
+        const botMessage = await message.reply(embed);
+        ReactionCollector.menu({ botMessage, user: message.author, pages });
+    }
+    else if (message.content.startsWith('>messageQuestion')) {
+        const botMessage = await message.channel.send("Awaiting a message");
+        MessageCollector.question({
+            botMessage,
+            user: message.author.id,
+            onMessage: async (botMessage, message) => { // Every message sent by user will trigger this function.
+                await message.delete();
+                await botMessage.channel.send(`Your message: '${message.content}'`);
+            }
+        }); 
     }
     else if (message.content.startsWith('>delete')) {
         const msg = await message.channel.messages.fetch(args.shift());

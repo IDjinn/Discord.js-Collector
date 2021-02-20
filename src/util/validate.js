@@ -88,7 +88,7 @@ module.exports.validateOptions = (options, type) => {
         ) return Promise.reject(new Error('Invalid input: reactions is invalid type.'));
 
         if (!options.reactions) {
-            validOptions.reactions = type !== 'reactPaginator'
+            validOptions.reactionsMap = type !== 'reactPaginator'
                 ? Constants.DEFAULT_YES_NO_MAP
                 : Constants.DEFAULT_PAGINATOR_REACTIONS_MAP;
         }
