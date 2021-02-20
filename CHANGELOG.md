@@ -1,5 +1,10 @@
 
 ---
+# CHANGELOG - V1.8.8
+
+Fix reaction paginator bug.
+
+---
 # CHANGELOG - V1.8.7
 
 Reaction Role Manager: fix rr not deleted properly.
